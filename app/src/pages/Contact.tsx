@@ -12,7 +12,6 @@ import {
   Youtube,
   Send,
   ChevronDown,
-  ChevronUp,
 } from 'lucide-react';
 import ContactForm from '../components/ContactForm';
 

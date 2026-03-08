@@ -6,6 +6,25 @@ This repo contains the TOPAZ 2.0 dance competition website.
 
 The app lives in the **`app/`** folder.
 
+### Deploy now (manual – get the site live in a few minutes)
+
+1. Install Vercel CLI (one time):  
+   `npm i -g vercel`
+2. From the repo root:  
+   `cd app`
+3. Log in (one time):  
+   `vercel login`
+4. Link to your Vercel project (one time):  
+   `vercel link`  
+   Choose your account/team, pick **existing** project (e.g. topapz-website) or create one.
+5. Deploy to production:  
+   `npm run deploy`  
+   Or: `vite build && vercel --prod`
+
+Your site will be live at the URL Vercel prints (e.g. `topapz-website.vercel.app`).
+
+---
+
 ### Option A: Auto-deploy from GitHub (recommended)
 
 1. In [Vercel Dashboard](https://vercel.com/dashboard), open your project (or create one).
@@ -18,15 +37,13 @@ The app lives in the **`app/`** folder.
 
 ### Option B: Auto-deploy via GitHub Actions
 
-If the dashboard Git connection doesn’t trigger deploys, this workflow deploys on every push to `main` using secrets.
+If the dashboard Git connection doesn’t trigger deploys, this workflow deploys on every push to `main` **only if** you add these secrets in GitHub (repo **Settings → Secrets and variables → Actions**):
 
-1. In Vercel: **Project Settings → General** → copy **Project ID** and **Org ID** (or get them from `.vercel/project.json` after running `vercel link` locally).
-2. Create a [Vercel token](https://vercel.com/account/tokens) (read + deploy).
-3. In GitHub: repo **Settings → Secrets and variables → Actions** → add:
-   - `VERCEL_TOKEN` = your Vercel token  
-   - `VERCEL_ORG_ID` = your team/org ID  
-   - `VERCEL_PROJECT_ID` = your project ID  
-4. Push to `main`; the **Deploy to Vercel** workflow will run and deploy.
+- `VERCEL_TOKEN` – [Create token](https://vercel.com/account/tokens)
+- `VERCEL_ORG_ID` – from Vercel project **Settings → General**, or run `cd app && vercel link` and read `.vercel/project.json`
+- `VERCEL_PROJECT_ID` – same place as Org ID
+
+Without these three secrets, the GitHub Action runs but cannot deploy.
 
 Build command: `npm run build`  
 Output directory: `dist`

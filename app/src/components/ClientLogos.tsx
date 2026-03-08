@@ -41,7 +41,7 @@ function ClientLogoItem({ logo }: { logo: ClientLogo }) {
 
 const ClientLogos = ({
   background,
-  heading,
+  heading: _heading,
   logos,
   className = '',
 }: ClientLogosProps) => {

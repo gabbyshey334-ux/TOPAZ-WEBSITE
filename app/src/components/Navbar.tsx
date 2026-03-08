@@ -37,11 +37,7 @@ const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showSignUpModal, setShowSignUpModal] = useState(false);
-  const location = useLocation();
 
-  // All pages currently start with a dark hero section
-  const isHomePage = location.pathname === '/';
-  
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);

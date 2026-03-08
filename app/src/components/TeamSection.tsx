@@ -20,7 +20,7 @@ export interface TeamSectionProps {
 
 const TeamSection = ({
   background,
-  heading,
+  heading: _heading,
   teamImageSrc,
   teamImageAlt = 'TOPAZ team',
   members,
