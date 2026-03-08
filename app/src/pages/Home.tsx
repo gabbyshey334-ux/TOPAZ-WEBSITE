@@ -215,7 +215,7 @@ const Home = () => {
 
           {/* Product Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-20">
-            {/* PLACEHOLDER - Replace with real product images from Nick: /images/products/tshirt-black-1.jpg, tshirt-blue-1.jpg, tshirt-black-2.jpg, sweatshirt-black-1.jpg */}
+            {/* Product images in app/public/images/products/ */}
             {[
               {
                 id: 1,
