@@ -1,0 +1,7 @@
+{
+  "name": "topaz-website",
+  "private": true,
+  "scripts": {
+    "build": "cd app && npm ci && npm run build"
+  }
+}

@@ -2,9 +2,7 @@
 
 This repo contains the TOPAZ 2.0 dance competition website.
 
-## Vercel deployment
-
-The app lives in the **`app/`** folder.
+**Vercel (default):** The repo root has a `vercel.json` that builds from the **`app/`** folder and serves **`app/dist`**. You do **not** need to set Root Directory in the dashboard — just connect this repo and deploy.
 
 ### Deploy now (manual – get the site live in a few minutes)
 
