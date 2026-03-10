@@ -1,8 +1,9 @@
 # PDFs folder
 
-Place the TOPAZ competition rules PDF here so the site can offer it for download.
+Place TOPAZ PDFs here for download.
 
-**Required file:**
-- `topaz-rules.pdf` — Complete TOPAZ competition rules (used by Rules page, Footer, and CTA section)
+**Files:**
+- `topaz-rules.pdf` — Competition rules (Rules page, Footer, CTA)
+- `topaz-registration-form.pdf` — Registration form (Registration page)
 
-The app serves this at `/pdfs/topaz-rules.pdf` and suggests the download filename `TOPAZ_Rules_2026.pdf`.
+The app serves them at `/pdfs/topaz-rules.pdf` and `/pdfs/topaz-registration-form.pdf`.

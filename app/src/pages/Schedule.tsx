@@ -57,12 +57,12 @@ const Schedule = () => {
   const upcomingCompetitions: CompetitionCardProps[] = [
     {
       id: '1',
-      name: 'Spring Showcase 2026',
-      date: 'March 15-16, 2026',
-      location: 'Los Angeles Convention Center, CA',
-      registrationDeadline: 'February 28, 2026',
+      name: 'The Return of TOPAZ 2.0',
+      date: 'Saturday, August 22, 2026',
+      location: 'Seaside Convention Center',
+      registrationDeadline: 'August 15, 2026',
       status: 'open',
-      description: 'Our annual spring competition featuring all dance categories. Perfect for soloists and groups looking to start their season strong.',
+      description: '415 1st Ave, Seaside, OR 97138. Event time: 8:00 AM – 12:00 PM. Registration is open for The Return of TOPAZ 2.0.',
     },
     {
       id: '2',

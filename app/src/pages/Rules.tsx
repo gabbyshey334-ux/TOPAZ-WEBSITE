@@ -186,26 +186,6 @@ const Rules = () => {
         'Props and minimal set pieces allowed',
       ],
     },
-    {
-      name: 'Ballroom',
-      description: 'Partner dance styles and social dance forms.',
-      icon: 'users' as const,
-      details: [
-        'Standard and Latin styles accepted',
-        'Couples and group formations welcome',
-        'Proper technique and partnership emphasized',
-      ],
-    },
-    {
-      name: 'Line Dancing',
-      description: 'Choreographed group dances in lines or rows.',
-      icon: 'users' as const,
-      details: [
-        'Country, pop, and themed line dances',
-        'Synchronization and group unity valued',
-        'Minimum 3 contestants required',
-      ],
-    },
   ];
 
   // Variety Arts Categories
@@ -262,24 +242,22 @@ const Rules = () => {
     },
     {
       name: 'Variety F - Ballroom',
-      description: 'For couples or groups of couples.',
+      description: 'Partner dance styles and social dance forms.',
       icon: 'users' as const,
-      badge: 'COUPLES/GROUPS ONLY',
       details: [
-        'Lifts, gymnastics, and props allowed',
-        'Showcase and theatrical ballroom styles',
-        'Emphasis on partnership and performance quality',
+        'Standard and Latin styles accepted',
+        'Couples and group formations welcome',
+        'Proper technique and partnership emphasized',
       ],
     },
     {
       name: 'Variety G - Line Dancing',
-      description: 'Group line dancing with enhanced elements.',
+      description: 'Choreographed group dances in lines or rows.',
       icon: 'users' as const,
-      badge: 'MIN. 3 CONTESTANTS',
       details: [
+        'Country, pop, and themed line dances',
+        'Synchronization and group unity valued',
         'Minimum 3 contestants required',
-        'Props and gymnastics allowed',
-        'Synchronization and creativity valued',
       ],
     },
   ];

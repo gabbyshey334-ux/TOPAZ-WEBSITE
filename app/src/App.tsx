@@ -11,6 +11,8 @@ import About from './pages/About';
 import Schedule from './pages/Schedule';
 import Rules from './pages/Rules';
 import Contact from './pages/Contact';
+import Gallery from './pages/Gallery';
+import Registration from './pages/Registration';
 
 function App() {
   return (
@@ -27,6 +29,8 @@ function App() {
             <Route path="/schedule" element={<Schedule />} />
             <Route path="/rules" element={<Rules />} />
             <Route path="/contact" element={<Contact />} />
+            <Route path="/gallery" element={<Gallery />} />
+            <Route path="/registration" element={<Registration />} />
           </Routes>
         </main>
 

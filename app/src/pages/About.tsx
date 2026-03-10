@@ -101,14 +101,14 @@ const About = () => {
         content="Topaz has proudly been at the forefront of theatrical arts competitions since 1972. Throughout the years we have extended our family to countless studios and thousands of contestants who have become our extended family. Many of the impactful leaders we now feature—choreographers and celebrities in theater—performed at our competitions in the early days. Just as in the core for the line and the journey that led us full circle."
       />
 
-      {/* Section 3: Our Story (White) - image left, text right */}
+      {/* Section 3: Our Story (White) - image left, text right. Use bob-pat-heath.jpg when available. */}
       <TextSection
         background="white"
         heading="Our Story"
         alignment="right"
         imageSrc={ABOUT_IMAGES.ourStory}
-        imageAlt="Pat and Bob Heath legacy"
-        content="Pat and Bob Heath were visionaries in the world of theatrical arts, pioneering a competition framework that redefined excellence. Their innovative approach not only captured the imagination of many but also provided a platform where talent could shine, establishing their model. With that, their work and excellence continue to resonate, proving that great ideas can transcend time and influence generations."
+        imageAlt="Pat and Bob Heath, founders"
+        content="Pat and Bob Heath were visionaries in the world of theatrical arts, pioneering a competition framework that not only redefined excellence. Their innovative approach not only captured the imagination of many but also provided a platform where talent could shine, establishing their model. With that their work excellence continue to resonate, proving that great ideas can transcend time and influence generations."
       />
 
       {/* Section 4: Meet The Team (Black) */}

@@ -5,6 +5,13 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        /* TOPAZ brand (from logos) – use as needed */
+        topaz: {
+          primary: '#2E75B6',
+          secondary: '#1a1a2e',
+          accent: '#00b4d8',
+          gold: '#FFD700',
+        },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
