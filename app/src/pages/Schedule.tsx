@@ -60,9 +60,11 @@ const Schedule = () => {
       name: 'The Return of TOPAZ 2.0',
       date: 'Saturday, August 22, 2026',
       location: 'Seaside Convention Center',
+      address: '415 1st Ave, Seaside, OR 97138',
       registrationDeadline: 'August 15, 2026',
       status: 'open',
-      description: '415 1st Ave, Seaside, OR 97138. Event time: 8:00 AM – 12:00 PM. Registration is open for The Return of TOPAZ 2.0.',
+      description: 'Event time: 8:00 AM – 12:00 PM. Registration is open for The Return of TOPAZ 2.0.',
+      image: `${import.meta.env.BASE_URL}images/events/trophy-gold.jpg`,
     },
     {
       id: '2',
@@ -72,6 +74,7 @@ const Schedule = () => {
       registrationDeadline: 'May 31, 2026',
       status: 'coming',
       description: 'The pinnacle of the TOPAZ season. Qualifying dancers compete for national titles and prestigious scholarships.',
+      image: `${import.meta.env.BASE_URL}images/events/competition-2026.jpg`,
     },
     {
       id: '3',
@@ -81,6 +84,7 @@ const Schedule = () => {
       registrationDeadline: 'June 15, 2026',
       status: 'coming',
       description: 'Five days of workshops, masterclasses, and competitive performances with world-renowned instructors.',
+      image: `${import.meta.env.BASE_URL}images/events/stage-performance.jpg`,
     },
     {
       id: '4',
@@ -90,6 +94,7 @@ const Schedule = () => {
       registrationDeadline: 'September 20, 2026',
       status: 'coming',
       description: 'A beloved tradition featuring special categories and the annual Teacher/Student showcase.',
+      image: `${import.meta.env.BASE_URL}images/events/competition-2026.jpg`,
     },
   ];
 
@@ -223,10 +228,10 @@ const Schedule = () => {
           </div>
 
           {filteredUpcoming.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+            <div className="grid grid-cols-1 gap-10">
               {filteredUpcoming.map((competition) => (
                 <div key={competition.id} className="competition-card group h-full">
-                  <div className="h-full bg-white rounded-3xl border border-gray-100 shadow-premium hover:shadow-2xl transition-all duration-500">
+                  <div className="h-full bg-white rounded-3xl border border-gray-100 shadow-premium hover:shadow-2xl transition-all duration-500 overflow-hidden">
                     <CompetitionCard {...competition} />
                   </div>
                 </div>

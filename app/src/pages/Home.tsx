@@ -92,9 +92,11 @@ const Home = () => {
       name: 'The Return of TOPAZ 2.0',
       date: 'Saturday, August 22, 2026',
       location: 'Seaside Convention Center',
+      address: '415 1st Ave, Seaside, OR 97138',
       registrationDeadline: 'August 15, 2026',
       status: 'open' as const,
-      description: '415 1st Ave, Seaside, OR 97138. Event time: 8:00 AM – 12:00 PM. Join us for the return of TOPAZ 2.0.',
+      description: 'Event time: 8:00 AM – 12:00 PM. Join us for the return of TOPAZ 2.0.',
+      image: `${import.meta.env.BASE_URL}images/events/trophy-gold.jpg`,
     },
     {
       id: '2',
@@ -104,6 +106,7 @@ const Home = () => {
       registrationDeadline: 'May 31, 2026',
       status: 'coming' as const,
       description: 'The pinnacle of the TOPAZ season with national titles.',
+      image: `${import.meta.env.BASE_URL}images/events/competition-2026.jpg`,
     },
   ];
 

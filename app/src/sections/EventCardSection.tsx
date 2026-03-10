@@ -92,8 +92,8 @@ const EventCardSection = () => {
           className="relative h-[45vh] lg:h-full overflow-hidden"
         >
           <img
-            src="/assets/event_card_dancer.jpg"
-            alt="Dancer"
+            src={`${import.meta.env.BASE_URL}images/events/trophy-gold.jpg`}
+            alt="The Return of TOPAZ 2.0"
             className="w-full h-full object-cover img-monochrome"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-transparent to-background/20 lg:to-background/40" />
