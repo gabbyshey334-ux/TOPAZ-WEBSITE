@@ -90,7 +90,9 @@ const Home = () => {
     {
       id: '1',
       name: 'The Return of TOPAZ 2.0',
+      subtitle: 'Join us for the return of TOPAZ 2.0',
       date: 'Saturday, August 22, 2026',
+      time: '8:00 AM – 12:00 PM',
       location: 'Seaside Convention Center',
       address: '415 1st Ave, Seaside, OR 97138',
       registrationDeadline: 'August 15, 2026',
@@ -101,6 +103,7 @@ const Home = () => {
     {
       id: '2',
       name: 'National Finals 2026',
+      subtitle: 'The pinnacle of the TOPAZ season',
       date: 'June 20-22, 2026',
       location: 'MGM Grand, Las Vegas, NV',
       registrationDeadline: 'May 31, 2026',

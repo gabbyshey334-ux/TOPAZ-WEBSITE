@@ -3,7 +3,7 @@ import { Calendar, MapPin, Clock, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const FALLBACK_EVENT_IMAGE =
-  'https://images.unsplash.com/photo-1569516449774-7a7b4d84a0d8?w=800&q=80';
+  'https://images.unsplash.com/photo-1569516449774-7a7b4d84a0d8?w=1200&q=80';
 
 export interface CompetitionCardProps {
   id: string;
@@ -13,11 +13,33 @@ export interface CompetitionCardProps {
   registrationDeadline: string;
   status: 'open' | 'closed' | 'coming';
   description?: string;
-  /** Optional image URL. When set, card uses split layout (content left, image right). */
+  /** Optional image URL. When set, card uses hero-style 60/40 layout. */
   image?: string;
   /** Optional full address shown under location */
   address?: string;
+  /** Optional time range (e.g. "8:00 AM – 12:00 PM") */
+  time?: string;
+  /** Optional subtitle under the title */
+  subtitle?: string;
 }
+
+const statusConfig = {
+  open: {
+    label: 'REGISTRATION OPEN',
+    bg: 'bg-green-100',
+    text: 'text-green-800',
+  },
+  coming: {
+    label: 'COMING SOON',
+    bg: 'bg-blue-100',
+    text: 'text-blue-800',
+  },
+  closed: {
+    label: 'REGISTRATION CLOSED',
+    bg: 'bg-gray-100',
+    text: 'text-gray-800',
+  },
+} as const;
 
 const CompetitionCard = ({
   name,
@@ -27,75 +49,88 @@ const CompetitionCard = ({
   registrationDeadline,
   status,
   description,
+  subtitle,
+  time,
   image,
 }: CompetitionCardProps) => {
   const [imgError, setImgError] = useState(false);
   const imgSrc = image && !imgError ? image : FALLBACK_EVENT_IMAGE;
-
-  const statusConfig = {
-    open: { label: 'Registration Open', className: 'bg-green-500/10 text-green-600 border border-green-500/20' },
-    closed: { label: 'Registration Closed', className: 'bg-red-500/10 text-red-600 border border-red-500/20' },
-    coming: { label: 'Coming Soon', className: 'bg-primary/10 text-primary border border-primary/20' },
-  };
-
-  const statusInfo = statusConfig[status];
+  const statusStyle = statusConfig[status];
 
   const contentBlock = (
-    <div className="p-6 lg:p-8 xl:p-10 flex flex-col justify-center h-full">
-      <div className="flex flex-col items-start gap-4 mb-6">
+    <div className="p-6 sm:p-8 lg:p-10 xl:p-12 flex flex-col justify-center h-full">
+      {/* Status Badge - desktop only; on mobile shown on image */}
+      <div className="hidden lg:block mb-5 lg:mb-6">
         <span
-          className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest whitespace-nowrap ${statusInfo.className}`}
+          className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider ${statusStyle.bg} ${statusStyle.text} inline-block`}
         >
-          {statusInfo.label}
+          {statusStyle.label}
         </span>
-        <h3 className="font-display font-black text-2xl lg:text-3xl text-[#0a0a0a] group-hover:text-primary transition-colors duration-500 leading-tight uppercase tracking-tighter">
-          {name}
-        </h3>
       </div>
 
-      {description && (
-        <p className="text-gray-500 text-base lg:text-lg mb-6 line-clamp-3 leading-relaxed font-medium">
-          {description}
+      {/* Title */}
+      <h2 className="font-display font-black text-3xl sm:text-4xl lg:text-5xl text-gray-900 mb-2 leading-tight tracking-tight">
+        {name}
+      </h2>
+
+      {/* Subtitle or description line */}
+      {(subtitle || description) && (
+        <p className="text-base lg:text-lg text-gray-600 mb-6 line-clamp-2 leading-relaxed">
+          {subtitle || description}
         </p>
       )}
 
-      <div className="space-y-3 mb-8">
-        <div className="flex items-center gap-4 text-gray-600">
-          <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/10 transition-colors">
-            <Calendar className="w-5 h-5 text-primary" />
-          </div>
-          <span className="font-bold text-sm tracking-tight">{date}</span>
-        </div>
-        <div className="flex items-start gap-4 text-gray-600">
-          <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/10 transition-colors mt-0.5">
-            <MapPin className="w-5 h-5 text-primary" />
+      {/* Event details with icons */}
+      <div className="space-y-4 mb-8">
+        <div className="flex items-start gap-3">
+          <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
+            <Calendar className="w-5 h-5 text-blue-600" />
           </div>
           <div>
-            <p className="font-bold text-sm tracking-tight">{location}</p>
-            {address && <p className="text-sm text-gray-500 mt-0.5">{address}</p>}
+            <p className="text-xs text-gray-500 font-medium uppercase tracking-wider">Date</p>
+            <p className="text-gray-900 font-semibold">{date}</p>
+            {time && <p className="text-sm text-gray-600 mt-0.5">{time}</p>}
           </div>
         </div>
-        <div className="flex items-center gap-4 text-gray-600">
-          <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/10 transition-colors">
-            <Clock className="w-5 h-5 text-primary" />
+
+        <div className="flex items-start gap-3">
+          <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
+            <MapPin className="w-5 h-5 text-blue-600" />
           </div>
-          <span className="font-bold text-sm tracking-tight">Deadline: {registrationDeadline}</span>
+          <div>
+            <p className="text-xs text-gray-500 font-medium uppercase tracking-wider">Location</p>
+            <p className="text-gray-900 font-semibold">{location}</p>
+            {address && <p className="text-sm text-gray-600 mt-0.5">{address}</p>}
+          </div>
+        </div>
+
+        <div className="flex items-start gap-3">
+          <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
+            <Clock className="w-5 h-5 text-blue-600" />
+          </div>
+          <div>
+            <p className="text-xs text-gray-500 font-medium uppercase tracking-wider">Deadline</p>
+            <p className="text-gray-900 font-semibold">{registrationDeadline}</p>
+          </div>
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-4 mt-auto">
+      {/* Actions */}
+      <div className="flex flex-col sm:flex-row gap-3">
         <Link
           to={status === 'open' ? '/registration' : '/schedule'}
-          className={`flex-1 btn-primary !px-6 !py-3.5 !text-xs !rounded-2xl shadow-none hover:shadow-lg hover:-translate-y-0.5 transition-all inline-flex items-center justify-center gap-2 ${
-            status !== 'open' ? 'opacity-50 pointer-events-none grayscale' : ''
+          className={`flex-1 px-6 py-4 rounded-xl font-bold text-center inline-flex items-center justify-center gap-2 transition-all shadow-lg hover:shadow-xl ${
+            status === 'open'
+              ? 'bg-blue-600 text-white hover:bg-blue-700'
+              : 'bg-gray-200 text-gray-500 cursor-not-allowed pointer-events-none'
           }`}
         >
           {status === 'open' ? 'Register Now' : 'Register'}
-          <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+          <ArrowRight className="w-5 h-5" />
         </Link>
         <Link
           to="/rules"
-          className="flex-1 btn-secondary !px-6 !py-3.5 !text-xs !rounded-2xl !bg-gray-50 !border-none hover:!bg-gray-100 shadow-none text-center"
+          className="px-6 py-4 border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:border-blue-600 hover:text-blue-600 transition-colors text-center"
         >
           Details
         </Link>
@@ -105,26 +140,70 @@ const CompetitionCard = ({
 
   if (image) {
     return (
-      <div className="group h-full flex flex-col overflow-hidden">
-        <div className="grid grid-cols-1 lg:grid-cols-2 min-h-[320px] lg:min-h-[380px]">
-          <div className="order-2 lg:order-1 bg-white">{contentBlock}</div>
-          <div className="order-1 lg:order-2 relative h-64 lg:h-auto min-h-[260px] overflow-hidden">
+      <div className="group h-full flex flex-col overflow-hidden rounded-2xl">
+        <div className="grid grid-cols-1 lg:grid-cols-5 min-h-[500px] lg:min-h-[560px]">
+          {/* LEFT: Image (60% - 3 cols) */}
+          <div className="lg:col-span-3 relative h-72 sm:h-80 lg:h-auto min-h-[280px] order-1 overflow-hidden">
             <img
               src={imgSrc}
               alt={name}
-              className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
               onError={() => setImgError(true)}
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-black/20 to-transparent lg:to-transparent" />
+            {/* Status on image for mobile only */}
+            <div className="absolute top-5 left-5 lg:hidden">
+              <span className={`px-4 py-2 rounded-full text-xs font-bold ${statusStyle.bg} ${statusStyle.text}`}>
+                {statusStyle.label}
+              </span>
+            </div>
+          </div>
+
+          {/* RIGHT: Content (40% - 2 cols) */}
+          <div className="lg:col-span-2 bg-white order-2 flex flex-col">
+            {contentBlock}
           </div>
         </div>
       </div>
     );
   }
 
+  /* No image: compact card for past events */
   return (
-    <div className="bg-white p-8 group h-full flex flex-col">
-      {contentBlock}
+    <div className="bg-white p-6 sm:p-8 group h-full flex flex-col rounded-2xl">
+      <div className="mb-4">
+        <span className={`px-4 py-2 rounded-full text-xs font-bold uppercase ${statusStyle.bg} ${statusStyle.text} inline-block`}>
+          {statusStyle.label}
+        </span>
+      </div>
+      <h2 className="font-display font-black text-2xl lg:text-3xl text-gray-900 mb-4 leading-tight">
+        {name}
+      </h2>
+      {description && (
+        <p className="text-gray-600 text-base mb-6 line-clamp-2">{description}</p>
+      )}
+      <div className="space-y-3 mb-6">
+        <div className="flex items-center gap-3 text-gray-700">
+          <Calendar className="w-5 h-5 text-blue-600 flex-shrink-0" />
+          <span className="font-semibold text-sm">{date}</span>
+        </div>
+        <div className="flex items-start gap-3 text-gray-700">
+          <MapPin className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+          <span className="font-semibold text-sm">{location}</span>
+        </div>
+        <div className="flex items-center gap-3 text-gray-700">
+          <Clock className="w-5 h-5 text-blue-600 flex-shrink-0" />
+          <span className="font-semibold text-sm">Deadline: {registrationDeadline}</span>
+        </div>
+      </div>
+      <div className="mt-auto flex gap-3">
+        <Link
+          to="/schedule"
+          className="btn-secondary !px-6 !py-3 !rounded-xl !text-sm flex-1 text-center"
+        >
+          Details
+        </Link>
+      </div>
     </div>
   );
 };

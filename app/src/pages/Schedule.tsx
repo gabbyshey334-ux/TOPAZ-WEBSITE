@@ -58,7 +58,9 @@ const Schedule = () => {
     {
       id: '1',
       name: 'The Return of TOPAZ 2.0',
+      subtitle: 'Join us for the return of TOPAZ 2.0',
       date: 'Saturday, August 22, 2026',
+      time: '8:00 AM – 12:00 PM',
       location: 'Seaside Convention Center',
       address: '415 1st Ave, Seaside, OR 97138',
       registrationDeadline: 'August 15, 2026',
@@ -69,16 +71,18 @@ const Schedule = () => {
     {
       id: '2',
       name: 'National Finals 2026',
+      subtitle: 'The pinnacle of the TOPAZ season',
       date: 'June 20-22, 2026',
       location: 'MGM Grand, Las Vegas, NV',
       registrationDeadline: 'May 31, 2026',
       status: 'coming',
-      description: 'The pinnacle of the TOPAZ season. Qualifying dancers compete for national titles and prestigious scholarships.',
+      description: 'Qualifying dancers compete for national titles and prestigious scholarships.',
       image: `${import.meta.env.BASE_URL}images/events/competition-2026.jpg`,
     },
     {
       id: '3',
       name: 'Summer Intensive',
+      subtitle: 'Workshops and competitive performances',
       date: 'July 8-12, 2026',
       location: 'Joffrey Ballet School, New York, NY',
       registrationDeadline: 'June 15, 2026',
@@ -89,6 +93,7 @@ const Schedule = () => {
     {
       id: '4',
       name: 'Fall Classic 2026',
+      subtitle: 'Special categories and Teacher/Student showcase',
       date: 'October 10-11, 2026',
       location: 'McCormick Place, Chicago, IL',
       registrationDeadline: 'September 20, 2026',
@@ -211,27 +216,25 @@ const Schedule = () => {
       </section>
 
       {/* Upcoming Competitions */}
-      <section ref={upcomingRef} className="py-24 lg:py-32">
+      <section ref={upcomingRef} className="py-24 lg:py-32 bg-[#fafafa]">
         <div className="w-full px-4 sm:px-6 lg:px-12 max-w-7xl mx-auto">
-          <div className="flex items-center justify-between mb-16">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-primary/5 flex items-center justify-center">
-                <Calendar className="w-6 h-6 text-primary" />
-              </div>
-              <h2 className="font-display font-black text-3xl lg:text-4xl text-[#0a0a0a]">
-                Upcoming <span className="text-primary italic">Events</span>
-              </h2>
-            </div>
-            <div className="hidden sm:block text-sm font-mono text-gray-400">
-              {filteredUpcoming.length} EVENTS FOUND
-            </div>
+          <div className="mb-12">
+            <h2 className="font-display font-black text-3xl lg:text-4xl text-[#0a0a0a] mb-2">
+              Upcoming <span className="text-primary italic">Competitions</span>
+            </h2>
+            <p className="text-gray-600 text-lg">
+              Don&apos;t miss your chance to shine on the TOPAZ stage.
+            </p>
           </div>
 
           {filteredUpcoming.length > 0 ? (
-            <div className="grid grid-cols-1 gap-10">
+            <div className="space-y-12">
               {filteredUpcoming.map((competition) => (
-                <div key={competition.id} className="competition-card group h-full">
-                  <div className="h-full bg-white rounded-3xl border border-gray-100 shadow-premium hover:shadow-2xl transition-all duration-500 overflow-hidden">
+                <div
+                  key={competition.id}
+                  className="competition-card group"
+                >
+                  <div className="bg-white rounded-2xl shadow-xl hover:shadow-2xl hover:scale-[1.01] transition-all duration-300 overflow-hidden">
                     <CompetitionCard {...competition} />
                   </div>
                 </div>
