@@ -37,9 +37,23 @@ const HeroSection = () => {
       ref={sectionRef}
       className="relative min-h-screen flex items-center justify-center overflow-hidden bg-black pt-16"
     >
-      {/* Logo Background - Large Watermark (theater masks) */}
+      {/* Video Background */}
+      <div className="absolute inset-0 z-0">
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover"
+          poster=""
+        >
+          <source src={SHOWREEL_VIDEO_URL} type="video/mp4" />
+        </video>
+      </div>
+
+      {/* Logo watermark overlay (subtle, so video stays visible) */}
       {!logoError && (
-        <div className="absolute inset-0 flex items-center justify-center opacity-[0.12] pointer-events-none">
+        <div className="absolute inset-0 flex items-center justify-center opacity-[0.08] pointer-events-none z-[1]">
           <img
             src={`${import.meta.env.BASE_URL}images/topaz-logo-masks.png`}
             alt=""
@@ -50,7 +64,7 @@ const HeroSection = () => {
       )}
 
       {/* Gradient overlays for better text contrast */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/60 z-[1]" />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70 z-[2]" />
 
       {/* Content */}
       <div ref={logoRef} className="relative z-10 text-center text-white px-6">
