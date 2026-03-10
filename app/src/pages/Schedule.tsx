@@ -216,27 +216,22 @@ const Schedule = () => {
       </section>
 
       {/* Upcoming Competitions */}
-      <section ref={upcomingRef} className="py-24 lg:py-32 bg-[#fafafa]">
-        <div className="w-full px-4 sm:px-6 lg:px-12 max-w-7xl mx-auto">
-          <div className="mb-12">
-            <h2 className="font-display font-black text-3xl lg:text-4xl text-[#0a0a0a] mb-2">
-              Upcoming <span className="text-primary italic">Competitions</span>
+      <section ref={upcomingRef} className="py-20 lg:py-32 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-6 lg:px-12">
+          <div className="mb-16 text-center lg:text-left">
+            <h2 className="text-4xl lg:text-5xl font-black text-gray-900 mb-4">
+              Upcoming Competitions
             </h2>
-            <p className="text-gray-600 text-lg">
+            <p className="text-lg lg:text-xl text-gray-600 max-w-2xl">
               Don&apos;t miss your chance to shine on the TOPAZ stage.
             </p>
           </div>
 
           {filteredUpcoming.length > 0 ? (
-            <div className="space-y-12">
+            <div className="space-y-12 lg:space-y-16">
               {filteredUpcoming.map((competition) => (
-                <div
-                  key={competition.id}
-                  className="competition-card group"
-                >
-                  <div className="bg-white rounded-2xl shadow-xl hover:shadow-2xl hover:scale-[1.01] transition-all duration-300 overflow-hidden">
-                    <CompetitionCard {...competition} />
-                  </div>
+                <div key={competition.id} className="competition-card w-full">
+                  <CompetitionCard {...competition} />
                 </div>
               ))}
             </div>
