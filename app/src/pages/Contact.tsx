@@ -104,28 +104,28 @@ const Contact = () => {
     {
       icon: Mail,
       title: 'Email Us',
-      content: 'info@dancetopaz.com',
+      content: 'topaz2.0@yahoo.com',
       action: {
         label: 'Send Email',
-        href: 'mailto:info@dancetopaz.com',
+        href: 'mailto:topaz2.0@yahoo.com',
       },
     },
     {
       icon: Phone,
       title: 'Call Us',
-      content: '(555) 123-4567',
+      content: '971-299-4401',
       action: {
         label: 'Call Now',
-        href: 'tel:+15551234567',
+        href: 'tel:971-299-4401',
       },
     },
     {
       icon: MapPin,
-      title: 'Visit Us',
-      content: '123 Dance Avenue\nNew York, NY 10001',
+      title: 'Mail Us',
+      content: 'PO BOX 131\nBANKS, OR 97106',
       action: {
         label: 'Get Directions',
-        href: '#directions',
+        href: 'https://maps.google.com/?q=PO+BOX+131+BANKS+OR+97106',
       },
     },
     {

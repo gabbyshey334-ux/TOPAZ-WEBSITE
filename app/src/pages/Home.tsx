@@ -95,7 +95,7 @@ const Home = () => {
       time: '8:00 AM – 12:00 PM',
       location: 'Seaside Convention Center',
       address: '415 1st Ave, Seaside, OR 97138',
-      registrationDeadline: 'August 15, 2026',
+      registrationDeadline: 'July 22, 2026, 12:00 AM',
       status: 'open' as const,
       description: 'Event time: 8:00 AM – 12:00 PM. Join us for the return of TOPAZ 2.0.',
       image: `${import.meta.env.BASE_URL}images/events/trophy-gold.jpg`,

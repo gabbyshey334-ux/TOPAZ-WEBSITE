@@ -63,11 +63,11 @@ const Footer = () => {
                 <span>971-299-4401</span>
               </a>
               <a
-                href="mailto:Topaz2.0@yahoo.com"
+                href="mailto:topaz2.0@yahoo.com"
                 className="flex items-center gap-2 text-white/90 hover:text-white transition-colors"
               >
                 <Mail className="w-5 h-5 flex-shrink-0" />
-                <span>Topaz2.0@yahoo.com</span>
+                <span>topaz2.0@yahoo.com</span>
               </a>
               <div className="flex items-start gap-2 text-white/90">
                 <MapPin className="w-5 h-5 mt-1 flex-shrink-0" />
