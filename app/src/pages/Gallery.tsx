@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Play, X } from 'lucide-react';
+import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
 
 /*
   TO ADD NEW PHOTOS:
@@ -77,27 +78,31 @@ const Gallery = () => {
         {activeTab === 'photos' && (
           <>
             {/* Photo Gallery - Masonry-style grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {photos.map((photo) => (
-                <button
-                  key={photo.id}
-                  onClick={() =>
-                    setLightboxImage({ src: photo.src, alt: photo.alt })
-                  }
-                  className="group aspect-[4/5] rounded-2xl overflow-hidden bg-gray-100 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02]"
-                >
-                  <img
-                    src={photo.src}
-                    alt={photo.alt}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src =
-                        'https://images.unsplash.com/photo-1518834107812-67b0b7c58434?w=600&h=800&fit=crop';
-                    }}
-                  />
-                </button>
-              ))}
-            </div>
+            <ResponsiveMasonry columnsCountBreakPoints={{ 350: 1, 750: 2, 900: 3, 1200: 4 }}>
+              <Masonry gutter="16px">
+                {photos.map((photo) => (
+                  <button
+                    key={photo.id}
+                    onClick={() =>
+                      setLightboxImage({ src: photo.src, alt: photo.alt })
+                    }
+                    className="relative group w-full rounded-2xl overflow-hidden bg-gray-100 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] block mb-4"
+                  >
+                    <img
+                      src={photo.src}
+                      alt={photo.alt}
+                      className="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-500 block"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src =
+                          'https://images.unsplash.com/photo-1518834107812-67b0b7c58434?w=600&h=800&fit=crop';
+                      }}
+                    />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
+                  </button>
+                ))}
+              </Masonry>
+            </ResponsiveMasonry>
+            
             {photos.length === 0 && (
               <p className="text-center text-gray-500 py-12">
                 Add photos to the gallery by updating the photos array in Gallery.tsx and
