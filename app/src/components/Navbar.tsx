@@ -53,6 +53,7 @@ const Navbar = () => {
     { label: 'About', to: '/about' },
     { label: 'Schedule', to: '/schedule' },
     { label: 'Gallery', to: '/gallery' },
+    { label: 'Shop', to: '/shop' },
     { label: 'Rules', to: '/rules' },
     { label: 'Contact', to: '/contact' },
   ];

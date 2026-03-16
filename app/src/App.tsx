@@ -13,6 +13,7 @@ import Rules from './pages/Rules';
 import Contact from './pages/Contact';
 import Gallery from './pages/Gallery';
 import Registration from './pages/Registration';
+import Shop from './pages/Shop';
 
 function App() {
   return (
@@ -31,6 +32,7 @@ function App() {
             <Route path="/contact" element={<Contact />} />
             <Route path="/gallery" element={<Gallery />} />
             <Route path="/registration" element={<Registration />} />
+            <Route path="/shop" element={<Shop />} />
           </Routes>
         </main>
 
