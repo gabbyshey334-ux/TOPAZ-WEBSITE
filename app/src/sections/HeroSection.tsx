@@ -12,30 +12,55 @@ const HeroSection = () => {
   const headingRef = useRef<HTMLHeadingElement>(null);
   const taglineRef = useRef<HTMLParagraphElement>(null);
   const underlineRef = useRef<HTMLDivElement>(null);
+  const logoWrapperRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
   const [logoError, setLogoError] = useState(false);
   const [logoSrc, setLogoSrc] = useState(LOGO_MASKS_ONLY);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
+      // Logo Fade In - slower and cinematic
+      if (logoWrapperRef.current) {
+        gsap.fromTo(
+          logoWrapperRef.current,
+          { opacity: 0, scale: 0.95 },
+          { opacity: 1, scale: 1, duration: 2, ease: 'power2.out' }
+        );
+      }
+
+      // Heading Reveal - Staggered
       if (headingRef.current) {
         gsap.fromTo(
           headingRef.current,
-          { y: 40, opacity: 0 },
-          { y: 0, opacity: 1, duration: 1, ease: 'power3.out' }
+          { y: 60, opacity: 0 },
+          { y: 0, opacity: 1, duration: 1.2, ease: 'power3.out', delay: 0.2 }
         );
       }
+
+      // Underline Grow
       if (underlineRef.current) {
         gsap.fromTo(
           underlineRef.current,
           { scaleX: 0, opacity: 0 },
-          { scaleX: 1, opacity: 1, duration: 0.8, delay: 0.3, ease: 'power3.out' }
+          { scaleX: 1, opacity: 1, duration: 1, delay: 0.6, ease: 'power3.out' }
         );
       }
+
+      // Tagline Fade Up
       if (taglineRef.current) {
         gsap.fromTo(
           taglineRef.current,
           { y: 20, opacity: 0 },
-          { y: 0, opacity: 1, duration: 0.6, delay: 0.5, ease: 'power3.out' }
+          { y: 0, opacity: 1, duration: 0.8, delay: 0.8, ease: 'power3.out' }
+        );
+      }
+
+      // Scroll Indicator Fade In
+      if (scrollRef.current) {
+        gsap.fromTo(
+          scrollRef.current,
+          { opacity: 0, y: -10 },
+          { opacity: 1, y: 0, duration: 1, delay: 1.5, ease: 'power2.out' }
         );
       }
     }, sectionRef);
@@ -48,28 +73,30 @@ const HeroSection = () => {
       className="relative min-h-screen bg-white pt-16"
     >
       {/* VIDEO SECTION - Top 70% (60vh mobile, 65vh tablet, 70vh desktop) */}
-      <div className="relative h-[60vh] sm:h-[65vh] lg:h-[70vh] overflow-hidden bg-black">
+      <div className="relative h-[60vh] sm:h-[65vh] lg:h-[70vh] w-full overflow-hidden bg-black shadow-2xl">
         <video
           autoPlay
           muted
           loop
           playsInline
-          className="absolute inset-0 w-full h-full object-cover"
+          className="absolute inset-0 w-full h-full object-cover opacity-90"
         >
           <source src={SHOWREEL_VIDEO_URL} type="video/mp4" />
         </video>
 
-        {/* Dark overlay for better logo visibility */}
-        <div className="absolute inset-0 bg-black/30" />
+        {/* Elegant Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60 pointer-events-none" />
 
         {/* LARGE THEATER MASKS LOGO - Centered, BIGGER, NO text overlay */}
         {!logoError && (
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div 
+            ref={logoWrapperRef}
+            className="absolute inset-0 flex items-center justify-center pointer-events-none z-10"
+          >
             <img
               src={`${import.meta.env.BASE_URL}${logoSrc}`}
               alt=""
-              className="w-3/4 md:w-2/3 lg:w-1/2 h-auto object-contain opacity-20"
-              style={{ maxWidth: '800px' }}
+              className="w-[80%] md:w-[70%] lg:w-[60%] max-w-5xl h-auto object-contain opacity-20 drop-shadow-2xl filter blur-[0.5px]"
               onError={() => {
                 if (logoSrc === LOGO_MASKS_ONLY) {
                   setLogoSrc(LOGO_MASKS_FALLBACK);
@@ -83,28 +110,37 @@ const HeroSection = () => {
       </div>
 
       {/* CONTENT SECTION - Bottom 30% */}
-      <div className="relative bg-white py-12 sm:py-16 flex flex-col items-center justify-center min-h-[40vh] sm:min-h-[35vh] lg:min-h-[30vh]">
-        <h1
-          ref={headingRef}
-          className="font-display font-black text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl tracking-tighter text-gray-900 leading-none mb-4 text-center"
+      <div className="relative bg-white flex flex-col items-center justify-center min-h-[40vh] sm:min-h-[35vh] lg:min-h-[30vh] px-6 z-20 shadow-[0_-20px_40px_rgba(0,0,0,0.05)]">
+        <div className="max-w-7xl mx-auto text-center">
+          <h1
+            ref={headingRef}
+            className="font-display font-black text-6xl sm:text-7xl md:text-8xl lg:text-[9rem] xl:text-[10rem] tracking-tighter text-gray-900 leading-[0.85] mb-6 drop-shadow-sm"
+          >
+            TOPAZ <span className="text-[#2E75B6] italic relative inline-block">
+              2.0
+              {/* Optional: Subtle glow for the 2.0 */}
+              <div className="absolute inset-0 bg-blue-500/20 blur-3xl rounded-full -z-10" />
+            </span>
+          </h1>
+
+          <div
+            ref={underlineRef}
+            className="w-24 md:w-32 h-1.5 bg-[#2E75B6] mx-auto mb-8 rounded-full shadow-lg shadow-blue-500/30"
+          />
+
+          <p
+            ref={taglineRef}
+            className="font-mono text-xs sm:text-sm tracking-[0.4em] text-gray-500 uppercase font-bold"
+          >
+            EST. 1972 • EXCELLENCE IN DANCE
+          </p>
+        </div>
+
+        <div 
+          ref={scrollRef}
+          className="absolute bottom-8 animate-bounce"
         >
-          TOPAZ <span className="text-[#2E75B6] italic">2.0</span>
-        </h1>
-
-        <div
-          ref={underlineRef}
-          className="w-20 md:w-24 h-1 bg-blue-600 rounded-full mb-6"
-        />
-
-        <p
-          ref={taglineRef}
-          className="font-mono text-sm tracking-[0.3em] text-gray-600 uppercase"
-        >
-          EST. 1972
-        </p>
-
-        <div className="mt-8">
-          <ChevronDown className="w-6 h-6 text-gray-400 animate-bounce" aria-hidden />
+          <ChevronDown className="w-8 h-8 text-gray-300" aria-hidden />
         </div>
       </div>
     </section>
