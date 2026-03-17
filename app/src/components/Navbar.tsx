@@ -62,19 +62,17 @@ const Navbar = () => {
 
   return (
     <>
-      <nav
-        className={`fixed top-0 left-0 w-full z-50 transition-all duration-700 ${
-          isScrolled
-            ? 'glass shadow-premium py-4'
-            : 'bg-transparent py-8'
-        }`}
-      >
+    <nav
+      className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${
+        isScrolled
+          ? 'bg-white shadow-lg'
+          : 'bg-white/95 backdrop-blur-sm'
+      }`}
+    >
         <div className="w-full px-4 sm:px-6 lg:px-12 flex items-center justify-between max-w-7xl mx-auto">
           {/* Logo */}
           <Link to="/" className="flex items-center group">
-            <span className={`font-display font-black text-2xl tracking-tighter transition-colors duration-500 ${
-              isScrolled ? 'text-[#0a0a0a]' : 'text-white'
-            }`}>
+            <span className="font-display font-black text-2xl text-gray-900 tracking-tighter">
               TOPAZ <span className="text-primary italic">2.0</span>
             </span>
           </Link>
@@ -85,7 +83,7 @@ const Navbar = () => {
               <NavLink 
                 key={link.to} 
                 to={link.to} 
-                isDark={!isScrolled}
+                isDark={false}
               >
                 {link.label}
               </NavLink>
@@ -96,9 +94,7 @@ const Navbar = () => {
           <div className="hidden md:block">
             <button
               onClick={() => setShowSignUpModal(true)}
-              className={`btn-primary !px-8 !py-3 !text-xs !font-black uppercase tracking-widest transition-all duration-500 ${
-                !isScrolled ? 'shadow-[0_0_20px_rgba(46,117,182,0.4)]' : ''
-              }`}
+              className="btn-primary !px-8 !py-3 !text-xs !font-black uppercase tracking-widest transition-all duration-500 shadow-[0_0_20px_rgba(46,117,182,0.4)]"
             >
               Join the Dance
             </button>
@@ -107,9 +103,7 @@ const Navbar = () => {
           {/* Mobile Menu Button */}
           <button
             onClick={() => setIsMobileMenuOpen(true)}
-            className={`md:hidden p-2 transition-colors duration-500 ${
-              isScrolled ? 'text-[#0a0a0a]' : 'text-white'
-            }`}
+            className="md:hidden p-2 text-gray-900 transition-colors duration-500"
             aria-label="Open menu"
           >
             <Menu className="w-6 h-6" />
