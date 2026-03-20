@@ -64,7 +64,7 @@ const Footer = () => {
           <div className="lg:col-span-2">
             <Link to="/" className="inline-block mb-6">
               <span className="font-display font-black text-2xl text-white tracking-tight">
-                TOPAZ<span className="text-[#c9a227]">2.0</span>
+                TOPAZ<span className="text-[#2E75B6]">2.0</span>
               </span>
             </Link>
             <p className="text-white/60 leading-relaxed mb-6 max-w-sm">
@@ -80,7 +80,7 @@ const Footer = () => {
                   href={link.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-[#c9a227] hover:text-[#0a0a0a] transition-all duration-200"
+                  className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-[#2E75B6] transition-all duration-200"
                   aria-label={link.name}
                 >
                   <link.icon className="w-5 h-5" />
@@ -98,10 +98,10 @@ const Footer = () => {
               <ul className="space-y-3">
                 {column.links.map((link) => (
                   <li key={link.label}>
-                    <Link
-                      to={link.to}
-                      className="text-white/60 hover:text-[#c9a227] transition-colors duration-200 text-sm"
-                    >
+                <Link
+                  to={link.to}
+                  className="text-white/60 hover:text-[#2E75B6] transition-colors duration-200 text-sm"
+                >
                       {link.label}
                     </Link>
                   </li>
@@ -115,11 +115,11 @@ const Footer = () => {
         <div className="mt-12 pt-8 border-t border-white/10">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex flex-wrap items-center gap-6 text-sm text-white/60">
-              <a href="tel:971-299-4401" className="flex items-center gap-2 hover:text-[#c9a227] transition-colors">
+              <a href="tel:971-299-4401" className="flex items-center gap-2 hover:text-[#2E75B6] transition-colors">
                 <Phone className="w-4 h-4" />
                 971-299-4401
               </a>
-              <a href="mailto:topaz2.0@yahoo.com" className="flex items-center gap-2 hover:text-[#c9a227] transition-colors">
+              <a href="mailto:topaz2.0@yahoo.com" className="flex items-center gap-2 hover:text-[#2E75B6] transition-colors">
                 <Mail className="w-4 h-4" />
                 topaz2.0@yahoo.com
               </a>
@@ -130,10 +130,10 @@ const Footer = () => {
             </div>
 
             <div className="flex items-center gap-6 text-sm">
-              <Link to="/" className="text-white/60 hover:text-[#c9a227] transition-colors">
+              <Link to="/" className="text-white/60 hover:text-[#2E75B6] transition-colors">
                 Privacy Policy
               </Link>
-              <Link to="/" className="text-white/60 hover:text-[#c9a227] transition-colors">
+              <Link to="/" className="text-white/60 hover:text-[#2E75B6] transition-colors">
                 Terms of Service
               </Link>
             </div>

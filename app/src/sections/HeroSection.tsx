@@ -53,8 +53,8 @@ const HeroSection = () => {
   }, []);
 
   return (
-    <section ref={sectionRef} className="relative bg-[#0a0a0a]">
-      {/* VIDEO SECTION - Full width like reference */}
+    <section ref={sectionRef} className="relative bg-white pt-16">
+      {/* VIDEO SECTION - Full width hero */}
       <div className="relative h-[55vh] sm:h-[60vh] md:h-[65vh] lg:h-[70vh] w-full overflow-hidden bg-black">
         <video
           autoPlay
@@ -66,8 +66,8 @@ const HeroSection = () => {
           <source src={SHOWREEL_VIDEO_URL} type="video/mp4" />
         </video>
 
-        {/* Dark overlay for better text contrast */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/60 pointer-events-none" />
+        {/* Dark overlay for text contrast */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/10 to-black/50 pointer-events-none" />
 
         {/* Hero Content Overlay */}
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
@@ -75,12 +75,12 @@ const HeroSection = () => {
             ref={headingRef}
             className="font-display font-black text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl tracking-tighter text-white leading-[0.9] mb-4"
           >
-            TOPAZ <span className="text-[#c9a227] italic">2.0</span>
+            TOPAZ <span className="text-[#2E75B6] italic">2.0</span>
           </h1>
 
           <div
             ref={underlineRef}
-            className="w-24 h-1 bg-[#c9a227] mx-auto mb-6 rounded-full"
+            className="w-24 h-1 bg-[#2E75B6] mx-auto mb-6 rounded-full"
           />
 
           <p

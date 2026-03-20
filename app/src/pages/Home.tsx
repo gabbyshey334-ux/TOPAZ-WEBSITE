@@ -202,7 +202,7 @@ const Home = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] selection:bg-[#c9a227] selection:text-black">
+    <div className="min-h-screen bg-[#0a0a0a] selection:bg-[#2E75B6] selection:text-white">
       <HeroSection />
 
       {/* TOUR DATES BANNER - Like reference */}
@@ -243,7 +243,7 @@ const Home = () => {
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
               <div className="absolute bottom-6 left-6 right-6">
-                <span className="inline-block px-3 py-1 bg-[#c9a227] text-black text-xs font-bold uppercase tracking-wider rounded mb-3">
+                <span className="inline-block px-3 py-1 bg-[#2E75B6] text-white text-xs font-bold uppercase tracking-wider rounded mb-3">
                   Now Live
                 </span>
                 <h3 className="font-display font-black text-2xl md:text-3xl text-white">
@@ -259,11 +259,11 @@ const Home = () => {
             {/* Right - Content */}
             <div className="space-y-6">
               <div className="featured-animate">
-                <span className="text-[#c9a227] font-mono text-sm tracking-[0.2em] uppercase font-bold">
+                <span className="text-[#2E75B6] font-mono text-sm tracking-[0.2em] uppercase font-bold">
                   Featured Event
                 </span>
                 <h2 className="font-display font-black text-4xl md:text-5xl lg:text-6xl text-white mt-2 leading-[1.1]">
-                  READY TO <span className="text-[#c9a227]">REFLECT</span>?
+                  READY TO <span className="text-[#2E75B6]">REFLECT</span>?
                 </h2>
               </div>
               <p className="featured-animate text-white/70 text-lg leading-relaxed">
@@ -273,7 +273,7 @@ const Home = () => {
               <div className="featured-animate flex flex-wrap gap-4">
                 <Link
                   to="/registration"
-                  className="inline-flex items-center gap-2 px-8 py-4 bg-[#c9a227] text-[#0a0a0a] font-bold text-sm uppercase tracking-wider rounded hover:bg-[#b8921f] transition-all duration-200"
+                  className="inline-flex items-center gap-2 px-8 py-4 bg-[#2E75B6] text-white font-bold text-sm uppercase tracking-wider rounded hover:bg-[#1F4E78] transition-all duration-200"
                 >
                   REGISTER NOW
                   <ArrowRight className="w-4 h-4" />
@@ -340,14 +340,14 @@ const Home = () => {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="about-animate font-display font-black text-4xl md:text-5xl lg:text-6xl text-white tracking-tight">
-              TOPAZ <span className="text-[#c9a227]">LEGACY</span>
+              TOPAZ <span className="text-[#2E75B6]">LEGACY</span>
             </h2>
-            <div className="about-animate w-24 h-1 bg-[#c9a227] mx-auto mt-6" />
+            <div className="about-animate w-24 h-1 bg-[#2E75B6] mx-auto mt-6" />
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <div className="about-animate bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10 hover:border-[#c9a227]/30 transition-colors duration-300">
-              <Star className="w-10 h-10 text-[#c9a227] mb-4" />
+            <div className="about-animate bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10 hover:border-[#2E75B6]/30 transition-colors duration-300">
+              <Star className="w-10 h-10 text-[#2E75B6] mb-4" />
               <h3 className="font-display font-bold text-xl text-white mb-3">OVER 50 YEARS</h3>
               <p className="text-white/60 leading-relaxed">
                 Since 1972, TOPAZ has been the premier dance competition, 
@@ -355,8 +355,8 @@ const Home = () => {
               </p>
             </div>
 
-            <div className="about-animate bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10 hover:border-[#c9a227]/30 transition-colors duration-300">
-              <Award className="w-10 h-10 text-[#c9a227] mb-4" />
+            <div className="about-animate bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10 hover:border-[#2E75B6]/30 transition-colors duration-300">
+              <Award className="w-10 h-10 text-[#2E75B6] mb-4" />
               <h3 className="font-display font-bold text-xl text-white mb-3">PRESTIGIOUS AWARDS</h3>
               <p className="text-white/60 leading-relaxed">
                 Our unique cumulative scoring system lets dancers earn bronze, 
@@ -364,8 +364,8 @@ const Home = () => {
               </p>
             </div>
 
-            <div className="about-animate bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10 hover:border-[#c9a227]/30 transition-colors duration-300">
-              <Users className="w-10 h-10 text-[#c9a227] mb-4" />
+            <div className="about-animate bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10 hover:border-[#2E75B6]/30 transition-colors duration-300">
+              <Users className="w-10 h-10 text-[#2E75B6] mb-4" />
               <h3 className="font-display font-bold text-xl text-white mb-3">INCLUSIVE COMMUNITY</h3>
               <p className="text-white/60 leading-relaxed">
                 Welcoming dancers of all ages, backgrounds, and skill levels 
@@ -392,7 +392,7 @@ const Home = () => {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
                 <div className="absolute bottom-0 left-0 right-0 p-6">
-                  <span className="inline-block px-3 py-1 bg-[#c9a227] text-black text-xs font-bold uppercase tracking-wider rounded mb-3">
+                  <span className="inline-block px-3 py-1 bg-[#2E75B6] text-white text-xs font-bold uppercase tracking-wider rounded mb-3">
                     Featured
                   </span>
                   <h3 className="font-display font-black text-3xl text-white leading-tight">
@@ -402,17 +402,17 @@ const Home = () => {
                 </div>
               </div>
               {/* Decorative elements */}
-              <div className="absolute -top-4 -right-4 w-24 h-24 bg-[#c9a227] rounded-full opacity-20 blur-2xl" />
+              <div className="absolute -top-4 -right-4 w-24 h-24 bg-[#2E75B6] rounded-full opacity-20 blur-2xl" />
               <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-purple-500 rounded-full opacity-20 blur-2xl" />
             </div>
 
             {/* Right - Content */}
             <div className="space-y-6">
-              <span className="text-[#c9a227] font-mono text-sm tracking-[0.2em] uppercase font-bold">
+              <span className="text-[#2E75B6] font-mono text-sm tracking-[0.2em] uppercase font-bold">
                 Press & Media
               </span>
               <h2 className="font-display font-black text-4xl md:text-5xl text-white leading-[1.1]">
-                TOPAZ IN THE <span className="text-[#c9a227]">SPOTLIGHT</span>
+                TOPAZ IN THE <span className="text-[#2E75B6]">SPOTLIGHT</span>
               </h2>
               <p className="text-white/70 text-lg leading-relaxed">
                 From the trusted brands you know and love, TOPAZ has been featured in leading 
@@ -421,15 +421,15 @@ const Home = () => {
               </p>
               <div className="flex flex-wrap gap-4 pt-4">
                 <div className="flex items-center gap-3 bg-white/10 rounded-lg px-4 py-3">
-                  <Award className="w-6 h-6 text-[#c9a227]" />
+                  <Award className="w-6 h-6 text-[#2E75B6]" />
                   <span className="text-white font-bold">Voted #1 Competition</span>
                 </div>
                 <div className="flex items-center gap-3 bg-white/10 rounded-lg px-4 py-3">
-                  <Star className="w-6 h-6 text-[#c9a227]" />
+                  <Star className="w-6 h-6 text-[#2E75B6]" />
                   <span className="text-white font-bold">Industry Leader</span>
                 </div>
               </div>
-              <button className="inline-flex items-center gap-2 px-8 py-4 bg-[#c9a227] text-[#0a0a0a] font-bold text-sm uppercase tracking-wider rounded hover:bg-[#b8921f] transition-all duration-200 mt-4">
+              <button className="inline-flex items-center gap-2 px-8 py-4 bg-[#2E75B6] text-white font-bold text-sm uppercase tracking-wider rounded hover:bg-[#1F4E78] transition-all duration-200 mt-4">
                 READ ARTICLE
                 <ArrowRight className="w-4 h-4" />
               </button>
@@ -442,11 +442,11 @@ const Home = () => {
       <section className="relative bg-[#0a0a0a] py-20 lg:py-28">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <span className="text-[#c9a227] font-mono text-sm tracking-[0.2em] uppercase font-bold">
+            <span className="text-[#2E75B6] font-mono text-sm tracking-[0.2em] uppercase font-bold">
               Upcoming Events
             </span>
             <h2 className="font-display font-black text-4xl md:text-5xl text-white mt-4">
-              TOUR <span className="text-[#c9a227]">DATES</span>
+              TOUR <span className="text-[#2E75B6]">DATES</span>
             </h2>
           </div>
 
@@ -454,7 +454,7 @@ const Home = () => {
             {tourDates.map((tour) => (
               <div
                 key={tour.id}
-                className="group relative bg-gradient-to-b from-white/10 to-white/5 rounded-2xl overflow-hidden border border-white/10 hover:border-[#c9a227]/50 transition-all duration-300"
+                className="group relative bg-gradient-to-b from-white/10 to-white/5 rounded-2xl overflow-hidden border border-white/10 hover:border-[#2E75B6]/50 transition-all duration-300"
               >
                 <div className="aspect-[16/10] overflow-hidden">
                   <img
@@ -471,7 +471,7 @@ const Home = () => {
                     }`}>
                       {tour.status === 'upcoming' ? 'OPEN' : 'COMING SOON'}
                     </span>
-                    <span className="text-[#c9a227] font-bold">{tour.date}</span>
+                    <span className="text-[#2E75B6] font-bold">{tour.date}</span>
                   </div>
                   <h3 className="font-display font-black text-2xl text-white mb-1">{tour.city}</h3>
                   <p className="text-white/60 text-sm mb-4">{tour.venue}</p>
@@ -493,7 +493,7 @@ const Home = () => {
           <div className="text-center mt-12">
             <Link
               to="/schedule"
-              className="inline-flex items-center gap-2 px-8 py-4 border border-[#c9a227] text-[#c9a227] font-bold text-sm uppercase tracking-wider rounded hover:bg-[#c9a227] hover:text-[#0a0a0a] transition-all duration-200"
+              className="inline-flex items-center gap-2 px-8 py-4 border border-[#2E75B6] text-[#2E75B6] font-bold text-sm uppercase tracking-wider rounded hover:bg-[#2E75B6] hover:text-white transition-all duration-200"
             >
               VIEW ALL DATES
               <ArrowRight className="w-4 h-4" />
@@ -507,7 +507,7 @@ const Home = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="font-display font-black text-2xl md:text-3xl text-white tracking-tight">
-              OUR <span className="text-[#c9a227]">SPONSORS</span>
+              OUR <span className="text-[#2E75B6]">SPONSORS</span>
             </h2>
           </div>
 
@@ -535,7 +535,7 @@ const Home = () => {
 
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="font-display font-black text-4xl md:text-5xl lg:text-6xl text-white mb-6">
-            READY TO TAKE THE <span className="text-[#c9a227]">STAGE</span>?
+            READY TO TAKE THE <span className="text-[#2E75B6]">STAGE</span>?
           </h2>
           <p className="text-white/70 text-lg md:text-xl mb-10 max-w-2xl mx-auto">
             Join thousands of dancers who have made TOPAZ their home. 
@@ -544,7 +544,7 @@ const Home = () => {
           <div className="flex flex-wrap justify-center gap-4">
             <Link
               to="/registration"
-              className="inline-flex items-center gap-2 px-10 py-5 bg-[#c9a227] text-[#0a0a0a] font-bold text-sm uppercase tracking-wider rounded hover:bg-[#b8921f] transition-all duration-200"
+              className="inline-flex items-center gap-2 px-10 py-5 bg-[#2E75B6] text-white font-bold text-sm uppercase tracking-wider rounded hover:bg-[#1F4E78] transition-all duration-200"
             >
               REGISTER NOW
               <ArrowRight className="w-5 h-5" />
