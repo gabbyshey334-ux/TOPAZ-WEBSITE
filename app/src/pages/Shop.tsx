@@ -4,41 +4,41 @@ import { ShoppingBag } from 'lucide-react';
 const products = [
   {
     id: 1,
-    name: 'TOPAZ Dancer Silhouettes Tee',
+    name: 'TOPAZ Heritage Tee - Black',
     category: 't-shirts',
     price: 25,
-    image: '/images/products/tshirt-black-dancers.jpg',
-    description: 'Black t-shirt with dancer silhouettes design',
+    image: `${import.meta.env.BASE_URL}images/products/tshirt-black-1.jpg`,
+    description: 'Classic black t-shirt with TOPAZ logo',
     sizes: ['S', 'M', 'L', 'XL', 'XXL'],
     available: false // Coming soon
   },
   {
     id: 2,
-    name: 'TOPAZ Colorful Dancer Tee',
+    name: 'TOPAZ Performance Blue Tee',
     category: 't-shirts',
     price: 25,
-    image: '/images/products/tshirt-blue-dancer.jpg',
-    description: 'Blue t-shirt with colorful swirl dancer',
+    image: `${import.meta.env.BASE_URL}images/products/tshirt-blue-1.jpg`,
+    description: 'Blue performance t-shirt with dancer design',
     sizes: ['S', 'M', 'L', 'XL', 'XXL'],
     available: false
   },
   {
     id: 3,
-    name: 'TOPAZ Leap Tee',
+    name: 'TOPAZ Legacy Tee - Black',
     category: 't-shirts',
     price: 25,
-    image: '/images/products/tshirt-black-leap.jpg',
-    description: 'Black t-shirt with leaping dancer',
+    image: `${import.meta.env.BASE_URL}images/products/tshirt-black-2.jpg`,
+    description: 'Black legacy design t-shirt',
     sizes: ['S', 'M', 'L', 'XL', 'XXL'],
     available: false
   },
   {
     id: 4,
-    name: 'TOPAZ Dancer Sweatshirt',
+    name: 'TOPAZ Signature Hoodie',
     category: 'sweatshirts',
     price: 45,
-    image: '/images/products/sweatshirt-black-dancer.jpg',
-    description: 'Black sweatshirt with dancer design',
+    image: `${import.meta.env.BASE_URL}images/products/sweatshirt-black-1.jpg`,
+    description: 'Black hoodie with signature TOPAZ design',
     sizes: ['S', 'M', 'L', 'XL', 'XXL'],
     available: false
   }
