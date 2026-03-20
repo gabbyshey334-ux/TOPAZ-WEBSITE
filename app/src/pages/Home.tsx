@@ -56,7 +56,7 @@ const promoCards = [
     title: 'SUMMER INTENSIVE',
     subtitle: 'TRAINING CAMP',
     description: 'Join our elite summer program',
-    bg: 'from-purple-600 to-purple-900',
+    bg: 'from-blue-600 to-blue-900',
     image: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=600&h=400&fit=crop'
   },
   {
@@ -64,7 +64,7 @@ const promoCards = [
     title: 'THE PANEL',
     subtitle: 'JUDGES & MENTORS',
     description: 'Meet our industry experts',
-    bg: 'from-pink-600 to-rose-900',
+    bg: 'from-[#2E75B6] to-[#1F4E78]',
     image: 'https://images.unsplash.com/photo-1547153760-18fc86324498?w=600&h=400&fit=crop'
   },
   {
@@ -72,7 +72,7 @@ const promoCards = [
     title: 'MASTER CLASS',
     subtitle: 'EXCLUSIVE WORKSHOP',
     description: 'Learn from the best',
-    bg: 'from-blue-600 to-blue-900',
+    bg: 'from-indigo-600 to-indigo-900',
     image: 'https://images.unsplash.com/photo-1518834107812-67b0b7c58434?w=600&h=400&fit=crop'
   }
 ];
@@ -202,12 +202,12 @@ const Home = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] selection:bg-[#2E75B6] selection:text-white">
+    <div className="min-h-screen bg-white selection:bg-[#2E75B6] selection:text-white">
       <HeroSection />
 
-      {/* TOUR DATES BANNER - Like reference */}
-      <section ref={tourRef} className="relative bg-gradient-to-r from-purple-900 via-purple-700 to-pink-600 py-6 overflow-hidden">
-        <div className="absolute inset-0 bg-black/20" />
+      {/* TOUR DATES BANNER - Blue gradient like other pages */}
+      <section ref={tourRef} className="relative bg-gradient-to-r from-[#1F4E78] to-[#2E75B6] py-6 overflow-hidden">
+        <div className="absolute inset-0 bg-black/10" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="tour-card flex items-center gap-4">
@@ -221,7 +221,7 @@ const Home = () => {
             </div>
             <Link
               to="/schedule"
-              className="tour-card inline-flex items-center gap-2 px-6 py-3 bg-white text-purple-900 font-bold text-sm uppercase tracking-wider rounded hover:bg-white/90 transition-all duration-200"
+              className="tour-card inline-flex items-center gap-2 px-6 py-3 bg-white text-[#2E75B6] font-bold text-sm uppercase tracking-wider rounded hover:bg-white/90 transition-all duration-200"
             >
               VIEW DATES
               <ArrowRight className="w-4 h-4" />
@@ -230,12 +230,12 @@ const Home = () => {
         </div>
       </section>
 
-      {/* NOW LIVE / FEATURED SECTION - Like reference */}
-      <section ref={featuredRef} className="relative bg-[#0a0a0a] py-16 lg:py-24 overflow-hidden">
+      {/* NOW LIVE / FEATURED SECTION - White background */}
+      <section ref={featuredRef} className="relative bg-white py-16 lg:py-24 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
             {/* Left - Image/Video */}
-            <div className="featured-animate relative aspect-[4/3] rounded-2xl overflow-hidden group">
+            <div className="featured-animate relative aspect-[4/3] rounded-2xl overflow-hidden group shadow-2xl">
               <img
                 src="https://images.unsplash.com/photo-1547153760-18fc86324498?w=1200&h=900&fit=crop"
                 alt="Featured performance"
@@ -252,7 +252,7 @@ const Home = () => {
               </div>
               {/* Play button */}
               <button className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-white/90 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                <Play className="w-6 h-6 text-[#0a0a0a] ml-1" fill="currentColor" />
+                <Play className="w-6 h-6 text-[#2E75B6] ml-1" fill="currentColor" />
               </button>
             </div>
 
@@ -262,11 +262,11 @@ const Home = () => {
                 <span className="text-[#2E75B6] font-mono text-sm tracking-[0.2em] uppercase font-bold">
                   Featured Event
                 </span>
-                <h2 className="font-display font-black text-4xl md:text-5xl lg:text-6xl text-white mt-2 leading-[1.1]">
+                <h2 className="font-display font-black text-4xl md:text-5xl lg:text-6xl text-gray-900 mt-2 leading-[1.1]">
                   READY TO <span className="text-[#2E75B6]">REFLECT</span>?
                 </h2>
               </div>
-              <p className="featured-animate text-white/70 text-lg leading-relaxed">
+              <p className="featured-animate text-gray-600 text-lg leading-relaxed">
                 Join us for an unforgettable dance experience. The Reflection Tour brings together 
                 the best dancers from across the nation to compete, learn, and grow together.
               </p>
@@ -280,7 +280,7 @@ const Home = () => {
                 </Link>
                 <Link
                   to="/about"
-                  className="inline-flex items-center gap-2 px-8 py-4 border border-white/30 text-white font-bold text-sm uppercase tracking-wider rounded hover:bg-white/10 transition-all duration-200"
+                  className="inline-flex items-center gap-2 px-8 py-4 border border-gray-300 text-gray-700 font-bold text-sm uppercase tracking-wider rounded hover:bg-gray-50 transition-all duration-200"
                 >
                   LEARN MORE
                 </Link>
@@ -290,14 +290,14 @@ const Home = () => {
         </div>
       </section>
 
-      {/* PROMOTIONAL CARDS - Like reference */}
-      <section ref={promoRef} className="relative bg-[#0a0a0a] py-8">
+      {/* PROMOTIONAL CARDS - Gray background */}
+      <section ref={promoRef} className="relative bg-gray-50 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-3 gap-4">
             {promoCards.map((card) => (
               <div
                 key={card.id}
-                className="promo-card relative h-64 md:h-72 rounded-xl overflow-hidden group cursor-pointer"
+                className="promo-card relative h-64 md:h-72 rounded-xl overflow-hidden group cursor-pointer shadow-lg"
               >
                 <img
                   src={card.image}
@@ -327,47 +327,39 @@ const Home = () => {
         </div>
       </section>
 
-      {/* ABOUT / REVELATIONS SECTION - Like reference */}
-      <section ref={aboutRef} className="relative bg-[#0a0a0a] py-20 lg:py-32 overflow-hidden">
-        {/* Background pattern */}
-        <div className="absolute inset-0 opacity-5">
-          <div className="absolute inset-0" style={{
-            backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)',
-            backgroundSize: '40px 40px'
-          }} />
-        </div>
-
+      {/* ABOUT / LEGACY SECTION - White background */}
+      <section ref={aboutRef} className="relative bg-white py-20 lg:py-32 overflow-hidden">
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="about-animate font-display font-black text-4xl md:text-5xl lg:text-6xl text-white tracking-tight">
+            <h2 className="about-animate font-display font-black text-4xl md:text-5xl lg:text-6xl text-gray-900 tracking-tight">
               TOPAZ <span className="text-[#2E75B6]">LEGACY</span>
             </h2>
             <div className="about-animate w-24 h-1 bg-[#2E75B6] mx-auto mt-6" />
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <div className="about-animate bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10 hover:border-[#2E75B6]/30 transition-colors duration-300">
+            <div className="about-animate bg-gray-50 rounded-2xl p-8 border border-gray-100 hover:border-[#2E75B6]/30 transition-colors duration-300">
               <Star className="w-10 h-10 text-[#2E75B6] mb-4" />
-              <h3 className="font-display font-bold text-xl text-white mb-3">OVER 50 YEARS</h3>
-              <p className="text-white/60 leading-relaxed">
+              <h3 className="font-display font-bold text-xl text-gray-900 mb-3">OVER 50 YEARS</h3>
+              <p className="text-gray-600 leading-relaxed">
                 Since 1972, TOPAZ has been the premier dance competition, 
                 nurturing talent and creating unforgettable moments for dancers nationwide.
               </p>
             </div>
 
-            <div className="about-animate bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10 hover:border-[#2E75B6]/30 transition-colors duration-300">
+            <div className="about-animate bg-gray-50 rounded-2xl p-8 border border-gray-100 hover:border-[#2E75B6]/30 transition-colors duration-300">
               <Award className="w-10 h-10 text-[#2E75B6] mb-4" />
-              <h3 className="font-display font-bold text-xl text-white mb-3">PRESTIGIOUS AWARDS</h3>
-              <p className="text-white/60 leading-relaxed">
+              <h3 className="font-display font-bold text-xl text-gray-900 mb-3">PRESTIGIOUS AWARDS</h3>
+              <p className="text-gray-600 leading-relaxed">
                 Our unique cumulative scoring system lets dancers earn bronze, 
                 silver, and gold medals as they progress through the competition season.
               </p>
             </div>
 
-            <div className="about-animate bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10 hover:border-[#2E75B6]/30 transition-colors duration-300">
+            <div className="about-animate bg-gray-50 rounded-2xl p-8 border border-gray-100 hover:border-[#2E75B6]/30 transition-colors duration-300">
               <Users className="w-10 h-10 text-[#2E75B6] mb-4" />
-              <h3 className="font-display font-bold text-xl text-white mb-3">INCLUSIVE COMMUNITY</h3>
-              <p className="text-white/60 leading-relaxed">
+              <h3 className="font-display font-bold text-xl text-gray-900 mb-3">INCLUSIVE COMMUNITY</h3>
+              <p className="text-gray-600 leading-relaxed">
                 Welcoming dancers of all ages, backgrounds, and skill levels 
                 in a supportive and inspiring environment.
               </p>
@@ -376,8 +368,8 @@ const Home = () => {
         </div>
       </section>
 
-      {/* MAGAZINE / FEATURE SECTION - Like reference */}
-      <section ref={magazineRef} className="relative bg-gradient-to-br from-purple-900 via-[#1a1a3e] to-[#0a0a0a] py-20 lg:py-28 overflow-hidden">
+      {/* MAGAZINE / FEATURE SECTION - Blue gradient like CTA sections */}
+      <section ref={magazineRef} className="relative bg-gradient-to-br from-[#1F4E78] to-[#2E75B6] py-20 lg:py-28 overflow-hidden">
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1600&h=900&fit=crop')] opacity-10 bg-cover bg-center" />
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -403,33 +395,33 @@ const Home = () => {
               </div>
               {/* Decorative elements */}
               <div className="absolute -top-4 -right-4 w-24 h-24 bg-[#2E75B6] rounded-full opacity-20 blur-2xl" />
-              <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-purple-500 rounded-full opacity-20 blur-2xl" />
+              <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-white rounded-full opacity-10 blur-2xl" />
             </div>
 
             {/* Right - Content */}
             <div className="space-y-6">
-              <span className="text-[#2E75B6] font-mono text-sm tracking-[0.2em] uppercase font-bold">
+              <span className="text-white/80 font-mono text-sm tracking-[0.2em] uppercase font-bold">
                 Press & Media
               </span>
               <h2 className="font-display font-black text-4xl md:text-5xl text-white leading-[1.1]">
-                TOPAZ IN THE <span className="text-[#2E75B6]">SPOTLIGHT</span>
+                TOPAZ IN THE <span className="text-white/90 italic">SPOTLIGHT</span>
               </h2>
-              <p className="text-white/70 text-lg leading-relaxed">
+              <p className="text-white/80 text-lg leading-relaxed">
                 From the trusted brands you know and love, TOPAZ has been featured in leading 
                 dance publications. Our competitions are recognized for excellence, innovation, 
                 and creating opportunities for dancers to shine on the national stage.
               </p>
               <div className="flex flex-wrap gap-4 pt-4">
-                <div className="flex items-center gap-3 bg-white/10 rounded-lg px-4 py-3">
-                  <Award className="w-6 h-6 text-[#2E75B6]" />
+                <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-lg px-4 py-3">
+                  <Award className="w-6 h-6 text-white" />
                   <span className="text-white font-bold">Voted #1 Competition</span>
                 </div>
-                <div className="flex items-center gap-3 bg-white/10 rounded-lg px-4 py-3">
-                  <Star className="w-6 h-6 text-[#2E75B6]" />
+                <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-lg px-4 py-3">
+                  <Star className="w-6 h-6 text-white" />
                   <span className="text-white font-bold">Industry Leader</span>
                 </div>
               </div>
-              <button className="inline-flex items-center gap-2 px-8 py-4 bg-[#2E75B6] text-white font-bold text-sm uppercase tracking-wider rounded hover:bg-[#1F4E78] transition-all duration-200 mt-4">
+              <button className="inline-flex items-center gap-2 px-8 py-4 bg-white text-[#2E75B6] font-bold text-sm uppercase tracking-wider rounded hover:bg-white/90 transition-all duration-200 mt-4">
                 READ ARTICLE
                 <ArrowRight className="w-4 h-4" />
               </button>
@@ -438,14 +430,14 @@ const Home = () => {
         </div>
       </section>
 
-      {/* TOUR DATES CARDS SECTION */}
-      <section className="relative bg-[#0a0a0a] py-20 lg:py-28">
+      {/* TOUR DATES CARDS SECTION - White background */}
+      <section className="relative bg-white py-20 lg:py-28">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <span className="text-[#2E75B6] font-mono text-sm tracking-[0.2em] uppercase font-bold">
               Upcoming Events
             </span>
-            <h2 className="font-display font-black text-4xl md:text-5xl text-white mt-4">
+            <h2 className="font-display font-black text-4xl md:text-5xl text-gray-900 mt-4">
               TOUR <span className="text-[#2E75B6]">DATES</span>
             </h2>
           </div>
@@ -454,7 +446,7 @@ const Home = () => {
             {tourDates.map((tour) => (
               <div
                 key={tour.id}
-                className="group relative bg-gradient-to-b from-white/10 to-white/5 rounded-2xl overflow-hidden border border-white/10 hover:border-[#2E75B6]/50 transition-all duration-300"
+                className="group relative bg-white rounded-2xl overflow-hidden border border-gray-200 hover:border-[#2E75B6]/50 transition-all duration-300 shadow-lg hover:shadow-xl"
               >
                 <div className="aspect-[16/10] overflow-hidden">
                   <img
@@ -462,20 +454,20 @@ const Home = () => {
                     alt={tour.city}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-transparent to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                 </div>
                 <div className="p-6">
                   <div className="flex items-center justify-between mb-3">
                     <span className={`px-3 py-1 text-xs font-bold uppercase tracking-wider rounded ${
-                      tour.status === 'upcoming' ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'
+                      tour.status === 'upcoming' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
                     }`}>
                       {tour.status === 'upcoming' ? 'OPEN' : 'COMING SOON'}
                     </span>
                     <span className="text-[#2E75B6] font-bold">{tour.date}</span>
                   </div>
-                  <h3 className="font-display font-black text-2xl text-white mb-1">{tour.city}</h3>
-                  <p className="text-white/60 text-sm mb-4">{tour.venue}</p>
-                  <div className="flex items-center gap-4 text-sm text-white/50">
+                  <h3 className="font-display font-black text-2xl text-gray-900 mb-1">{tour.city}</h3>
+                  <p className="text-gray-500 text-sm mb-4">{tour.venue}</p>
+                  <div className="flex items-center gap-4 text-sm text-gray-400">
                     <span className="flex items-center gap-1">
                       <Clock className="w-4 h-4" />
                       {tour.time}
@@ -502,11 +494,11 @@ const Home = () => {
         </div>
       </section>
 
-      {/* SPONSORS SECTION - Like reference */}
-      <section ref={sponsorsRef} className="relative bg-[#0a0a0a] py-16 lg:py-20 border-t border-white/10">
+      {/* SPONSORS SECTION - Gray background */}
+      <section ref={sponsorsRef} className="relative bg-gray-50 py-16 lg:py-20 border-t border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="font-display font-black text-2xl md:text-3xl text-white tracking-tight">
+            <h2 className="font-display font-black text-2xl md:text-3xl text-gray-900 tracking-tight">
               OUR <span className="text-[#2E75B6]">SPONSORS</span>
             </h2>
           </div>
@@ -528,23 +520,23 @@ const Home = () => {
         </div>
       </section>
 
-      {/* FINAL CTA SECTION */}
-      <section className="relative bg-gradient-to-br from-purple-900 via-[#1a1a3e] to-[#0a0a0a] py-20 lg:py-28 overflow-hidden">
+      {/* FINAL CTA SECTION - Blue gradient */}
+      <section className="relative bg-gradient-to-br from-[#1F4E78] to-[#2E75B6] py-20 lg:py-28 overflow-hidden">
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=1600&h=900&fit=crop')] opacity-20 bg-cover bg-center" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-transparent to-[#0a0a0a]" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#1F4E78] via-transparent to-[#1F4E78]" />
 
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="font-display font-black text-4xl md:text-5xl lg:text-6xl text-white mb-6">
-            READY TO TAKE THE <span className="text-[#2E75B6]">STAGE</span>?
+            READY TO TAKE THE <span className="text-white/90 italic">STAGE</span>?
           </h2>
-          <p className="text-white/70 text-lg md:text-xl mb-10 max-w-2xl mx-auto">
+          <p className="text-white/80 text-lg md:text-xl mb-10 max-w-2xl mx-auto">
             Join thousands of dancers who have made TOPAZ their home. 
             Register today and start your journey to excellence.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <Link
               to="/registration"
-              className="inline-flex items-center gap-2 px-10 py-5 bg-[#2E75B6] text-white font-bold text-sm uppercase tracking-wider rounded hover:bg-[#1F4E78] transition-all duration-200"
+              className="inline-flex items-center gap-2 px-10 py-5 bg-white text-[#2E75B6] font-bold text-sm uppercase tracking-wider rounded hover:bg-white/90 transition-all duration-200"
             >
               REGISTER NOW
               <ArrowRight className="w-5 h-5" />

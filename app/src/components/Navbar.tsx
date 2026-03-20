@@ -42,6 +42,7 @@ const Navbar = () => {
       >
         <div className="max-w-7xl mx-auto px-6 lg:px-10">
           <div className="flex items-center justify-between h-16">
+
             {/* Logo */}
             <Link to="/" className="flex items-center gap-3 group shrink-0">
               {/* Diamond mark */}
@@ -60,7 +61,7 @@ const Navbar = () => {
               </div>
             </Link>
 
-            {/* Desktop Nav Links - Centered like reference */}
+            {/* Desktop Nav Links */}
             <div className="hidden lg:flex items-center gap-8">
               {navLinks.map((link) => (
                 <Link
@@ -73,7 +74,6 @@ const Navbar = () => {
                   }`}
                 >
                   {link.label}
-                  {/* Active underline */}
                   <span
                     className={`absolute -bottom-0.5 left-0 w-full h-[2px] bg-[#2E75B6] transition-transform duration-300 origin-left ${
                       isActive(link.to) ? 'scale-x-100' : 'scale-x-0'
@@ -83,7 +83,7 @@ const Navbar = () => {
               ))}
             </div>
 
-            {/* Desktop CTA - Right side */}
+            {/* Desktop CTA */}
             <div className="hidden lg:flex items-center gap-4">
               <Link
                 to="/registration"
