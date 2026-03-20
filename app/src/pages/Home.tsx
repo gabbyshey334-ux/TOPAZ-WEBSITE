@@ -18,7 +18,7 @@ import HeroSection from '../sections/HeroSection';
 // Register GSAP plugin
 gsap.registerPlugin(ScrollTrigger);
 
-// Competition data
+// Competition data - only The Return of TOPAZ 2.0
 const tourDates = [
   {
     id: '1',
@@ -28,24 +28,6 @@ const tourDates = [
     time: '8:00 AM',
     status: 'upcoming',
     image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop'
-  },
-  {
-    id: '2',
-    city: 'PORTLAND, OR',
-    venue: 'Portland Convention Center',
-    date: 'SEP 12, 2026',
-    time: '9:00 AM',
-    status: 'upcoming',
-    image: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=800&h=600&fit=crop'
-  },
-  {
-    id: '3',
-    city: 'LAS VEGAS, NV',
-    venue: 'MGM Grand',
-    date: 'OCT 15, 2026',
-    time: '10:00 AM',
-    status: 'coming',
-    image: 'https://images.unsplash.com/photo-1581351123004-7579805fb014?w=800&h=600&fit=crop'
   }
 ];
 

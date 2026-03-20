@@ -68,70 +68,9 @@ const Schedule = () => {
       description: 'Event time: 8:00 AM – 12:00 PM. Registration is open for The Return of TOPAZ 2.0.',
       image: `${import.meta.env.BASE_URL}images/events/trophy-gold.jpg`,
     },
-    {
-      id: '2',
-      name: 'National Finals 2026',
-      subtitle: 'The pinnacle of the TOPAZ season',
-      date: 'June 20-22, 2026',
-      location: 'MGM Grand, Las Vegas, NV',
-      registrationDeadline: 'May 31, 2026',
-      status: 'coming',
-      description: 'Qualifying dancers compete for national titles and prestigious scholarships.',
-      image: `${import.meta.env.BASE_URL}images/events/competition-2026.jpg`,
-    },
-    {
-      id: '3',
-      name: 'Summer Intensive',
-      subtitle: 'Workshops and competitive performances',
-      date: 'July 8-12, 2026',
-      location: 'Joffrey Ballet School, New York, NY',
-      registrationDeadline: 'June 15, 2026',
-      status: 'coming',
-      description: 'Five days of workshops, masterclasses, and competitive performances with world-renowned instructors.',
-      image: `${import.meta.env.BASE_URL}images/events/stage-performance.jpg`,
-    },
-    {
-      id: '4',
-      name: 'Fall Classic 2026',
-      subtitle: 'Special categories and Teacher/Student showcase',
-      date: 'October 10-11, 2026',
-      location: 'McCormick Place, Chicago, IL',
-      registrationDeadline: 'September 20, 2026',
-      status: 'coming',
-      description: 'A beloved tradition featuring special categories and the annual Teacher/Student showcase.',
-      image: `${import.meta.env.BASE_URL}images/events/competition-2026.jpg`,
-    },
   ];
 
-  const pastCompetitions: CompetitionCardProps[] = [
-    {
-      id: '5',
-      name: 'Winter Gala 2025',
-      date: 'December 5-6, 2025',
-      location: 'Boston Hynes Convention Center, MA',
-      registrationDeadline: 'Closed',
-      status: 'closed',
-      description: 'Our annual winter celebration of dance excellence.',
-    },
-    {
-      id: '6',
-      name: 'Regional Championships 2025',
-      date: 'September 12-14, 2025',
-      location: 'Georgia World Congress Center, Atlanta, GA',
-      registrationDeadline: 'Closed',
-      status: 'closed',
-      description: 'Regional qualifiers for the national finals.',
-    },
-    {
-      id: '7',
-      name: 'Summer Showcase 2025',
-      date: 'July 18-19, 2025',
-      location: 'Seattle Convention Center, WA',
-      registrationDeadline: 'Closed',
-      status: 'closed',
-      description: 'A summer celebration of dance talent from the Pacific Northwest.',
-    },
-  ];
+  const pastCompetitions: CompetitionCardProps[] = [];
 
   const filterCompetitions = (competitions: CompetitionCardProps[]) => {
     return competitions.filter((comp) => {
