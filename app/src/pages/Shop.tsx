@@ -160,6 +160,95 @@ const Shop = () => {
         </div>
       </section>
 
+      {/* SECTION 5: SIZE GUIDE */}
+      <section className="py-16 bg-white border-t border-gray-100">
+        <div className="max-w-4xl mx-auto px-6">
+          <div className="text-center mb-10">
+            <h2 className="font-display font-bold text-3xl text-gray-900 mb-3">Size Guide</h2>
+            <p className="text-gray-500">All measurements are in inches. When in between sizes, we recommend sizing up.</p>
+          </div>
+
+          {/* T-Shirts */}
+          <div className="mb-10">
+            <h3 className="font-bold text-lg text-gray-800 mb-4 flex items-center gap-2">
+              <span className="w-2 h-6 bg-[#2E75B6] rounded-full inline-block"></span>
+              T-Shirts
+            </h3>
+            <div className="overflow-x-auto rounded-xl border border-gray-200 shadow-sm">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-[#2E75B6] text-white">
+                    <th className="px-6 py-3 text-left font-bold">Size</th>
+                    <th className="px-6 py-3 text-center font-bold">Chest</th>
+                    <th className="px-6 py-3 text-center font-bold">Length</th>
+                    <th className="px-6 py-3 text-center font-bold">Sleeve</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {[
+                    { size: 'S', chest: '34–36"', length: '27"', sleeve: '32"' },
+                    { size: 'M', chest: '38–40"', length: '28"', sleeve: '33"' },
+                    { size: 'L', chest: '42–44"', length: '29"', sleeve: '34"' },
+                    { size: 'XL', chest: '46–48"', length: '30"', sleeve: '35"' },
+                    { size: 'XXL', chest: '50–52"', length: '31"', sleeve: '36"' },
+                  ].map((row, i) => (
+                    <tr key={row.size} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                      <td className="px-6 py-3 font-bold text-gray-900">{row.size}</td>
+                      <td className="px-6 py-3 text-center text-gray-600">{row.chest}</td>
+                      <td className="px-6 py-3 text-center text-gray-600">{row.length}</td>
+                      <td className="px-6 py-3 text-center text-gray-600">{row.sleeve}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Sweatshirts */}
+          <div>
+            <h3 className="font-bold text-lg text-gray-800 mb-4 flex items-center gap-2">
+              <span className="w-2 h-6 bg-[#2E75B6] rounded-full inline-block"></span>
+              Sweatshirts
+            </h3>
+            <div className="overflow-x-auto rounded-xl border border-gray-200 shadow-sm">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-[#2E75B6] text-white">
+                    <th className="px-6 py-3 text-left font-bold">Size</th>
+                    <th className="px-6 py-3 text-center font-bold">Chest</th>
+                    <th className="px-6 py-3 text-center font-bold">Length</th>
+                    <th className="px-6 py-3 text-center font-bold">Sleeve</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {[
+                    { size: 'S', chest: '36–38"', length: '26"', sleeve: '33"' },
+                    { size: 'M', chest: '40–42"', length: '27"', sleeve: '34"' },
+                    { size: 'L', chest: '44–46"', length: '28"', sleeve: '35"' },
+                    { size: 'XL', chest: '48–50"', length: '29"', sleeve: '36"' },
+                    { size: 'XXL', chest: '52–54"', length: '30"', sleeve: '37"' },
+                  ].map((row, i) => (
+                    <tr key={row.size} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                      <td className="px-6 py-3 font-bold text-gray-900">{row.size}</td>
+                      <td className="px-6 py-3 text-center text-gray-600">{row.chest}</td>
+                      <td className="px-6 py-3 text-center text-gray-600">{row.length}</td>
+                      <td className="px-6 py-3 text-center text-gray-600">{row.sleeve}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <p className="text-center text-sm text-gray-400 mt-6">
+            Questions about sizing? Email us at{' '}
+            <a href="mailto:topaz2.0@yahoo.com" className="text-[#2E75B6] underline hover:text-[#1F4E78]">
+              topaz2.0@yahoo.com
+            </a>
+          </p>
+        </div>
+      </section>
+
       {/* SECTION 6: BOTTOM CTA */}
       <section className="py-20 bg-white border-t border-gray-100">
         <div className="max-w-4xl mx-auto px-6 text-center">
