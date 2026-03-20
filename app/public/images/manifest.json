@@ -1,0 +1,122 @@
+{
+  "images": [
+    {
+      "success": true,
+      "skipped": true,
+      "originalUrl": "https://static.wixstatic.com/media/187f75_a536ad47a98747f99ccec44e0e0b3d6f~mv2.jpg/v1/fill/w_320,h_238,q_90,enc_avif,quality_auto/187f75_a536ad47a98747f99ccec44e0e0b3d6f~mv2.jpg",
+      "localPath": "/images/gallery/gallery-01.jpg",
+      "filename": "gallery-01.jpg",
+      "category": "gallery",
+      "fileSize": "1.71 MB"
+    },
+    {
+      "success": true,
+      "skipped": true,
+      "originalUrl": "https://static.wixstatic.com/media/187f75_2240f8ab41234ff49258d404bb6bc179~mv2.jpg/v1/fill/w_320,h_215,q_90,enc_avif,quality_auto/187f75_2240f8ab41234ff49258d404bb6bc179~mv2.jpg",
+      "localPath": "/images/gallery/gallery-02.jpg",
+      "filename": "gallery-02.jpg",
+      "category": "gallery",
+      "fileSize": "1.27 MB"
+    },
+    {
+      "success": true,
+      "skipped": true,
+      "originalUrl": "https://static.wixstatic.com/media/187f75_c8e05c66becf4997bcd14bffdadcca85~mv2.jpg/v1/fill/w_320,h_430,q_90,enc_avif,quality_auto/187f75_c8e05c66becf4997bcd14bffdadcca85~mv2.jpg",
+      "localPath": "/images/gallery/gallery-03.jpg",
+      "filename": "gallery-03.jpg",
+      "category": "gallery",
+      "fileSize": "2.3 MB"
+    },
+    {
+      "success": true,
+      "skipped": true,
+      "originalUrl": "https://static.wixstatic.com/media/187f75_c5f8d9aa9ddb4d81a653acaf95551b39~mv2.jpg/v1/fill/w_320,h_254,q_90,enc_avif,quality_auto/187f75_c5f8d9aa9ddb4d81a653acaf95551b39~mv2.jpg",
+      "localPath": "/images/gallery/gallery-04.jpg",
+      "filename": "gallery-04.jpg",
+      "category": "gallery",
+      "fileSize": "2.47 MB"
+    },
+    {
+      "success": true,
+      "skipped": true,
+      "originalUrl": "https://static.wixstatic.com/media/187f75_6e4e918b9ad64de58d7043943fd1a190~mv2.jpg/v1/fill/w_320,h_444,q_90,enc_avif,quality_auto/187f75_6e4e918b9ad64de58d7043943fd1a190~mv2.jpg",
+      "localPath": "/images/gallery/gallery-05.jpg",
+      "filename": "gallery-05.jpg",
+      "category": "gallery",
+      "fileSize": "1.41 MB"
+    },
+    {
+      "success": true,
+      "skipped": true,
+      "originalUrl": "https://static.wixstatic.com/media/187f75_1e9e85500e3d403cb0f6405d5a19ccf6~mv2.jpg/v1/fill/w_320,h_212,q_90,enc_avif,quality_auto/187f75_1e9e85500e3d403cb0f6405d5a19ccf6~mv2.jpg",
+      "localPath": "/images/gallery/gallery-06.jpg",
+      "filename": "gallery-06.jpg",
+      "category": "gallery",
+      "fileSize": "1.15 MB"
+    },
+    {
+      "success": true,
+      "skipped": false,
+      "originalUrl": "https://static.wixstatic.com/media/187f75_8f1abb5c72134b6887dbd359ed1e0547~mv2.jpg/v1/fill/w_320,h_253,q_90,enc_avif,quality_auto/187f75_8f1abb5c72134b6887dbd359ed1e0547~mv2.jpg",
+      "localPath": "/images/gallery/gallery-07.jpg",
+      "filename": "gallery-07.jpg",
+      "category": "gallery",
+      "fileSize": "2.76 MB"
+    },
+    {
+      "success": true,
+      "skipped": true,
+      "originalUrl": "https://static.wixstatic.com/media/187f75_99817ddadd2043b5b86128885318f541~mv2.jpg/v1/fill/w_320,h_222,q_90,enc_avif,quality_auto/187f75_99817ddadd2043b5b86128885318f541~mv2.jpg",
+      "localPath": "/images/about/about-01.jpg",
+      "filename": "about-01.jpg",
+      "category": "about",
+      "fileSize": "1.71 MB"
+    },
+    {
+      "success": true,
+      "skipped": true,
+      "originalUrl": "https://static.wixstatic.com/media/187f75_7cdad5e9b19044e99f787eaba269d6ac~mv2.jpg/v1/fill/w_320,h_586,q_90,enc_avif,quality_auto/187f75_7cdad5e9b19044e99f787eaba269d6ac~mv2.jpg",
+      "localPath": "/images/about/about-02.jpg",
+      "filename": "about-02.jpg",
+      "category": "about",
+      "fileSize": "1.39 MB"
+    },
+    {
+      "success": true,
+      "skipped": true,
+      "originalUrl": "https://static.wixstatic.com/media/8bb438_5ae585140ab442d49138ef3ccbf8fdb8~mv2_d_3000_3000_s_4_2.jpg/v1/fill/w_320,h_320,q_90,enc_avif,quality_auto/8bb438_5ae585140ab442d49138ef3ccbf8fdb8~mv2_d_3000_3000_s_4_2.jpg",
+      "localPath": "/images/events/event-01.jpg",
+      "filename": "event-01.jpg",
+      "category": "events",
+      "fileSize": "2.9 MB"
+    },
+    {
+      "success": true,
+      "skipped": false,
+      "originalUrl": "https://static.wixstatic.com/media/8bb438_0ab7a3ec93cf434cb89081f5272b5dac~mv2_d_3000_1941_s_2.jpg/v1/fill/w_320,h_207,q_90,enc_avif,quality_auto/8bb438_0ab7a3ec93cf434cb89081f5272b5dac~mv2_d_3000_1941_s_2.jpg",
+      "localPath": "/images/events/event-02.jpg",
+      "filename": "event-02.jpg",
+      "category": "events",
+      "fileSize": "1.48 MB"
+    },
+    {
+      "success": true,
+      "skipped": false,
+      "originalUrl": "https://static.wixstatic.com/media/8bb438_98999c7be5814da8a012bb8d32aa6a47~mv2_d_3000_1965_s_2.jpg/v1/fill/w_320,h_210,q_90,enc_avif,quality_auto/8bb438_98999c7be5814da8a012bb8d32aa6a47~mv2_d_3000_1965_s_2.jpg",
+      "localPath": "/images/events/event-03.jpg",
+      "filename": "event-03.jpg",
+      "category": "events",
+      "fileSize": "1004.97 KB"
+    }
+  ],
+  "videos": [],
+  "downloadDate": "2026-03-20T20:34:00.589Z",
+  "totalImages": 13,
+  "totalVideos": 1,
+  "downloadedImages": 3,
+  "skippedImages": 9,
+  "failedImages": 1,
+  "videoDownloaded": false,
+  "videoSkipped": false,
+  "totalSize": "21.54 MB"
+}
