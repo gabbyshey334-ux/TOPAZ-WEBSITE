@@ -55,32 +55,33 @@ const HeroSection = () => {
   return (
     <section
       ref={sectionRef}
-      className="relative min-h-screen bg-white pt-20"
+      className="relative bg-white pt-20"
     >
-      {/* VIDEO SECTION - Top 55vh (50vh mobile, 52vh tablet, 55vh desktop) */}
-      <div className="relative h-[50vh] sm:h-[52vh] lg:h-[55vh] w-full overflow-hidden bg-black shadow-2xl">
+      {/* VIDEO SECTION - Balanced, responsive hero media */}
+      <div className="relative h-[50vh] md:h-[55vh] xl:h-[60vh] w-full overflow-hidden bg-black">
         <video
           autoPlay
           muted
           loop
           playsInline
-          className="absolute inset-0 w-full h-full object-cover opacity-90"
+          className="absolute inset-0 w-full h-full object-cover"
         >
           <source src={SHOWREEL_VIDEO_URL} type="video/mp4" />
         </video>
 
-        {/* Elegant Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/40 pointer-events-none" />
+        {/* Subtle overlay for depth and readability transition into content */}
+        <div className="absolute inset-0 bg-black/25 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/15 via-transparent to-black/35 pointer-events-none" />
         
         {/* NO TEXT OR LOGO IN VIDEO - Keep it clean */}
       </div>
 
       {/* CONTENT SECTION - Bottom part */}
-      <div className="relative bg-white flex flex-col items-center justify-center py-16 lg:py-24 px-6 z-20 shadow-[0_-20px_40px_rgba(0,0,0,0.05)]">
-        <div className="max-w-7xl mx-auto text-center">
+      <div className="relative bg-white flex flex-col items-center justify-center py-20 lg:py-24 px-6 z-20">
+        <div className="w-full max-w-5xl mx-auto text-center">
           <h1
             ref={headingRef}
-            className="font-display font-black text-7xl sm:text-8xl md:text-9xl lg:text-[10rem] tracking-tighter text-gray-900 leading-[0.85] mb-6 drop-shadow-sm"
+            className="font-display font-black text-6xl sm:text-7xl md:text-8xl lg:text-9xl xl:text-[9.5rem] tracking-tighter text-gray-900 leading-[0.88] mb-6"
           >
             TOPAZ <span className="text-[#2E75B6] italic relative inline-block">
               2.0
@@ -96,7 +97,7 @@ const HeroSection = () => {
 
           <p
             ref={taglineRef}
-            className="font-mono text-xs sm:text-base tracking-[0.3em] text-gray-600 uppercase font-bold"
+            className="font-mono text-[11px] sm:text-sm md:text-base tracking-[0.22em] sm:tracking-[0.28em] text-gray-600 uppercase font-bold"
           >
             EST. 1972 • EXCELLENCE IN DANCE
           </p>
@@ -104,7 +105,7 @@ const HeroSection = () => {
 
         <div 
           ref={scrollRef}
-          className="mt-12 animate-bounce"
+          className="mt-10 md:mt-12 animate-bounce"
         >
           <ChevronDown className="w-6 h-6 text-gray-400" aria-hidden />
         </div>

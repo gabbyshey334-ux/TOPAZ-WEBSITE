@@ -19,24 +19,28 @@ const Registration = () => {
 
   const faqs = [
     {
+      question: 'Can I register on competition day?',
+      answer: 'No. All registrations must be received by email before July 22, 2026, 12:00 AM. NO day-of-event registration is accepted. Plan ahead and submit in time.'
+    },
+    {
       question: 'Can I register multiple entries?',
-      answer: 'Yes! Studios with 5+ entries receive a 10% discount. Please submit a separate form for each routine to ensure accurate categorization.'
+      answer: 'Yes! Studios with 5+ entries receive a 10% discount. Please submit a separate form for each routine by email to topaz2.0@yahoo.com before the deadline.'
     },
     {
       question: 'What payment methods are accepted?',
-      answer: 'We accept cash, check, credit card, and PayPal. Checks should be made payable to Topaz 2.0 LLC.'
+      answer: 'We accept cash, check, credit card, and PayPal. Checks should be made payable to Topaz 2.0 LLC. Include payment details with your email submission.'
     },
     {
       question: 'Can I make changes after submitting?',
-      answer: 'Yes, please contact us at topaz2.0@yahoo.com before the registration deadline to request changes to your entry.'
+      answer: 'Yes, please contact us at topaz2.0@yahoo.com before the registration deadline (July 22, 2026, 12:00 AM) to request changes to your entry.'
     },
     {
       question: 'What if I miss the deadline?',
-      answer: 'Late registration is available July 23-31, 2026 with a $25 late fee per entry, subject to space availability.'
+      answer: 'Registrations are not accepted after the deadline. All entries must be received by email at topaz2.0@yahoo.com before July 22, 2026, 12:00 AM. There are no exceptions and no late or day-of-event registration.'
     },
     {
       question: 'Do I need to register for each category separately?',
-      answer: 'Yes, each routine requires a separate registration form to ensuring proper scheduling and judging.'
+      answer: 'Yes, each routine requires a separate registration form. Email all forms to topaz2.0@yahoo.com before the deadline for proper scheduling and judging.'
     }
   ];
 
@@ -81,7 +85,7 @@ const Registration = () => {
             </h2>
             
             <p className="text-gray-600 mb-10 text-lg max-w-lg mx-auto leading-relaxed">
-              Download, complete, and submit this form to secure your spot in the competition.
+              Download, complete, and email this form to topaz2.0@yahoo.com to secure your spot in the competition.
             </p>
             
             <a
@@ -101,7 +105,7 @@ const Registration = () => {
           </div>
 
           {/* SECTION 3: DISCLAIMER BOX */}
-          <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-6 lg:p-8 mb-16 shadow-sm">
+          <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-6 lg:p-8 mb-8 shadow-sm">
             <div className="flex items-start gap-5">
               <div className="bg-amber-100 p-3 rounded-full flex-shrink-0">
                 <AlertCircle className="w-6 h-6 text-amber-600" />
@@ -111,6 +115,25 @@ const Registration = () => {
                 <p className="text-amber-800 leading-relaxed">
                   Mailing address is only required for certain competitions. 
                   Please check specific competition requirements before submitting.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* DEADLINE WARNING BOX */}
+          <div className="bg-red-50 border-2 border-red-300 rounded-2xl p-6 lg:p-8 mb-16 shadow-sm">
+            <div className="flex items-start gap-5">
+              <div className="bg-red-100 p-3 rounded-full flex-shrink-0">
+                <AlertCircle className="w-6 h-6 text-red-600" />
+              </div>
+              <div>
+                <h3 className="font-bold text-lg text-red-900 mb-2">Registration Deadline — No Exceptions</h3>
+                <p className="text-red-800 leading-relaxed mb-4">
+                  All registrations must be received by email at <strong>topaz2.0@yahoo.com</strong> before <strong>July 22, 2026, 12:00 AM</strong>. 
+                  NO late registration. NO day-of-event registration. Email submissions only. Plan ahead!
+                </p>
+                <p className="text-red-700 text-sm font-semibold">
+                  Registration closes strictly at the deadline. We cannot accept entries after this time.
                 </p>
               </div>
             </div>
@@ -125,7 +148,10 @@ const Registration = () => {
             <h2 className="font-display font-black text-4xl text-gray-900 mb-4">
               How to Register
             </h2>
-            <p className="text-gray-500 text-lg">Follow these simple steps to join the competition</p>
+            <p className="text-gray-500 text-lg mb-4">Follow these steps and submit by email before the deadline.</p>
+            <p className="text-red-600 font-semibold text-sm max-w-2xl mx-auto">
+              You must complete registration before July 22, 2026, 12:00 AM. No registration on competition day.
+            </p>
           </div>
           
           <div className="grid md:grid-cols-3 gap-8 lg:gap-12">
@@ -158,7 +184,7 @@ const Registration = () => {
               </div>
               <h3 className="font-display font-bold text-xl mb-4 text-gray-900">3. Submit</h3>
               <p className="text-gray-600 leading-relaxed">
-                Email completed form to <span className="text-[#2E75B6] font-semibold">topaz2.0@yahoo.com</span> or submit in person at the event.
+                Email your completed form and materials to <span className="text-[#2E75B6] font-semibold">topaz2.0@yahoo.com</span>. This is the only way to submit your registration.
               </p>
             </div>
           </div>
@@ -184,7 +210,8 @@ const Registration = () => {
                   'High-resolution photo of all contestants',
                   'Music selection (MP3, WAV, or CD)',
                   'Payment (check, cash, or credit card)',
-                  'Parent/guardian signature (for minors)'
+                  'Parent/guardian signature (for minors)',
+                  'Submit completed form and materials by email to topaz2.0@yahoo.com'
                 ].map((item, i) => (
                   <li key={i} className="flex items-start gap-4 text-gray-700">
                     <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -243,9 +270,8 @@ const Registration = () => {
               {[
                 { label: 'Registration Opens', date: 'March 1, 2026', status: 'past' },
                 { label: 'Early Bird Deadline', date: 'June 1, 2026', desc: '10% discount', status: 'active' },
-                { label: 'Regular Deadline', date: 'July 22, 2026, 12:00 AM', status: 'future' },
-                { label: 'Late Registration', date: 'July 23-31, 2026', desc: '$25 late fee', status: 'future' },
-                { label: 'Competition Day', date: 'August 22, 2026', status: 'future', highlight: true }
+                { label: 'Registration Closes', date: 'July 22, 2026, 12:00 AM', desc: 'No exceptions. No day-of-event registration.', status: 'future', highlight: true },
+                { label: 'Competition Day', date: 'August 22, 2026', status: 'future' }
               ].map((item, i) => (
                 <div key={i} className={`relative flex items-center lg:justify-center ${i % 2 === 0 ? 'lg:flex-row-reverse' : ''}`}>
                   <div className="absolute left-8 lg:left-1/2 -translate-x-1/2 w-4 h-4 rounded-full border-4 border-white shadow-sm z-10 bg-[#2E75B6]" />
@@ -266,6 +292,12 @@ const Registration = () => {
                 </div>
               ))}
             </div>
+          </div>
+
+          <div className="mt-12 text-center">
+            <p className="text-red-600 font-bold text-sm md:text-base">
+              NO registrations accepted after July 22, 2026, 12:00 AM. NO day-of-event registration. Email only.
+            </p>
           </div>
         </div>
       </section>
