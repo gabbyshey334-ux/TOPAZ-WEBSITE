@@ -9,12 +9,13 @@ import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
   3. Format: { id: X, src: '/images/gallery/your-photo.jpg', alt: 'Description', category: 'competitions' | 'rehearsals' | 'awards' }
 */
 const photos = [
-  { id: 1, src: `${import.meta.env.BASE_URL}images/gallery/photo-1.jpg`, alt: 'Competition 2025', category: 'competitions' },
-  { id: 2, src: `${import.meta.env.BASE_URL}images/gallery/photo-2.jpg`, alt: 'Dancers performing', category: 'competitions' },
-  { id: 3, src: `${import.meta.env.BASE_URL}images/gallery/photo-3.jpg`, alt: 'Stage performance', category: 'rehearsals' },
-  { id: 4, src: `${import.meta.env.BASE_URL}images/gallery/photo-4.jpg`, alt: 'Award ceremony', category: 'awards' },
-  { id: 5, src: `${import.meta.env.BASE_URL}images/gallery/photo-5.jpg`, alt: 'Group routine', category: 'competitions' },
-  { id: 6, src: `${import.meta.env.BASE_URL}images/gallery/photo-6.jpg`, alt: 'Solo performance', category: 'rehearsals' },
+  { id: 1, src: `${import.meta.env.BASE_URL}images/gallery/gallery-01.jpg`, alt: 'Competition 2025', category: 'competitions' },
+  { id: 2, src: `${import.meta.env.BASE_URL}images/gallery/gallery-02.jpg`, alt: 'Dancers performing', category: 'competitions' },
+  { id: 3, src: `${import.meta.env.BASE_URL}images/gallery/gallery-03.jpg`, alt: 'Stage performance', category: 'rehearsals' },
+  { id: 4, src: `${import.meta.env.BASE_URL}images/gallery/gallery-04.jpg`, alt: 'Award ceremony', category: 'awards' },
+  { id: 5, src: `${import.meta.env.BASE_URL}images/gallery/gallery-05.jpg`, alt: 'Group routine', category: 'competitions' },
+  { id: 6, src: `${import.meta.env.BASE_URL}images/gallery/gallery-06.jpg`, alt: 'Solo performance', category: 'rehearsals' },
+  { id: 7, src: `${import.meta.env.BASE_URL}images/gallery/gallery-07.jpg`, alt: 'TOPAZ Competition', category: 'competitions' },
 ];
 
 /*

@@ -9,7 +9,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "deploy": "vite build && vercel --prod",
-    "download-media": "node scripts/download-media.js"
+    "download-media": "node scripts/download-media.cjs"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",
