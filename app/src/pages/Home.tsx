@@ -77,13 +77,13 @@ const promoCards = [
   }
 ];
 
-// Sponsors
+// Sponsors - using client logos from about page
 const sponsors = [
-  { name: 'CAPEZIO', logo: 'https://placehold.co/120x40/333/fff?text=CAPEZIO' },
-  { name: 'BLOCH', logo: 'https://placehold.co/120x40/333/fff?text=BLOCH' },
-  { name: 'DANCE SPIRIT', logo: 'https://placehold.co/120x40/333/fff?text=DANCE+SPIRIT' },
-  { name: 'DISNEY', logo: 'https://placehold.co/120x40/333/fff?text=DISNEY' },
-  { name: 'JOFFREY', logo: 'https://placehold.co/120x40/333/fff?text=JOFFREY' }
+  { name: 'Client 1', src: `${import.meta.env.BASE_URL}about/client-logo-01.png`, alt: 'Client 1' },
+  { name: 'Client 2', src: `${import.meta.env.BASE_URL}about/client-logo-02.png`, alt: 'Client 2' },
+  { name: 'Client 3', src: `${import.meta.env.BASE_URL}about/client-logo-03.png`, alt: 'Client 3' },
+  { name: 'Client 4', src: `${import.meta.env.BASE_URL}about/client-logo-04.png`, alt: 'Client 4' },
+  { name: 'Client 5', src: `${import.meta.env.BASE_URL}about/client-logo-05.png`, alt: 'Client 5' }
 ];
 
 const Home = () => {
@@ -494,26 +494,36 @@ const Home = () => {
         </div>
       </section>
 
-      {/* SPONSORS SECTION - Gray background */}
-      <section ref={sponsorsRef} className="relative bg-gray-50 py-16 lg:py-20 border-t border-gray-200">
+      {/* SPONSORS SECTION - Professional styling */}
+      <section ref={sponsorsRef} className="relative bg-gray-50 py-24 lg:py-32 border-t border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="font-display font-black text-2xl md:text-3xl text-gray-900 tracking-tight">
-              OUR <span className="text-[#2E75B6]">SPONSORS</span>
+          <div className="text-center mb-16">
+            <span className="text-[#2E75B6] font-mono text-sm tracking-[0.2em] uppercase font-bold">
+              Trusted Partners
+            </span>
+            <h2 className="font-display font-black text-4xl md:text-5xl lg:text-6xl text-gray-900 tracking-tight mt-4">
+              OUR <span className="text-[#2E75B6] italic">SPONSORS</span>
             </h2>
+            <div className="w-24 h-1 bg-[#2E75B6] mx-auto mt-6" />
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-8 md:gap-12">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-12 lg:gap-16 items-center justify-items-center">
             {sponsors.map((sponsor) => (
               <div
                 key={sponsor.name}
-                className="sponsor-logo opacity-60 hover:opacity-100 transition-opacity duration-300 grayscale hover:grayscale-0"
+                className="sponsor-logo group relative flex items-center justify-center p-8 bg-white rounded-2xl border border-gray-200 hover:border-[#2E75B6]/50 transition-all duration-300 hover:shadow-xl hover:scale-105 min-h-[140px] w-full"
               >
-                <img
-                  src={sponsor.logo}
-                  alt={sponsor.name}
-                  className="h-10 w-auto"
-                />
+                {sponsor.src ? (
+                  <img
+                    src={sponsor.src}
+                    alt={sponsor.alt}
+                    className="max-h-20 w-auto object-contain grayscale group-hover:grayscale-0 transition-all duration-300"
+                  />
+                ) : (
+                  <span className="font-display font-bold text-2xl text-gray-400 group-hover:text-[#2E75B6] transition-colors">
+                    {sponsor.name}
+                  </span>
+                )}
               </div>
             ))}
           </div>
