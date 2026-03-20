@@ -4,69 +4,164 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Link } from 'react-router-dom';
 import {
   ArrowRight,
-  Award,
-  Trophy,
-  Heart,
+  Calendar,
   MapPin,
   Clock,
+  Star,
+  Award,
+  Users,
+  ChevronRight,
+  Play
 } from 'lucide-react';
-import CompetitionCard from '../components/CompetitionCard';
 import HeroSection from '../sections/HeroSection';
 
+// Register GSAP plugin
 gsap.registerPlugin(ScrollTrigger);
 
+// Competition data
+const tourDates = [
+  {
+    id: '1',
+    city: 'SEASIDE, OR',
+    venue: 'Seaside Convention Center',
+    date: 'AUG 22, 2026',
+    time: '8:00 AM',
+    status: 'upcoming',
+    image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop'
+  },
+  {
+    id: '2',
+    city: 'PORTLAND, OR',
+    venue: 'Portland Convention Center',
+    date: 'SEP 12, 2026',
+    time: '9:00 AM',
+    status: 'upcoming',
+    image: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=800&h=600&fit=crop'
+  },
+  {
+    id: '3',
+    city: 'LAS VEGAS, NV',
+    venue: 'MGM Grand',
+    date: 'OCT 15, 2026',
+    time: '10:00 AM',
+    status: 'coming',
+    image: 'https://images.unsplash.com/photo-1581351123004-7579805fb014?w=800&h=600&fit=crop'
+  }
+];
+
+// Promotional cards
+const promoCards = [
+  {
+    id: 1,
+    title: 'SUMMER INTENSIVE',
+    subtitle: 'TRAINING CAMP',
+    description: 'Join our elite summer program',
+    bg: 'from-purple-600 to-purple-900',
+    image: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=600&h=400&fit=crop'
+  },
+  {
+    id: 2,
+    title: 'THE PANEL',
+    subtitle: 'JUDGES & MENTORS',
+    description: 'Meet our industry experts',
+    bg: 'from-pink-600 to-rose-900',
+    image: 'https://images.unsplash.com/photo-1547153760-18fc86324498?w=600&h=400&fit=crop'
+  },
+  {
+    id: 3,
+    title: 'MASTER CLASS',
+    subtitle: 'EXCLUSIVE WORKSHOP',
+    description: 'Learn from the best',
+    bg: 'from-blue-600 to-blue-900',
+    image: 'https://images.unsplash.com/photo-1518834107812-67b0b7c58434?w=600&h=400&fit=crop'
+  }
+];
+
+// Sponsors
+const sponsors = [
+  { name: 'CAPEZIO', logo: 'https://placehold.co/120x40/333/fff?text=CAPEZIO' },
+  { name: 'BLOCH', logo: 'https://placehold.co/120x40/333/fff?text=BLOCH' },
+  { name: 'DANCE SPIRIT', logo: 'https://placehold.co/120x40/333/fff?text=DANCE+SPIRIT' },
+  { name: 'DISNEY', logo: 'https://placehold.co/120x40/333/fff?text=DISNEY' },
+  { name: 'JOFFREY', logo: 'https://placehold.co/120x40/333/fff?text=JOFFREY' }
+];
+
 const Home = () => {
-  const upcomingRef = useRef<HTMLDivElement>(null);
-  const featuresRef = useRef<HTMLDivElement>(null);
-  const ctaRef = useRef<HTMLDivElement>(null);
+  const tourRef = useRef<HTMLDivElement>(null);
+  const featuredRef = useRef<HTMLDivElement>(null);
+  const promoRef = useRef<HTMLDivElement>(null);
+  const aboutRef = useRef<HTMLDivElement>(null);
+  const magazineRef = useRef<HTMLDivElement>(null);
+  const sponsorsRef = useRef<HTMLDivElement>(null);
 
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
-      // Upcoming competitions
-      const cardElements = upcomingRef.current?.querySelectorAll('.competition-card');
-      if (cardElements && cardElements.length > 0) {
+      // Tour dates animation
+      const tourCards = tourRef.current?.querySelectorAll('.tour-card');
+      if (tourCards) {
         gsap.fromTo(
-          cardElements,
+          tourCards,
+          { y: 60, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            duration: 0.8,
+            stagger: 0.15,
+            ease: 'power3.out',
+            scrollTrigger: {
+              trigger: tourRef.current,
+              start: 'top 80%',
+            },
+          }
+        );
+      }
+
+      // Featured section
+      const featuredElements = featuredRef.current?.querySelectorAll('.featured-animate');
+      if (featuredElements) {
+        gsap.fromTo(
+          featuredElements,
           { y: 40, opacity: 0 },
           {
             y: 0,
             opacity: 1,
-            duration: 0.6,
-            stagger: 0.15,
-            ease: 'power2.out',
-            scrollTrigger: {
-              trigger: upcomingRef.current,
-              start: 'top 75%',
-            },
-          }
-        );
-      }
-
-      // Features
-      const featureElements = featuresRef.current?.querySelectorAll('.feature-card');
-      if (featureElements && featureElements.length > 0) {
-        gsap.fromTo(
-          featureElements,
-          { y: 30, opacity: 0 },
-          {
-            y: 0,
-            opacity: 1,
-            duration: 0.6,
+            duration: 0.8,
             stagger: 0.1,
             ease: 'power2.out',
             scrollTrigger: {
-              trigger: featuresRef.current,
+              trigger: featuredRef.current,
               start: 'top 75%',
             },
           }
         );
       }
 
-      // CTA section
-      const ctaElements = ctaRef.current?.querySelectorAll('.cta-animate');
-      if (ctaElements && ctaElements.length > 0) {
+      // Promo cards
+      const promoCards = promoRef.current?.querySelectorAll('.promo-card');
+      if (promoCards) {
         gsap.fromTo(
-          ctaElements,
+          promoCards,
+          { y: 50, opacity: 0, scale: 0.95 },
+          {
+            y: 0,
+            opacity: 1,
+            scale: 1,
+            duration: 0.7,
+            stagger: 0.12,
+            ease: 'power2.out',
+            scrollTrigger: {
+              trigger: promoRef.current,
+              start: 'top 80%',
+            },
+          }
+        );
+      }
+
+      // About section
+      const aboutElements = aboutRef.current?.querySelectorAll('.about-animate');
+      if (aboutElements) {
+        gsap.fromTo(
+          aboutElements,
           { y: 30, opacity: 0 },
           {
             y: 0,
@@ -75,8 +170,28 @@ const Home = () => {
             stagger: 0.1,
             ease: 'power2.out',
             scrollTrigger: {
-              trigger: ctaRef.current,
+              trigger: aboutRef.current,
               start: 'top 75%',
+            },
+          }
+        );
+      }
+
+      // Sponsors
+      const sponsorLogos = sponsorsRef.current?.querySelectorAll('.sponsor-logo');
+      if (sponsorLogos) {
+        gsap.fromTo(
+          sponsorLogos,
+          { y: 20, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            duration: 0.5,
+            stagger: 0.08,
+            ease: 'power2.out',
+            scrollTrigger: {
+              trigger: sponsorsRef.current,
+              start: 'top 85%',
             },
           }
         );
@@ -86,309 +201,88 @@ const Home = () => {
     return () => ctx.revert();
   }, []);
 
-  const upcomingCompetitions = [
-    {
-      id: '1',
-      name: 'The Return of TOPAZ 2.0',
-      subtitle: 'Join us for the return of TOPAZ 2.0',
-      date: 'Saturday, August 22, 2026',
-      time: '8:00 AM – 12:00 PM',
-      location: 'Seaside Convention Center',
-      address: '415 1st Ave, Seaside, OR 97138',
-      registrationDeadline: 'July 22, 2026, 12:00 AM',
-      status: 'open' as const,
-      description: 'Event time: 8:00 AM – 12:00 PM. Join us for the return of TOPAZ 2.0.',
-      image: `${import.meta.env.BASE_URL}images/events/trophy-gold.jpg`,
-    },
-    {
-      id: '2',
-      name: 'National Finals 2026',
-      subtitle: 'The pinnacle of the TOPAZ season',
-      date: 'June 20-22, 2026',
-      location: 'MGM Grand, Las Vegas, NV',
-      registrationDeadline: 'May 31, 2026',
-      status: 'coming' as const,
-      description: 'The pinnacle of the TOPAZ season with national titles.',
-      image: `${import.meta.env.BASE_URL}images/events/competition-2026.jpg`,
-    },
-  ];
-
-  const features = [
-    {
-      icon: Award,
-      title: 'Professional Judging',
-      description:
-        'Experienced judges provide fair evaluation and constructive feedback for all performers.',
-    },
-    {
-      icon: Heart,
-      title: 'Inclusive Community',
-      description:
-        'Welcoming dancers of all ages, backgrounds, and skill levels in a supportive environment.',
-    },
-    {
-      icon: Trophy,
-      title: 'Prestigious Awards',
-      description:
-        'Earn medals, trophies, and scholarships as you progress through the competition season.',
-    },
-  ];
-
   return (
-    <div className="min-h-screen bg-white selection:bg-primary selection:text-white">
+    <div className="min-h-screen bg-[#0a0a0a] selection:bg-[#c9a227] selection:text-black">
       <HeroSection />
 
-      {/* Upcoming Competitions */}
-      <section ref={upcomingRef} id="about" className="py-24 lg:py-40 bg-white">
-        <div className="w-full px-4 sm:px-6 lg:px-12 max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-20">
-            <div className="max-w-2xl">
-              <h2 className="font-display font-black text-4xl sm:text-5xl lg:text-6xl text-[#0a0a0a] mb-6 leading-[1.1]">
-                Upcoming <span className="text-primary italic">Competitions</span>
-              </h2>
-              <p className="text-lg text-gray-500 leading-relaxed">
-                Don't miss your chance to shine on the TOPAZ stage. Join the legacy 
-                of excellence and compete with the best in the industry.
-              </p>
+      {/* TOUR DATES BANNER - Like reference */}
+      <section ref={tourRef} className="relative bg-gradient-to-r from-purple-900 via-purple-700 to-pink-600 py-6 overflow-hidden">
+        <div className="absolute inset-0 bg-black/20" />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="tour-card flex items-center gap-4">
+              <Calendar className="w-8 h-8 text-white" />
+              <div>
+                <h2 className="font-display font-black text-2xl md:text-3xl text-white tracking-tight">
+                  2026/27 TOUR DATES
+                </h2>
+                <p className="text-white/80 text-sm">Join us on the road this season</p>
+              </div>
             </div>
             <Link
               to="/schedule"
-              className="btn-secondary group whitespace-nowrap"
+              className="tour-card inline-flex items-center gap-2 px-6 py-3 bg-white text-purple-900 font-bold text-sm uppercase tracking-wider rounded hover:bg-white/90 transition-all duration-200"
             >
-              View Full Schedule
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              VIEW DATES
+              <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-            {upcomingCompetitions.map((competition) => (
-              <div key={competition.id} className="competition-card group">
-                <div className="relative overflow-hidden rounded-2xl shadow-premium hover:shadow-2xl transition-all duration-700 h-full bg-white border border-gray-100">
-                  <CompetitionCard {...competition} />
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section ref={featuresRef} className="py-24 lg:py-40 bg-[#fcfcfc] border-y border-gray-100 relative overflow-hidden">
-        <div className="w-full px-4 sm:px-6 lg:px-12 max-w-7xl mx-auto relative z-10">
-          <div className="text-center mb-24 max-w-3xl mx-auto">
-            <h2 className="font-display font-black text-4xl sm:text-5xl lg:text-6xl text-[#0a0a0a] mb-8 leading-[1.1]">
-              Why Choose <span className="text-primary">TOPAZ</span>?
-            </h2>
-            <p className="text-lg text-gray-500 leading-relaxed">
-              Experience the difference of a competition built by dancers, for
-              dancers. We provide an unparalleled platform for growth and recognition.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-            {features.map((feature) => (
-              <div
-                key={feature.title}
-                className="feature-card glass-dark hover:bg-black group p-10 rounded-3xl shadow-premium shadow-premium-hover border border-white/5 transition-all duration-700"
-              >
-                <div className="w-20 h-20 bg-primary/10 rounded-2xl flex items-center justify-center mb-10 group-hover:bg-primary group-hover:scale-110 transition-all duration-500">
-                  <feature.icon className="w-10 h-10 text-primary group-hover:text-white transition-colors" />
-                </div>
-                <h3 className="font-display font-bold text-2xl text-white mb-6 group-hover:text-primary transition-colors">
-                  {feature.title}
+      {/* NOW LIVE / FEATURED SECTION - Like reference */}
+      <section ref={featuredRef} className="relative bg-[#0a0a0a] py-16 lg:py-24 overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+            {/* Left - Image/Video */}
+            <div className="featured-animate relative aspect-[4/3] rounded-2xl overflow-hidden group">
+              <img
+                src="https://images.unsplash.com/photo-1547153760-18fc86324498?w=1200&h=900&fit=crop"
+                alt="Featured performance"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+              <div className="absolute bottom-6 left-6 right-6">
+                <span className="inline-block px-3 py-1 bg-[#c9a227] text-black text-xs font-bold uppercase tracking-wider rounded mb-3">
+                  Now Live
+                </span>
+                <h3 className="font-display font-black text-2xl md:text-3xl text-white">
+                  THE REFLECTION TOUR
                 </h3>
-                <p className="text-white/60 leading-relaxed group-hover:text-white/80 transition-colors">
-                  {feature.description}
-                </p>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Explore the Collection - Merchandise Section */}
-      <section className="py-24 lg:py-40 bg-white">
-        <div className="w-full px-4 sm:px-6 lg:px-12 max-w-7xl mx-auto">
-          {/* Heading */}
-          <div className="text-center mb-24 max-w-4xl mx-auto">
-            <h2 className="font-display font-black text-4xl sm:text-5xl lg:text-6xl text-[#0a0a0a] mb-4 uppercase tracking-tighter">
-              Explore the <span className="text-primary italic">Collection</span>
-            </h2>
-            <h3 className="font-mono text-xl md:text-2xl text-primary font-bold tracking-[0.2em]">
-              PRE ORDER NOW!
-            </h3>
-          </div>
-
-          {/* Product Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-20">
-            {/* Product images in app/public/images/products/ */}
-            {[
-              {
-                id: 1,
-                image: `${import.meta.env.BASE_URL}images/products/tshirt-black-1.jpg`,
-                fallback: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800&h=800&fit=crop',
-                name: 'Heritage Tee',
-                subtitle: 'DANCE AND PERFORMING ARTS',
-              },
-              {
-                id: 2,
-                image: `${import.meta.env.BASE_URL}images/products/tshirt-blue-1.jpg`,
-                fallback: 'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=800&h=800&fit=crop',
-                name: 'Performance Blue',
-                subtitle: 'ESTABLISHED 1972',
-              },
-              {
-                id: 3,
-                image: `${import.meta.env.BASE_URL}images/products/tshirt-black-2.jpg`,
-                fallback: 'https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?w=800&h=800&fit=crop',
-                name: 'Legacy Black',
-                subtitle: 'DANCE COMPETITION',
-              },
-              {
-                id: 4,
-                image: `${import.meta.env.BASE_URL}images/products/sweatshirt-black-1.jpg`,
-                fallback: 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=800&h=800&fit=crop',
-                name: 'Signature Hoodie',
-                subtitle: 'THEATRICAL ARTS',
-              },
-            ].map((product) => (
-              <div
-                key={product.id}
-                className="group cursor-pointer"
-              >
-                <div className="aspect-[4/5] bg-gray-100 overflow-hidden rounded-3xl mb-8 relative shadow-premium shadow-premium-hover">
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    loading="lazy"
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000"
-                    onError={(e) => {
-                      e.currentTarget.src = product.fallback;
-                    }}
-                  />
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-500" />
-                  <div className="absolute bottom-6 left-6 right-6 translate-y-12 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all duration-500">
-                    <button className="w-full py-3 bg-white text-black text-sm font-bold uppercase tracking-widest rounded-xl shadow-xl">
-                      Quick View
-                    </button>
-                  </div>
-                </div>
-                <div className="text-center px-4">
-                  <h4 className="font-display font-bold text-xl text-[#0a0a0a] mb-1">
-                    {product.name}
-                  </h4>
-                  <p className="font-mono text-[10px] text-gray-400 uppercase tracking-widest">
-                    {product.subtitle}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Shop Now Button */}
-          <div className="text-center">
-            <button
-              onClick={() => alert('Shop coming soon!')}
-              className="btn-primary"
-            >
-              Shop All Merchandise
-            </button>
-          </div>
-        </div>
-      </section>
-
-      {/* Quick Info Section */}
-      <section className="py-24 lg:py-40 border-t border-gray-100">
-        <div className="w-full px-4 sm:px-6 lg:px-12 max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
-            {/* Left - Image Grid */}
-            <div className="grid grid-cols-2 gap-6 relative">
-              <div className="aspect-[3/4] rounded-3xl overflow-hidden shadow-2xl translate-y-12">
-                <img
-                  src="https://images.unsplash.com/photo-1518834107812-67b0b7c58434?w=600&h=800&fit=crop"
-                  alt="Dance performance"
-                  className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-1000"
-                />
-              </div>
-              <div className="aspect-[3/4] rounded-3xl overflow-hidden shadow-2xl">
-                <img
-                  src="https://images.unsplash.com/photo-1547153760-18fc86324498?w=600&h=800&fit=crop"
-                  alt="Dancer portrait"
-                  className="w-full h-full object-cover transition-all duration-1000"
-                />
-              </div>
-              <div className="aspect-[3/4] rounded-3xl overflow-hidden shadow-2xl translate-y-12">
-                <img
-                  src="https://images.unsplash.com/photo-1535525153412-5a42439a210d?w=600&h=800&fit=crop"
-                  alt="Group dance"
-                  className="w-full h-full object-cover transition-all duration-1000"
-                />
-              </div>
-              <div className="aspect-[3/4] rounded-3xl overflow-hidden shadow-2xl">
-                <img
-                  src="https://images.unsplash.com/photo-1460723237483-7a6dc9d0b212?w=600&h=800&fit=crop"
-                  alt="Dance competition"
-                  className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-1000"
-                />
-              </div>
+              {/* Play button */}
+              <button className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-white/90 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                <Play className="w-6 h-6 text-[#0a0a0a] ml-1" fill="currentColor" />
+              </button>
             </div>
 
-            {/* Right - Info */}
-            <div className="lg:pl-10">
-              <h2 className="font-display font-black text-4xl sm:text-5xl lg:text-6xl text-[#0a0a0a] mb-12 leading-[1.1]">
-                Everything You <span className="text-primary italic">Need</span> to Know
-              </h2>
-              <div className="space-y-10">
-                <div className="flex items-start gap-6 group">
-                  <div className="w-14 h-14 bg-primary/5 rounded-2xl flex items-center justify-center flex-shrink-0 group-hover:bg-primary group-hover:scale-110 transition-all duration-500">
-                    <MapPin className="w-6 h-6 text-primary group-hover:text-white transition-colors" />
-                  </div>
-                  <div>
-                    <h3 className="font-display font-bold text-xl text-[#0a0a0a] mb-2 group-hover:text-primary transition-colors">
-                      Multiple Locations
-                    </h3>
-                    <p className="text-gray-500 leading-relaxed">
-                      Competitions held across the country in world-class venues 
-                      and major metropolitan cities.
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-6 group">
-                  <div className="w-14 h-14 bg-primary/5 rounded-2xl flex items-center justify-center flex-shrink-0 group-hover:bg-primary group-hover:scale-110 transition-all duration-500">
-                    <Clock className="w-6 h-6 text-primary group-hover:text-white transition-colors" />
-                  </div>
-                  <div>
-                    <h3 className="font-display font-bold text-xl text-[#0a0a0a] mb-2 group-hover:text-primary transition-colors">
-                      Flexible Scheduling
-                    </h3>
-                    <p className="text-gray-500 leading-relaxed">
-                      We offer multiple dates throughout the year to perfectly fit 
-                      your studio's competition season.
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-6 group">
-                  <div className="w-14 h-14 bg-primary/5 rounded-2xl flex items-center justify-center flex-shrink-0 group-hover:bg-primary group-hover:scale-110 transition-all duration-500">
-                    <Award className="w-6 h-6 text-primary group-hover:text-white transition-colors" />
-                  </div>
-                  <div>
-                    <h3 className="font-display font-bold text-xl text-[#0a0a0a] mb-2 group-hover:text-primary transition-colors">
-                      Medal Program
-                    </h3>
-                    <p className="text-gray-500 leading-relaxed">
-                      Our unique cumulative scoring system lets dancers earn bronze, 
-                      silver, and gold as they progress.
-                    </p>
-                  </div>
-                </div>
+            {/* Right - Content */}
+            <div className="space-y-6">
+              <div className="featured-animate">
+                <span className="text-[#c9a227] font-mono text-sm tracking-[0.2em] uppercase font-bold">
+                  Featured Event
+                </span>
+                <h2 className="font-display font-black text-4xl md:text-5xl lg:text-6xl text-white mt-2 leading-[1.1]">
+                  READY TO <span className="text-[#c9a227]">REFLECT</span>?
+                </h2>
               </div>
-              <div className="mt-16">
+              <p className="featured-animate text-white/70 text-lg leading-relaxed">
+                Join us for an unforgettable dance experience. The Reflection Tour brings together 
+                the best dancers from across the nation to compete, learn, and grow together.
+              </p>
+              <div className="featured-animate flex flex-wrap gap-4">
                 <Link
-                  to="/rules"
-                  className="btn-primary group"
+                  to="/registration"
+                  className="inline-flex items-center gap-2 px-8 py-4 bg-[#c9a227] text-[#0a0a0a] font-bold text-sm uppercase tracking-wider rounded hover:bg-[#b8921f] transition-all duration-200"
                 >
-                  View All Rules & Categories
-                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  REGISTER NOW
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+                <Link
+                  to="/about"
+                  className="inline-flex items-center gap-2 px-8 py-4 border border-white/30 text-white font-bold text-sm uppercase tracking-wider rounded hover:bg-white/10 transition-all duration-200"
+                >
+                  LEARN MORE
                 </Link>
               </div>
             </div>
@@ -396,40 +290,270 @@ const Home = () => {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section
-        ref={ctaRef}
-        className="py-24 lg:py-40 bg-[#0a0a0a] relative overflow-hidden"
-      >
-        <div className="absolute inset-0 opacity-20 pointer-events-none">
-          <img 
-            src="https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=1600&h=900&fit=crop" 
-            className="w-full h-full object-cover"
-            alt=""
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-transparent to-[#0a0a0a]" />
+      {/* PROMOTIONAL CARDS - Like reference */}
+      <section ref={promoRef} className="relative bg-[#0a0a0a] py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid md:grid-cols-3 gap-4">
+            {promoCards.map((card) => (
+              <div
+                key={card.id}
+                className="promo-card relative h-64 md:h-72 rounded-xl overflow-hidden group cursor-pointer"
+              >
+                <img
+                  src={card.image}
+                  alt={card.title}
+                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                />
+                <div className={`absolute inset-0 bg-gradient-to-br ${card.bg} opacity-80 group-hover:opacity-90 transition-opacity duration-300`} />
+                <div className="absolute inset-0 p-6 flex flex-col justify-between">
+                  <div>
+                    <p className="text-white/80 text-xs font-bold tracking-[0.2em] uppercase">
+                      {card.subtitle}
+                    </p>
+                    <h3 className="font-display font-black text-2xl md:text-3xl text-white mt-1">
+                      {card.title}
+                    </h3>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <p className="text-white/70 text-sm">{card.description}</p>
+                    <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center group-hover:bg-white/30 transition-colors">
+                      <ChevronRight className="w-5 h-5 text-white" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ABOUT / REVELATIONS SECTION - Like reference */}
+      <section ref={aboutRef} className="relative bg-[#0a0a0a] py-20 lg:py-32 overflow-hidden">
+        {/* Background pattern */}
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute inset-0" style={{
+            backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)',
+            backgroundSize: '40px 40px'
+          }} />
         </div>
 
-        <div className="w-full px-4 sm:px-6 lg:px-12 max-w-5xl mx-auto text-center relative z-10">
-          <h2 className="cta-animate font-display font-black text-5xl lg:text-8xl text-white mb-10 tracking-tighter">
-            READY TO TAKE THE <span className="text-primary italic">STAGE</span>?
-          </h2>
-          <p className="cta-animate text-white/60 text-xl lg:text-2xl mb-16 max-w-2xl mx-auto leading-relaxed">
-            Join thousands of dancers who have made TOPAZ their home. 
-            Register today and start your journey.
-          </p>
-          <div className="cta-animate flex flex-wrap justify-center gap-6">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="about-animate font-display font-black text-4xl md:text-5xl lg:text-6xl text-white tracking-tight">
+              TOPAZ <span className="text-[#c9a227]">LEGACY</span>
+            </h2>
+            <div className="about-animate w-24 h-1 bg-[#c9a227] mx-auto mt-6" />
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="about-animate bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10 hover:border-[#c9a227]/30 transition-colors duration-300">
+              <Star className="w-10 h-10 text-[#c9a227] mb-4" />
+              <h3 className="font-display font-bold text-xl text-white mb-3">OVER 50 YEARS</h3>
+              <p className="text-white/60 leading-relaxed">
+                Since 1972, TOPAZ has been the premier dance competition, 
+                nurturing talent and creating unforgettable moments for dancers nationwide.
+              </p>
+            </div>
+
+            <div className="about-animate bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10 hover:border-[#c9a227]/30 transition-colors duration-300">
+              <Award className="w-10 h-10 text-[#c9a227] mb-4" />
+              <h3 className="font-display font-bold text-xl text-white mb-3">PRESTIGIOUS AWARDS</h3>
+              <p className="text-white/60 leading-relaxed">
+                Our unique cumulative scoring system lets dancers earn bronze, 
+                silver, and gold medals as they progress through the competition season.
+              </p>
+            </div>
+
+            <div className="about-animate bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10 hover:border-[#c9a227]/30 transition-colors duration-300">
+              <Users className="w-10 h-10 text-[#c9a227] mb-4" />
+              <h3 className="font-display font-bold text-xl text-white mb-3">INCLUSIVE COMMUNITY</h3>
+              <p className="text-white/60 leading-relaxed">
+                Welcoming dancers of all ages, backgrounds, and skill levels 
+                in a supportive and inspiring environment.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* MAGAZINE / FEATURE SECTION - Like reference */}
+      <section ref={magazineRef} className="relative bg-gradient-to-br from-purple-900 via-[#1a1a3e] to-[#0a0a0a] py-20 lg:py-28 overflow-hidden">
+        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1600&h=900&fit=crop')] opacity-10 bg-cover bg-center" />
+
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* Left - Magazine mockup */}
+            <div className="relative">
+              <div className="relative bg-white rounded-2xl overflow-hidden shadow-2xl transform -rotate-2 hover:rotate-0 transition-transform duration-500">
+                <img
+                  src="https://images.unsplash.com/photo-1518834107812-67b0b7c58434?w=800&h=1000&fit=crop"
+                  alt="TOPAZ Magazine"
+                  className="w-full aspect-[4/5] object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+                <div className="absolute bottom-0 left-0 right-0 p-6">
+                  <span className="inline-block px-3 py-1 bg-[#c9a227] text-black text-xs font-bold uppercase tracking-wider rounded mb-3">
+                    Featured
+                  </span>
+                  <h3 className="font-display font-black text-3xl text-white leading-tight">
+                    DANCE<br/>MAGAZINE
+                  </h3>
+                  <p className="text-white/80 mt-2">NASHVILLE, TN • AUG 15, 2026</p>
+                </div>
+              </div>
+              {/* Decorative elements */}
+              <div className="absolute -top-4 -right-4 w-24 h-24 bg-[#c9a227] rounded-full opacity-20 blur-2xl" />
+              <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-purple-500 rounded-full opacity-20 blur-2xl" />
+            </div>
+
+            {/* Right - Content */}
+            <div className="space-y-6">
+              <span className="text-[#c9a227] font-mono text-sm tracking-[0.2em] uppercase font-bold">
+                Press & Media
+              </span>
+              <h2 className="font-display font-black text-4xl md:text-5xl text-white leading-[1.1]">
+                TOPAZ IN THE <span className="text-[#c9a227]">SPOTLIGHT</span>
+              </h2>
+              <p className="text-white/70 text-lg leading-relaxed">
+                From the trusted brands you know and love, TOPAZ has been featured in leading 
+                dance publications. Our competitions are recognized for excellence, innovation, 
+                and creating opportunities for dancers to shine on the national stage.
+              </p>
+              <div className="flex flex-wrap gap-4 pt-4">
+                <div className="flex items-center gap-3 bg-white/10 rounded-lg px-4 py-3">
+                  <Award className="w-6 h-6 text-[#c9a227]" />
+                  <span className="text-white font-bold">Voted #1 Competition</span>
+                </div>
+                <div className="flex items-center gap-3 bg-white/10 rounded-lg px-4 py-3">
+                  <Star className="w-6 h-6 text-[#c9a227]" />
+                  <span className="text-white font-bold">Industry Leader</span>
+                </div>
+              </div>
+              <button className="inline-flex items-center gap-2 px-8 py-4 bg-[#c9a227] text-[#0a0a0a] font-bold text-sm uppercase tracking-wider rounded hover:bg-[#b8921f] transition-all duration-200 mt-4">
+                READ ARTICLE
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* TOUR DATES CARDS SECTION */}
+      <section className="relative bg-[#0a0a0a] py-20 lg:py-28">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <span className="text-[#c9a227] font-mono text-sm tracking-[0.2em] uppercase font-bold">
+              Upcoming Events
+            </span>
+            <h2 className="font-display font-black text-4xl md:text-5xl text-white mt-4">
+              TOUR <span className="text-[#c9a227]">DATES</span>
+            </h2>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6">
+            {tourDates.map((tour) => (
+              <div
+                key={tour.id}
+                className="group relative bg-gradient-to-b from-white/10 to-white/5 rounded-2xl overflow-hidden border border-white/10 hover:border-[#c9a227]/50 transition-all duration-300"
+              >
+                <div className="aspect-[16/10] overflow-hidden">
+                  <img
+                    src={tour.image}
+                    alt={tour.city}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-transparent to-transparent" />
+                </div>
+                <div className="p-6">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className={`px-3 py-1 text-xs font-bold uppercase tracking-wider rounded ${
+                      tour.status === 'upcoming' ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'
+                    }`}>
+                      {tour.status === 'upcoming' ? 'OPEN' : 'COMING SOON'}
+                    </span>
+                    <span className="text-[#c9a227] font-bold">{tour.date}</span>
+                  </div>
+                  <h3 className="font-display font-black text-2xl text-white mb-1">{tour.city}</h3>
+                  <p className="text-white/60 text-sm mb-4">{tour.venue}</p>
+                  <div className="flex items-center gap-4 text-sm text-white/50">
+                    <span className="flex items-center gap-1">
+                      <Clock className="w-4 h-4" />
+                      {tour.time}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <MapPin className="w-4 h-4" />
+                      Register Now
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="text-center mt-12">
             <Link
               to="/schedule"
-              className="btn-primary !px-12 !py-5 text-lg"
+              className="inline-flex items-center gap-2 px-8 py-4 border border-[#c9a227] text-[#c9a227] font-bold text-sm uppercase tracking-wider rounded hover:bg-[#c9a227] hover:text-[#0a0a0a] transition-all duration-200"
             >
-              Register Now
+              VIEW ALL DATES
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* SPONSORS SECTION - Like reference */}
+      <section ref={sponsorsRef} className="relative bg-[#0a0a0a] py-16 lg:py-20 border-t border-white/10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="font-display font-black text-2xl md:text-3xl text-white tracking-tight">
+              OUR <span className="text-[#c9a227]">SPONSORS</span>
+            </h2>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-center gap-8 md:gap-12">
+            {sponsors.map((sponsor) => (
+              <div
+                key={sponsor.name}
+                className="sponsor-logo opacity-60 hover:opacity-100 transition-opacity duration-300 grayscale hover:grayscale-0"
+              >
+                <img
+                  src={sponsor.logo}
+                  alt={sponsor.name}
+                  className="h-10 w-auto"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FINAL CTA SECTION */}
+      <section className="relative bg-gradient-to-br from-purple-900 via-[#1a1a3e] to-[#0a0a0a] py-20 lg:py-28 overflow-hidden">
+        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=1600&h=900&fit=crop')] opacity-20 bg-cover bg-center" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-transparent to-[#0a0a0a]" />
+
+        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="font-display font-black text-4xl md:text-5xl lg:text-6xl text-white mb-6">
+            READY TO TAKE THE <span className="text-[#c9a227]">STAGE</span>?
+          </h2>
+          <p className="text-white/70 text-lg md:text-xl mb-10 max-w-2xl mx-auto">
+            Join thousands of dancers who have made TOPAZ their home. 
+            Register today and start your journey to excellence.
+          </p>
+          <div className="flex flex-wrap justify-center gap-4">
+            <Link
+              to="/registration"
+              className="inline-flex items-center gap-2 px-10 py-5 bg-[#c9a227] text-[#0a0a0a] font-bold text-sm uppercase tracking-wider rounded hover:bg-[#b8921f] transition-all duration-200"
+            >
+              REGISTER NOW
+              <ArrowRight className="w-5 h-5" />
             </Link>
             <Link
               to="/contact"
-              className="btn-secondary !bg-transparent !text-white !border-white/20 hover:!bg-white/10 !px-12 !py-5 text-lg"
+              className="inline-flex items-center gap-2 px-10 py-5 border border-white/30 text-white font-bold text-sm uppercase tracking-wider rounded hover:bg-white/10 transition-all duration-200"
             >
-              Contact Us
+              CONTACT US
             </Link>
           </div>
         </div>

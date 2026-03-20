@@ -13,7 +13,7 @@ const HeroSection = () => {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // Heading Reveal - Staggered
+      // Heading Reveal
       if (headingRef.current) {
         gsap.fromTo(
           headingRef.current,
@@ -40,7 +40,7 @@ const HeroSection = () => {
         );
       }
 
-      // Scroll Indicator Fade In
+      // Scroll Indicator
       if (scrollRef.current) {
         gsap.fromTo(
           scrollRef.current,
@@ -53,12 +53,9 @@ const HeroSection = () => {
   }, []);
 
   return (
-    <section
-      ref={sectionRef}
-      className="relative bg-white pt-20"
-    >
-      {/* VIDEO SECTION - Balanced, responsive hero media */}
-      <div className="relative h-[50vh] md:h-[55vh] xl:h-[60vh] w-full overflow-hidden bg-black">
+    <section ref={sectionRef} className="relative bg-[#0a0a0a]">
+      {/* VIDEO SECTION - Full width like reference */}
+      <div className="relative h-[55vh] sm:h-[60vh] md:h-[65vh] lg:h-[70vh] w-full overflow-hidden bg-black">
         <video
           autoPlay
           muted
@@ -69,45 +66,37 @@ const HeroSection = () => {
           <source src={SHOWREEL_VIDEO_URL} type="video/mp4" />
         </video>
 
-        {/* Subtle overlay for depth and readability transition into content */}
-        <div className="absolute inset-0 bg-black/25 pointer-events-none" />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/15 via-transparent to-black/35 pointer-events-none" />
-        
-        {/* NO TEXT OR LOGO IN VIDEO - Keep it clean */}
-      </div>
+        {/* Dark overlay for better text contrast */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/60 pointer-events-none" />
 
-      {/* CONTENT SECTION - Bottom part */}
-      <div className="relative bg-white flex flex-col items-center justify-center py-20 lg:py-24 px-6 z-20">
-        <div className="w-full max-w-5xl mx-auto text-center">
+        {/* Hero Content Overlay */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
           <h1
             ref={headingRef}
-            className="font-display font-black text-6xl sm:text-7xl md:text-8xl lg:text-9xl xl:text-[9.5rem] tracking-tighter text-gray-900 leading-[0.88] mb-6"
+            className="font-display font-black text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl tracking-tighter text-white leading-[0.9] mb-4"
           >
-            TOPAZ <span className="text-[#2E75B6] italic relative inline-block">
-              2.0
-              {/* Optional: Subtle glow for the 2.0 */}
-              <div className="absolute inset-0 bg-blue-500/20 blur-3xl rounded-full -z-10" />
-            </span>
+            TOPAZ <span className="text-[#c9a227] italic">2.0</span>
           </h1>
 
           <div
             ref={underlineRef}
-            className="w-32 h-1 bg-[#2E75B6] mx-auto mb-8 rounded-full shadow-lg shadow-blue-500/30"
+            className="w-24 h-1 bg-[#c9a227] mx-auto mb-6 rounded-full"
           />
 
           <p
             ref={taglineRef}
-            className="font-mono text-[11px] sm:text-sm md:text-base tracking-[0.22em] sm:tracking-[0.28em] text-gray-600 uppercase font-bold"
+            className="font-mono text-xs sm:text-sm tracking-[0.3em] text-white/80 uppercase font-bold"
           >
             EST. 1972 • EXCELLENCE IN DANCE
           </p>
         </div>
 
-        <div 
+        {/* Scroll Indicator */}
+        <div
           ref={scrollRef}
-          className="mt-10 md:mt-12 animate-bounce"
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce"
         >
-          <ChevronDown className="w-6 h-6 text-gray-400" aria-hidden />
+          <ChevronDown className="w-8 h-8 text-white/60" aria-hidden />
         </div>
       </div>
     </section>
