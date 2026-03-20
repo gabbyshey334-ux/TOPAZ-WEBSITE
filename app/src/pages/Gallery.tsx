@@ -85,13 +85,25 @@ const Gallery = () => {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero */}
-      <section className="relative bg-[#0a0a0a] py-24 lg:py-32 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-black/60 to-[#0a0a0a]" />
+      <section className="relative bg-[#0a0a0a] py-32 lg:py-48 overflow-hidden">
+        {/* Background Image */}
+        <div className="absolute inset-0 opacity-20">
+          <img
+            src="https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=1600&h=900&fit=crop"
+            className="w-full h-full object-cover grayscale"
+            alt=""
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a] via-transparent to-[#0a0a0a]" />
+        </div>
+
         <div className="relative z-10 max-w-7xl mx-auto px-6 text-center pt-20">
-          <h1 className="font-display font-black text-5xl md:text-6xl lg:text-7xl text-white mb-4">
-            Gallery
+          <p className="font-mono text-primary font-bold tracking-[0.3em] uppercase mb-6">
+            Memories
+          </p>
+          <h1 className="font-display font-black text-5xl sm:text-6xl lg:text-[8rem] text-white leading-[0.85] tracking-tighter uppercase mb-8">
+            Photo <span className="text-primary italic">Gallery</span>
           </h1>
-          <p className="text-white/70 text-lg md:text-xl">Moments from Our Competitions</p>
+          <div className="w-24 h-1 bg-primary mx-auto rounded-full" />
         </div>
       </section>
 
