@@ -12,7 +12,6 @@ export interface ClientLogo {
 
 export interface ClientLogosProps {
   background: 'black' | 'white';
-  heading: string;
   logos: ClientLogo[];
   className?: string;
 }
@@ -51,7 +50,6 @@ function ClientLogoItem({ logo, isBlack }: { logo: ClientLogo; isBlack: boolean 
 
 const ClientLogos = ({
   background,
-  heading,
   logos,
   className = '',
 }: ClientLogosProps) => {

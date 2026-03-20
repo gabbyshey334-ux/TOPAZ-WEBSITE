@@ -123,7 +123,6 @@ const About = () => {
       {/* Section 5: Our Clients (White) */}
       <ClientLogos
         background="white"
-        heading="Our Clients"
         logos={CLIENT_LOGOS}
       />
     </div>
