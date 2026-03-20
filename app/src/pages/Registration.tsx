@@ -48,17 +48,30 @@ const Registration = () => {
     <div className="min-h-screen bg-gray-50">
       
       {/* SECTION 1: HERO */}
-      <section className="relative bg-gradient-to-br from-[#1F4E78] to-[#2E75B6] text-white py-24 lg:py-32 overflow-hidden">
-        <div className="absolute inset-0 bg-[url('/images/topaz-pattern.png')] opacity-10 mix-blend-overlay" />
-        <div className="relative z-10 max-w-4xl mx-auto px-6 text-center pt-16">
-          <h1 className="font-display font-black text-5xl lg:text-7xl mb-6 tracking-tight leading-tight">
-            Competition Registration
-          </h1>
-          <p className="text-xl lg:text-2xl text-blue-100 mb-10 font-medium max-w-2xl mx-auto">
-            Join The Return of TOPAZ 2.0<br/>
-            <span className="text-white/80 text-lg mt-2 block">August 22, 2026 • Seaside Convention Center</span>
+      <section className="relative bg-[#0a0a0a] py-32 lg:py-48 overflow-hidden">
+        {/* Background Image */}
+        <div className="absolute inset-0 opacity-20">
+          <img
+            src="https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=1600&h=900&fit=crop"
+            className="w-full h-full object-cover"
+            alt=""
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a] via-transparent to-[#0a0a0a]" />
+        </div>
+
+        <div className="relative z-10 max-w-4xl mx-auto px-6 text-center pt-20">
+          <p className="font-mono text-primary font-bold tracking-[0.3em] uppercase mb-6">
+            Season 2026
           </p>
-          
+          <h1 className="font-display font-black text-5xl sm:text-6xl lg:text-[8rem] text-white leading-[0.85] tracking-tighter uppercase mb-8">
+            Competition <span className="text-primary italic">Registration</span>
+          </h1>
+          <div className="w-24 h-1 bg-primary mx-auto rounded-full mb-8" />
+          <p className="text-xl text-white/70 max-w-2xl mx-auto mb-10">
+            Join The Return of TOPAZ 2.0<br/>
+            <span className="text-white/60 text-lg mt-2 block">August 22, 2026 • Seaside Convention Center</span>
+          </p>
+
           <a
             href={registrationPdfUrl}
             download="TOPAZ-Registration-Form.pdf"

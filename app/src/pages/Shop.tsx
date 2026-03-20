@@ -119,14 +119,26 @@ const Shop = () => {
     <div className="min-h-screen bg-gray-50">
       
       {/* SECTION 1: HERO */}
-      <section className="relative bg-white py-24 lg:py-32 border-b border-gray-100">
-        <div className="absolute inset-0 bg-[url('/images/topaz-pattern.png')] opacity-5" />
-        <div className="relative z-10 max-w-7xl mx-auto px-6 text-center pt-16">
-          <p className="text-blue-600 font-bold tracking-widest uppercase mb-4">Official Merchandise</p>
-          <h1 className="font-display font-black text-5xl lg:text-7xl text-gray-900 mb-6 tracking-tight">
-            Explore the Collection
+      <section className="relative bg-[#0a0a0a] py-32 lg:py-48 overflow-hidden">
+        {/* Background Image */}
+        <div className="absolute inset-0 opacity-20">
+          <img
+            src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1600&h=900&fit=crop"
+            className="w-full h-full object-cover grayscale"
+            alt=""
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a] via-transparent to-[#0a0a0a]" />
+        </div>
+
+        <div className="relative z-10 max-w-7xl mx-auto px-6 text-center pt-20">
+          <p className="hero-animate font-mono text-primary font-bold tracking-[0.3em] uppercase mb-6">
+            Official Merchandise
+          </p>
+          <h1 className="hero-animate font-display font-black text-5xl sm:text-6xl lg:text-[8rem] text-white leading-[0.85] tracking-tighter uppercase mb-8">
+            Explore the <span className="text-primary italic">Collection</span>
           </h1>
-          <p className="text-xl text-gray-500 mb-8">
+          <div className="hero-animate w-24 h-1 bg-primary mx-auto rounded-full mb-8" />
+          <p className="hero-animate text-xl text-white/70 max-w-2xl mx-auto">
             Pre-order your exclusive TOPAZ gear now!
           </p>
         </div>
