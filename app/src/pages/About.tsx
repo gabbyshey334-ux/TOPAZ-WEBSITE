@@ -66,7 +66,7 @@ const About = () => {
       {/* Section 1: Hero Banner */}
       <section
         ref={heroRef}
-        className="relative bg-[#0a0a0a] py-32 lg:py-48 overflow-hidden"
+        className="relative bg-[#0a0a0a] min-h-screen overflow-hidden flex items-center"
       >
         <div className="absolute inset-0 opacity-20">
           <img 
@@ -77,7 +77,7 @@ const About = () => {
           <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a] via-transparent to-[#0a0a0a]" />
         </div>
 
-        <div className="relative z-10 px-4 sm:px-6 max-w-4xl mx-auto text-center pt-20">
+        <div className="relative z-10 px-4 sm:px-6 max-w-4xl mx-auto text-center">
           <p className="hero-animate font-mono text-primary font-bold tracking-[0.3em] uppercase mb-6">
             ESTABLISHED 1972
           </p>

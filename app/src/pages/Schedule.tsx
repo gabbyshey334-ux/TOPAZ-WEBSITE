@@ -95,7 +95,7 @@ const Schedule = () => {
       {/* Hero Banner */}
       <section
         ref={heroRef}
-        className="relative bg-[#0a0a0a] py-32 lg:py-48 overflow-hidden"
+        className="relative bg-[#0a0a0a] min-h-screen overflow-hidden flex items-center"
       >
         {/* Background visual */}
         <div className="absolute inset-0 opacity-20">
@@ -107,7 +107,7 @@ const Schedule = () => {
           <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a] via-transparent to-[#0a0a0a]" />
         </div>
 
-        <div className="relative w-full px-4 sm:px-6 lg:px-12 max-w-7xl mx-auto text-center z-10 pt-20">
+        <div className="relative w-full px-4 sm:px-6 lg:px-12 max-w-7xl mx-auto text-center z-10">
           <p className="hero-animate font-mono text-primary font-bold tracking-[0.3em] uppercase mb-6">
             Season 2026
           </p>

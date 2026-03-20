@@ -48,7 +48,7 @@ const Registration = () => {
     <div className="min-h-screen bg-gray-50">
       
       {/* SECTION 1: HERO */}
-      <section className="relative bg-[#0a0a0a] py-32 lg:py-48 overflow-hidden">
+      <section className="relative bg-[#0a0a0a] min-h-screen overflow-hidden flex items-center">
         {/* Background Image */}
         <div className="absolute inset-0 opacity-20">
           <img
@@ -59,7 +59,7 @@ const Registration = () => {
           <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a] via-transparent to-[#0a0a0a]" />
         </div>
 
-        <div className="relative z-10 max-w-4xl mx-auto px-6 text-center pt-20">
+        <div className="relative z-10 max-w-4xl mx-auto px-6 text-center">
           <p className="font-mono text-primary font-bold tracking-[0.3em] uppercase mb-6">
             Season 2026
           </p>
