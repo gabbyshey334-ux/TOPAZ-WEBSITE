@@ -53,51 +53,48 @@ const HeroSection = () => {
   }, []);
 
   return (
-    <section ref={sectionRef} className="relative bg-white pt-16">
-      {/* VIDEO SECTION - Full width hero */}
-      <div className="relative h-[55vh] sm:h-[60vh] md:h-[65vh] lg:h-[70vh] w-full overflow-hidden bg-black">
-        <video
-          autoPlay
-          muted
-          loop
-          playsInline
-          className="absolute inset-0 w-full h-full object-cover"
+    <section ref={sectionRef} className="relative min-h-screen w-full overflow-hidden bg-black">
+      <video
+        autoPlay
+        muted
+        loop
+        playsInline
+        className="absolute inset-0 w-full h-full object-cover"
+      >
+        <source src={SHOWREEL_VIDEO_URL} type="video/mp4" />
+      </video>
+
+      {/* Dark overlay for text contrast */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/60 pointer-events-none" />
+
+      {/* Hero Content Overlay */}
+      <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
+        <h1
+          ref={headingRef}
+          className="font-display font-black text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl tracking-tighter text-white leading-[0.9] mb-4"
         >
-          <source src={SHOWREEL_VIDEO_URL} type="video/mp4" />
-        </video>
+          TOPAZ <span className="text-[#2E75B6] italic">2.0</span>
+        </h1>
 
-        {/* Dark overlay for text contrast */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/10 to-black/50 pointer-events-none" />
-
-        {/* Hero Content Overlay */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
-          <h1
-            ref={headingRef}
-            className="font-display font-black text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl tracking-tighter text-white leading-[0.9] mb-4"
-          >
-            TOPAZ <span className="text-[#2E75B6] italic">2.0</span>
-          </h1>
-
-          <div
-            ref={underlineRef}
-            className="w-24 h-1 bg-[#2E75B6] mx-auto mb-6 rounded-full"
-          />
-
-          <p
-            ref={taglineRef}
-            className="font-mono text-xs sm:text-sm tracking-[0.3em] text-white/80 uppercase font-bold"
-          >
-            EST. 1972 • EXCELLENCE IN DANCE
-          </p>
-        </div>
-
-        {/* Scroll Indicator */}
         <div
-          ref={scrollRef}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce"
+          ref={underlineRef}
+          className="w-24 h-1 bg-[#2E75B6] mx-auto mb-6 rounded-full"
+        />
+
+        <p
+          ref={taglineRef}
+          className="font-mono text-xs sm:text-sm tracking-[0.3em] text-white/80 uppercase font-bold"
         >
-          <ChevronDown className="w-8 h-8 text-white/60" aria-hidden />
-        </div>
+          EST. 1972 • EXCELLENCE IN DANCE
+        </p>
+      </div>
+
+      {/* Scroll Indicator */}
+      <div
+        ref={scrollRef}
+        className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce"
+      >
+        <ChevronDown className="w-8 h-8 text-white/60" aria-hidden />
       </div>
     </section>
   );
