@@ -11,23 +11,46 @@ import {
   Award,
   Users,
   ChevronRight,
-  Play
+  Play,
+  Quote
 } from 'lucide-react';
 import HeroSection from '../sections/HeroSection';
 
 // Register GSAP plugin
 gsap.registerPlugin(ScrollTrigger);
 
-// Competition data - only The Return of TOPAZ 2.0
+// Competition data - The Return of TOPAZ 2.0
 const tourDates = [
   {
     id: '1',
     city: 'SEASIDE, OR',
     venue: 'Seaside Convention Center',
-    date: 'AUG 22, 2026',
+    date: 'August 22, 2026',
     time: '8:00 AM',
     status: 'upcoming',
     image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop'
+  }
+];
+
+// Testimonials data
+const testimonials = [
+  {
+    id: 1,
+    quote: "Our dancers attended TOPAZ and had such a FABULOUS time! The faculty were so helpful with everything. Our dancers loved all of the classes so much. It was extremely personal. Teachers tried to learn names and gave personal corrections which is really awesome in a competition setting. The whole event was so professional!",
+    author: "Studio Owner",
+    studio: "Premier Dance Academy"
+  },
+  {
+    id: 2,
+    quote: "My students and parents are still RAVING about TOPAZ! My students had a blast! TOPAZ is truly something special. So organized and their staff is STELLAR! The kids are BEGGING to do all the combos in class. As an educator, I am so pleased with the classes my students received, as well as the entire competition experience.",
+    author: "Studio Owner",
+    studio: "Elite Dance Center"
+  },
+  {
+    id: 3,
+    quote: "Wow! We loved our first TOPAZ weekend! So many of our seasoned advanced dancers said it was their favorite competition weekend to date. Your faculty created a very nurturing vibe, while maintaining challenging classes. Please know how much I appreciate that. I also appreciate that your numbers don't feel too big.",
+    author: "Studio Owner",
+    studio: "Summit Dance Project"
   }
 ];
 
@@ -73,7 +96,7 @@ const Home = () => {
   const featuredRef = useRef<HTMLDivElement>(null);
   const promoRef = useRef<HTMLDivElement>(null);
   const aboutRef = useRef<HTMLDivElement>(null);
-  const magazineRef = useRef<HTMLDivElement>(null);
+  const testimonialsRef = useRef<HTMLDivElement>(null);
   const sponsorsRef = useRef<HTMLDivElement>(null);
 
   useLayoutEffect(() => {
@@ -159,6 +182,26 @@ const Home = () => {
         );
       }
 
+      // Testimonials
+      const testimonialCards = testimonialsRef.current?.querySelectorAll('.testimonial-card');
+      if (testimonialCards) {
+        gsap.fromTo(
+          testimonialCards,
+          { y: 40, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            duration: 0.8,
+            stagger: 0.15,
+            ease: 'power2.out',
+            scrollTrigger: {
+              trigger: testimonialsRef.current,
+              start: 'top 80%',
+            },
+          }
+        );
+      }
+
       // Sponsors
       const sponsorLogos = sponsorsRef.current?.querySelectorAll('.sponsor-logo');
       if (sponsorLogos) {
@@ -187,41 +230,116 @@ const Home = () => {
     <div className="min-h-screen bg-white selection:bg-[#2E75B6] selection:text-white">
       <HeroSection />
 
-      {/* TOUR DATES BANNER - With background image */}
-      <section ref={tourRef} className="relative py-6 overflow-hidden">
+      {/* BIG TOUR SECTION - Featured like Dance Educators Collective */}
+      <section ref={tourRef} className="relative min-h-screen overflow-hidden flex items-center">
         {/* Background Image */}
         <div className="absolute inset-0">
           <img
-            src={`${import.meta.env.BASE_URL}images/events/trophy-gold.jpg`}
+            src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1600&h=900&fit=crop"
             alt="TOPAZ Competition"
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover grayscale"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#1F4E78]/95 to-[#2E75B6]/90" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/80" />
+        </div>
+
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="tour-card space-y-6">
+            <span className="font-mono text-[#2E75B6] font-bold tracking-[0.3em] uppercase text-sm md:text-base">
+              THE RETURN OF
+            </span>
+            
+            <h1 className="font-display font-black text-5xl sm:text-6xl md:text-7xl lg:text-[10rem] text-white leading-[0.85] tracking-tighter uppercase">
+              TOPAZ 2.0
+            </h1>
+
+            <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8 text-white">
+              <div className="flex items-center gap-2">
+                <Calendar className="w-6 h-6 text-[#2E75B6]" />
+                <span className="font-display font-bold text-2xl md:text-4xl uppercase tracking-wide">
+                  August 22, 2026
+                </span>
+              </div>
+              <span className="hidden md:block text-white/40 text-4xl">|</span>
+              <div className="flex items-center gap-2">
+                <MapPin className="w-6 h-6 text-[#2E75B6]" />
+                <span className="font-display font-bold text-2xl md:text-4xl uppercase tracking-wide">
+                  SEASIDE, OR
+                </span>
+              </div>
+            </div>
+
+            <div className="pt-8">
+              <Link
+                to="/registration"
+                className="inline-flex items-center gap-3 px-12 py-5 bg-[#2E75B6] text-white font-bold text-lg uppercase tracking-wider rounded-full hover:bg-[#1F4E78] transition-all duration-300 hover:scale-105"
+              >
+                REGISTER NOW
+                <ArrowRight className="w-6 h-6" />
+              </Link>
+            </div>
+
+            <p className="text-white/60 text-lg max-w-2xl mx-auto pt-4">
+              Seaside Convention Center • 415 1st Ave, Seaside, OR 97138
+            </p>
+          </div>
+        </div>
+
+        {/* Scroll indicator */}
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
+          <ChevronRight className="w-8 h-8 text-white/40 rotate-90" />
+        </div>
+      </section>
+
+      {/* TESTIMONIALS SECTION - Purple background like Dance Educators */}
+      <section ref={testimonialsRef} className="relative bg-[#6B21A8] py-24 lg:py-32 overflow-hidden">
+        {/* Background pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute inset-0" style={{
+            backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)',
+            backgroundSize: '40px 40px'
+          }} />
         </div>
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="tour-card flex items-center gap-4">
-              <Calendar className="w-8 h-8 text-white" />
-              <div>
-                <h2 className="font-display font-black text-2xl md:text-3xl text-white tracking-tight">
-                  2026/27 TOUR DATES
-                </h2>
-                <p className="text-white/80 text-sm">Join us on the road this season</p>
+          <div className="text-center mb-16">
+            <span className="font-mono text-white/60 text-sm tracking-[0.2em] uppercase font-bold">
+              What Studios Say
+            </span>
+            <h2 className="font-display font-black text-4xl md:text-5xl lg:text-6xl text-white tracking-tight mt-4">
+              TESTIMONIALS
+            </h2>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            {testimonials.map((testimonial) => (
+              <div
+                key={testimonial.id}
+                className="testimonial-card relative bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20"
+              >
+                {/* Large quote marks */}
+                <div className="absolute top-4 left-4 text-white/20">
+                  <Quote className="w-12 h-12" />
+                </div>
+                <div className="absolute bottom-4 right-4 text-white/20 rotate-180">
+                  <Quote className="w-12 h-12" />
+                </div>
+
+                <div className="relative z-10 pt-8">
+                  <p className="text-white/90 leading-relaxed text-sm md:text-base mb-8">
+                    {testimonial.quote}
+                  </p>
+                  <div className="border-t border-white/20 pt-4">
+                    <p className="font-bold text-white">{testimonial.author}</p>
+                    <p className="text-white/60 text-sm">{testimonial.studio}</p>
+                  </div>
+                </div>
               </div>
-            </div>
-            <Link
-              to="/schedule"
-              className="tour-card inline-flex items-center gap-2 px-6 py-3 bg-white text-[#2E75B6] font-bold text-sm uppercase tracking-wider rounded hover:bg-white/90 transition-all duration-200"
-            >
-              VIEW DATES
-              <ArrowRight className="w-4 h-4" />
-            </Link>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* NOW LIVE / FEATURED SECTION - White background */}
+      {/* NOW LIVE / FEATURED SECTION */}
       <section ref={featuredRef} className="relative bg-white py-16 lg:py-24 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
@@ -241,7 +359,6 @@ const Home = () => {
                   THE REFLECTION TOUR
                 </h3>
               </div>
-              {/* Play button */}
               <button className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-white/90 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                 <Play className="w-6 h-6 text-[#2E75B6] ml-1" fill="currentColor" />
               </button>
@@ -264,14 +381,14 @@ const Home = () => {
               <div className="featured-animate flex flex-wrap gap-4">
                 <Link
                   to="/registration"
-                  className="inline-flex items-center gap-2 px-8 py-4 bg-[#2E75B6] text-white font-bold text-sm uppercase tracking-wider rounded hover:bg-[#1F4E78] transition-all duration-200"
+                  className="inline-flex items-center gap-2 px-8 py-4 bg-[#2E75B6] text-white font-bold text-sm uppercase tracking-wider rounded-full hover:bg-[#1F4E78] transition-all duration-200"
                 >
                   REGISTER NOW
                   <ArrowRight className="w-4 h-4" />
                 </Link>
                 <Link
                   to="/about"
-                  className="inline-flex items-center gap-2 px-8 py-4 border border-gray-300 text-gray-700 font-bold text-sm uppercase tracking-wider rounded hover:bg-gray-50 transition-all duration-200"
+                  className="inline-flex items-center gap-2 px-8 py-4 border border-gray-300 text-gray-700 font-bold text-sm uppercase tracking-wider rounded-full hover:bg-gray-50 transition-all duration-200"
                 >
                   LEARN MORE
                 </Link>
@@ -281,7 +398,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* PROMOTIONAL CARDS - Gray background */}
+      {/* PROMOTIONAL CARDS */}
       <section ref={promoRef} className="relative bg-gray-50 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-3 gap-4">
@@ -318,7 +435,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* ABOUT / LEGACY SECTION - White background */}
+      {/* ABOUT / LEGACY SECTION */}
       <section ref={aboutRef} className="relative bg-white py-20 lg:py-32 overflow-hidden">
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
@@ -359,69 +476,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* MAGAZINE / FEATURE SECTION - Blue gradient like CTA sections */}
-      <section ref={magazineRef} className="relative bg-gradient-to-br from-[#1F4E78] to-[#2E75B6] py-20 lg:py-28 overflow-hidden">
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1600&h=900&fit=crop')] opacity-10 bg-cover bg-center" />
-
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            {/* Left - Magazine mockup */}
-            <div className="relative">
-              <div className="relative bg-white rounded-2xl overflow-hidden shadow-2xl transform -rotate-2 hover:rotate-0 transition-transform duration-500">
-                <img
-                  src="https://images.unsplash.com/photo-1518834107812-67b0b7c58434?w=800&h=1000&fit=crop"
-                  alt="TOPAZ Magazine"
-                  className="w-full aspect-[4/5] object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
-                <div className="absolute bottom-0 left-0 right-0 p-6">
-                  <span className="inline-block px-3 py-1 bg-[#2E75B6] text-white text-xs font-bold uppercase tracking-wider rounded mb-3">
-                    Featured
-                  </span>
-                  <h3 className="font-display font-black text-3xl text-white leading-tight">
-                    DANCE<br/>MAGAZINE
-                  </h3>
-                  <p className="text-white/80 mt-2">NASHVILLE, TN • AUG 15, 2026</p>
-                </div>
-              </div>
-              {/* Decorative elements */}
-              <div className="absolute -top-4 -right-4 w-24 h-24 bg-[#2E75B6] rounded-full opacity-20 blur-2xl" />
-              <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-white rounded-full opacity-10 blur-2xl" />
-            </div>
-
-            {/* Right - Content */}
-            <div className="space-y-6">
-              <span className="text-white/80 font-mono text-sm tracking-[0.2em] uppercase font-bold">
-                Press & Media
-              </span>
-              <h2 className="font-display font-black text-4xl md:text-5xl text-white leading-[1.1]">
-                TOPAZ IN THE <span className="text-white/90 italic">SPOTLIGHT</span>
-              </h2>
-              <p className="text-white/80 text-lg leading-relaxed">
-                From the trusted brands you know and love, TOPAZ has been featured in leading 
-                dance publications. Our competitions are recognized for excellence, innovation, 
-                and creating opportunities for dancers to shine on the national stage.
-              </p>
-              <div className="flex flex-wrap gap-4 pt-4">
-                <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-lg px-4 py-3">
-                  <Award className="w-6 h-6 text-white" />
-                  <span className="text-white font-bold">Voted #1 Competition</span>
-                </div>
-                <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-lg px-4 py-3">
-                  <Star className="w-6 h-6 text-white" />
-                  <span className="text-white font-bold">Industry Leader</span>
-                </div>
-              </div>
-              <button className="inline-flex items-center gap-2 px-8 py-4 bg-white text-[#2E75B6] font-bold text-sm uppercase tracking-wider rounded hover:bg-white/90 transition-all duration-200 mt-4">
-                READ ARTICLE
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* TOUR DATES CARDS SECTION - White background */}
+      {/* TOUR DATES CARDS SECTION */}
       <section className="relative bg-white py-20 lg:py-28">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
@@ -476,7 +531,7 @@ const Home = () => {
           <div className="text-center mt-12">
             <Link
               to="/schedule"
-              className="inline-flex items-center gap-2 px-8 py-4 border border-[#2E75B6] text-[#2E75B6] font-bold text-sm uppercase tracking-wider rounded hover:bg-[#2E75B6] hover:text-white transition-all duration-200"
+              className="inline-flex items-center gap-2 px-8 py-4 border border-[#2E75B6] text-[#2E75B6] font-bold text-sm uppercase tracking-wider rounded-full hover:bg-[#2E75B6] hover:text-white transition-all duration-200"
             >
               VIEW ALL DATES
               <ArrowRight className="w-4 h-4" />
@@ -485,7 +540,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* SPONSORS SECTION - Professional styling */}
+      {/* SPONSORS SECTION */}
       <section ref={sponsorsRef} className="relative bg-gray-50 py-24 lg:py-32 border-t border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
@@ -521,7 +576,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* FINAL CTA SECTION - Blue gradient */}
+      {/* FINAL CTA SECTION */}
       <section className="relative bg-gradient-to-br from-[#1F4E78] to-[#2E75B6] py-20 lg:py-28 overflow-hidden">
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=1600&h=900&fit=crop')] opacity-20 bg-cover bg-center" />
         <div className="absolute inset-0 bg-gradient-to-t from-[#1F4E78] via-transparent to-[#1F4E78]" />
@@ -537,14 +592,14 @@ const Home = () => {
           <div className="flex flex-wrap justify-center gap-4">
             <Link
               to="/registration"
-              className="inline-flex items-center gap-2 px-10 py-5 bg-white text-[#2E75B6] font-bold text-sm uppercase tracking-wider rounded hover:bg-white/90 transition-all duration-200"
+              className="inline-flex items-center gap-2 px-10 py-5 bg-white text-[#2E75B6] font-bold text-sm uppercase tracking-wider rounded-full hover:bg-white/90 transition-all duration-200"
             >
               REGISTER NOW
               <ArrowRight className="w-5 h-5" />
             </Link>
             <Link
               to="/contact"
-              className="inline-flex items-center gap-2 px-10 py-5 border border-white/30 text-white font-bold text-sm uppercase tracking-wider rounded hover:bg-white/10 transition-all duration-200"
+              className="inline-flex items-center gap-2 px-10 py-5 border border-white/30 text-white font-bold text-sm uppercase tracking-wider rounded-full hover:bg-white/10 transition-all duration-200"
             >
               CONTACT US
             </Link>
