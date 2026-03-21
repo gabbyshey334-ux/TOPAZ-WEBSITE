@@ -187,9 +187,18 @@ const Home = () => {
     <div className="min-h-screen bg-white selection:bg-[#2E75B6] selection:text-white">
       <HeroSection />
 
-      {/* TOUR DATES BANNER - Blue gradient like other pages */}
-      <section ref={tourRef} className="relative bg-gradient-to-r from-[#1F4E78] to-[#2E75B6] py-6 overflow-hidden">
-        <div className="absolute inset-0 bg-black/10" />
+      {/* TOUR DATES BANNER - With background image */}
+      <section ref={tourRef} className="relative py-6 overflow-hidden">
+        {/* Background Image */}
+        <div className="absolute inset-0">
+          <img
+            src={`${import.meta.env.BASE_URL}images/events/trophy-gold.jpg`}
+            alt="TOPAZ Competition"
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#1F4E78]/95 to-[#2E75B6]/90" />
+        </div>
+
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="tour-card flex items-center gap-4">
