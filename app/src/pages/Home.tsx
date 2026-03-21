@@ -18,9 +18,9 @@ import HeroSection from '../sections/HeroSection';
 gsap.registerPlugin(ScrollTrigger);
 
 const BASE = import.meta.env.BASE_URL;
-/** Primary banner logo (updated full logo asset) */
-const TOPAZ_BANNER_LOGO = `${BASE}images/logos/topaz-logo.png`;
-const TOPAZ_BANNER_LOGO_FALLBACK = `${BASE}images/logos/topaz-logo-masks.png`;
+/** Banner logo — theater masks (client asset) */
+const TOPAZ_BANNER_LOGO = `${BASE}images/logos/topaz-logo-masks.png`;
+const TOPAZ_BANNER_LOGO_FALLBACK = `${BASE}images/logos/topaz-logo.png`;
 
 // Testimonials data
 const testimonials = [
