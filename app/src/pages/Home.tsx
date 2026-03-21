@@ -10,8 +10,7 @@ import {
   Award,
   Users,
   ChevronRight,
-  Play,
-  Quote
+  Play
 } from 'lucide-react';
 import HeroSection from '../sections/HeroSection';
 
@@ -435,26 +434,33 @@ const Home = () => {
             </h2>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-3 gap-8 md:gap-12">
             {testimonials.map((testimonial) => (
               <div
                 key={testimonial.id}
-                className="testimonial-card relative bg-white rounded-2xl p-8 border border-white/30 shadow-xl shadow-black/10"
+                className="testimonial-card relative p-8 pt-10 pb-10 flex flex-col justify-between"
               >
-                <div className="absolute top-4 left-4 text-[#2E75B6]/20">
-                  <Quote className="w-12 h-12" />
+                {/* Custom Bracket Borders */}
+                <div className="absolute top-0 right-0 h-[4px] bg-white w-[calc(100%-3.5rem)]" />
+                <div className="absolute top-0 right-0 w-[4px] bg-white h-[calc(100%-3.5rem)]" />
+                <div className="absolute bottom-0 left-0 h-[4px] bg-white w-[calc(100%-3.5rem)]" />
+                <div className="absolute bottom-0 left-0 w-[4px] bg-white h-[calc(100%-3.5rem)]" />
+
+                {/* Typography Quotes */}
+                <div className="absolute top-[-3.5rem] left-[-0.5rem] text-white text-[7rem] font-serif font-black leading-none select-none">
+                  “
                 </div>
-                <div className="absolute bottom-4 right-4 text-[#2E75B6]/20 rotate-180">
-                  <Quote className="w-12 h-12" />
+                <div className="absolute bottom-[-5rem] right-[-0.5rem] text-white text-[7rem] font-serif font-black leading-none select-none">
+                  ”
                 </div>
 
-                <div className="relative z-10 pt-8">
-                  <p className="text-gray-700 leading-relaxed text-sm md:text-base mb-8">
+                <div className="relative z-10 flex-grow flex flex-col justify-between">
+                  <p className="text-white leading-relaxed text-sm md:text-base text-center md:text-justify mb-8 font-medium">
                     {testimonial.quote}
                   </p>
-                  <div className="border-t border-gray-200 pt-4">
-                    <p className="font-bold text-gray-900">{testimonial.author}</p>
-                    <p className="text-[#2E75B6] text-sm font-medium">{testimonial.studio}</p>
+                  <div className="text-right">
+                    <p className="font-bold text-white text-lg">- {testimonial.author}</p>
+                    <p className="text-white/90 text-sm font-medium">{testimonial.studio}</p>
                   </div>
                 </div>
               </div>
