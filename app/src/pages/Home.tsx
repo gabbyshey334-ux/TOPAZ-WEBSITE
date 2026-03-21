@@ -67,13 +67,22 @@ const promoCards = [
   }
 ];
 
-// Sponsors - using client logos from about page
-const sponsors = [
-  { name: 'Client 1', src: `${import.meta.env.BASE_URL}about/client-logo-01.png`, alt: 'Client 1' },
-  { name: 'Client 2', src: `${import.meta.env.BASE_URL}about/client-logo-02.png`, alt: 'Client 2' },
-  { name: 'Client 3', src: `${import.meta.env.BASE_URL}about/client-logo-03.png`, alt: 'Client 3' },
-  { name: 'Client 4', src: `${import.meta.env.BASE_URL}about/client-logo-04.png`, alt: 'Client 4' },
-  { name: 'Client 5', src: `${import.meta.env.BASE_URL}about/client-logo-05.png`, alt: 'Client 5' }
+const comingSoonSections = [
+  {
+    id: 'master-classes',
+    title: 'Master Classes',
+    text: 'Exclusive training opportunities with industry professionals. Stay tuned for announcements.',
+  },
+  {
+    id: 'sponsors',
+    title: 'Our Sponsors',
+    text: "We're proud to partner with leading brands in dance and performing arts. Sponsor information coming soon.",
+  },
+  {
+    id: 'panel',
+    title: 'Panel & Judges',
+    text: 'Meet our distinguished panel of judges and industry experts. Details coming soon.',
+  },
 ];
 
 const Home = () => {
@@ -82,7 +91,7 @@ const Home = () => {
   const promoRef = useRef<HTMLDivElement>(null);
   const aboutRef = useRef<HTMLDivElement>(null);
   const testimonialsRef = useRef<HTMLDivElement>(null);
-  const sponsorsRef = useRef<HTMLDivElement>(null);
+  const comingSoonRef = useRef<HTMLDivElement>(null);
 
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
@@ -186,20 +195,19 @@ const Home = () => {
         );
       }
 
-      // Sponsors
-      const sponsorLogos = sponsorsRef.current?.querySelectorAll('.sponsor-logo');
-      if (sponsorLogos) {
+      const comingSoonCards = comingSoonRef.current?.querySelectorAll('.coming-soon-card');
+      if (comingSoonCards) {
         gsap.fromTo(
-          sponsorLogos,
-          { y: 20, opacity: 0 },
+          comingSoonCards,
+          { y: 28, opacity: 0 },
           {
             y: 0,
             opacity: 1,
-            duration: 0.5,
-            stagger: 0.08,
+            duration: 0.65,
+            stagger: 0.12,
             ease: 'power2.out',
             scrollTrigger: {
-              trigger: sponsorsRef.current,
+              trigger: comingSoonRef.current,
               start: 'top 85%',
             },
           }
@@ -469,36 +477,36 @@ const Home = () => {
         </div>
       </section>
 
-      {/* SPONSORS SECTION */}
-      <section ref={sponsorsRef} className="relative bg-gray-50 py-24 lg:py-32 border-t border-gray-200">
+      {/* COMING SOON — Master Classes, Sponsors, Panel */}
+      <section
+        ref={comingSoonRef}
+        className="relative bg-gray-50 py-20 lg:py-28 border-t border-gray-200"
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
+          <div className="text-center mb-14">
             <span className="text-[#2E75B6] font-mono text-sm tracking-[0.2em] uppercase font-bold">
-              Trusted Partners
+              More to come
             </span>
-            <h2 className="font-display font-black text-4xl md:text-5xl lg:text-6xl text-gray-900 tracking-tight mt-4">
-              OUR <span className="text-[#2E75B6] italic">SPONSORS</span>
+            <h2 className="font-display font-black text-3xl md:text-4xl lg:text-5xl text-gray-900 tracking-tight mt-3">
+              WHAT&apos;S <span className="text-[#2E75B6] italic">NEXT</span>
             </h2>
-            <div className="w-24 h-1 bg-[#2E75B6] mx-auto mt-6" />
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-12 lg:gap-16 items-center justify-items-center">
-            {sponsors.map((sponsor) => (
+          <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
+            {comingSoonSections.map((block) => (
               <div
-                key={sponsor.name}
-                className="sponsor-logo group relative flex items-center justify-center p-8 bg-white rounded-2xl border border-gray-200 hover:border-[#2E75B6]/50 transition-all duration-300 hover:shadow-xl hover:scale-105 min-h-[140px] w-full"
+                key={block.id}
+                className="coming-soon-card flex flex-col rounded-2xl border border-gray-200 bg-white p-8 shadow-sm hover:border-[#2E75B6]/35 hover:shadow-md transition-all duration-300 text-center"
               >
-                {sponsor.src ? (
-                  <img
-                    src={sponsor.src}
-                    alt={sponsor.alt}
-                    className="max-h-20 w-auto object-contain grayscale group-hover:grayscale-0 transition-all duration-300"
-                  />
-                ) : (
-                  <span className="font-display font-bold text-2xl text-gray-400 group-hover:text-[#2E75B6] transition-colors">
-                    {sponsor.name}
-                  </span>
-                )}
+                <span className="inline-flex self-center items-center rounded-full border border-[#2E75B6]/30 bg-[#2E75B6]/5 px-4 py-1 text-xs font-bold uppercase tracking-wider text-[#2E75B6] mb-5">
+                  Coming Soon
+                </span>
+                <h3 className="font-display font-black text-xl md:text-2xl text-gray-900 mb-4 uppercase tracking-tight">
+                  {block.title}
+                </h3>
+                <p className="text-gray-600 text-sm md:text-base leading-relaxed flex-1">
+                  {block.text}
+                </p>
               </div>
             ))}
           </div>

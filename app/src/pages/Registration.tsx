@@ -24,7 +24,7 @@ const Registration = () => {
     },
     {
       question: 'Can I register multiple entries?',
-      answer: 'Yes! Studios with 5+ entries receive a 10% discount. Please submit a separate form for each routine by email to topaz2.0@yahoo.com before the deadline.'
+      answer: 'Yes. Submit a separate registration form for each routine by email to topaz2.0@yahoo.com before the deadline. Fees are per entry or per person as listed in the Entry Fees section and on the official PDF.'
     },
     {
       question: 'What payment methods are accepted?',
@@ -245,27 +245,40 @@ const Registration = () => {
                 <h3 className="font-display font-bold text-2xl text-gray-900">Entry Fees</h3>
               </div>
               <p className="text-sm text-gray-500 mb-6 leading-relaxed">
-                Amounts follow our registration form (PDF)—download above for the official fee schedule and any add-ons.
+                Official rates also appear on the registration PDF. Duo, trio, and groups are priced <strong>per person</strong> unless noted; solo is <strong>per entry</strong>.
               </p>
-              <ul className="space-y-6">
+              <ul className="space-y-5">
                 {[
-                  { label: 'Solo (1 dancer)', price: '$75 per routine' },
-                  { label: 'Duo (2 dancers)', price: '$75 per routine' },
-                  { label: 'Trio (3 dancers)', price: '$75 per routine' },
-                  { label: 'Small Group (4–10)', price: '$100 per routine' },
-                  { label: 'Large Group (11+)', price: '$150 per routine' },
-                  { label: 'Production (10+)', price: '$200 per routine' },
+                  { label: 'Solo', price: '$100 per entry' },
+                  { label: 'Duo', price: '$80 per person', note: '($160 total for 2)' },
+                  { label: 'Trio', price: '$70 per person', note: '($210 total for 3)' },
+                  { label: 'Small Group (4–10)', price: '$60 per person' },
+                  { label: 'Large Group (11+)', price: '$60 per person' },
+                  { label: 'Production', price: '$60 per person' },
                 ].map((item, i) => (
-                  <li key={i} className="flex items-center justify-between border-b border-gray-100 pb-4 last:border-0 last:pb-0">
-                    <span className="text-gray-700 font-medium">{item.label}</span>
-                    <span className="font-bold text-[#2E75B6]">{item.price}</span>
+                  <li key={i} className="border-b border-gray-100 pb-4 last:border-0 last:pb-0">
+                    <div className="flex flex-wrap items-baseline justify-between gap-2">
+                      <span className="text-gray-800 font-semibold">{item.label}</span>
+                      <span className="font-bold text-[#2E75B6] text-right">
+                        {item.price}
+                        {item.note ? (
+                          <span className="block text-sm font-semibold text-gray-600 mt-0.5">{item.note}</span>
+                        ) : null}
+                      </span>
+                    </div>
                   </li>
                 ))}
               </ul>
-              <div className="mt-8 bg-blue-50 rounded-xl p-4 text-center">
-                <p className="text-[#2E75B6] font-semibold text-sm">
-                  ✨ Discounts available for multiple entries
-                </p>
+              <div className="mt-8 rounded-xl border border-gray-200 bg-gray-50 p-5">
+                <p className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-3">Sample totals</p>
+                <ul className="space-y-2 text-sm text-gray-700 leading-snug">
+                  <li>Solo: <strong className="text-[#2E75B6]">$100</strong></li>
+                  <li>Duo (2 people): <strong className="text-[#2E75B6]">$160</strong> total ($80 × 2)</li>
+                  <li>Trio (3 people): <strong className="text-[#2E75B6]">$210</strong> total ($70 × 3)</li>
+                  <li>Small group (5 people): <strong className="text-[#2E75B6]">$300</strong> total ($60 × 5)</li>
+                  <li>Large group (12 people): <strong className="text-[#2E75B6]">$720</strong> total ($60 × 12)</li>
+                  <li>Production (15 people): <strong className="text-[#2E75B6]">$900</strong> total ($60 × 15)</li>
+                </ul>
               </div>
             </div>
 
@@ -287,7 +300,6 @@ const Registration = () => {
             <div className="space-y-12">
               {[
                 { label: 'Registration Opens', date: 'March 1, 2026', status: 'past' },
-                { label: 'Early Bird Deadline', date: 'June 1, 2026', desc: '10% discount', status: 'active' },
                 { label: 'Registration Closes', date: 'July 22, 2026, 12:00 AM', desc: 'No exceptions. No day-of-event registration.', status: 'future', highlight: true },
                 { label: 'Competition Day', date: 'August 22, 2026', status: 'future' }
               ].map((item, i) => (

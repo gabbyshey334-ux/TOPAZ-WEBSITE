@@ -7,12 +7,21 @@ import ClientLogos from '../components/ClientLogos';
 
 gsap.registerPlugin(ScrollTrigger);
 
-/* Images from assets/about – replace files in public/about to update */
+const BASE = import.meta.env.BASE_URL;
+
+/* Pat & Bob founders photo: add public/images/about/pat-bob-founders.jpg (see images/about/README.md) */
 const ABOUT_IMAGES = {
-  aboutUs: `${import.meta.env.BASE_URL}about/about-us.jpg`,
-  ourStory: `${import.meta.env.BASE_URL}about/our-story.jpg`,
-  meetTheTeam: `${import.meta.env.BASE_URL}about/meet-the-team.jpg`,
+  founders: `${BASE}images/about/pat-bob-founders.jpg`,
+  aboutUsFallback: `${BASE}about/about-us.jpg`,
+  ourStoryFallback: `${BASE}about/our-story.jpg`,
+  meetTheTeam: `${BASE}about/meet-the-team.jpg`,
 } as const;
+
+const ABOUT_US_CONTENT =
+  "Topaz has proudly been at the forefront of theatrical arts competitions since 1972. Throughout the years and across numerous cities, we've built a vibrant community of countless studios and thousands of contestants who form our extended Topaz family. Many of the dedicated teachers who now inspire students were once competitors in our events, showcasing the lasting impact of our competitions. Join us in the love for the arts and the journey of growth that it fosters!";
+
+const OUR_STORY_CONTENT =
+  "Pat and Bob Heath were visionaries in the world of theatrical arts, pioneering a competition framework that set a standard for excellence. Their innovative approach not only captured the imagination of audiences but also inspired countless others to adopt and adapt their model. With dedication and passion, their work continues to resonate, proving that great ideas can transcend time and influence generations.\n\nTopaz alumni have had the incredible opportunity to perform alongside legends like Cher, Michael Jackson, Madonna, and The Pointer Sisters, captivating audiences around the globe.\n\nToday, Randy and Ric, the youngest sons, play vital roles in shaping the future of Topaz. While Randy is dedicated to guiding the organization forward, Ric and his wife run a thriving gymnastics school with students competing on the international stage.\n\nThough we mourn the loss of Bob in 2023, Pat remains passionate about Topaz and is currently enjoying her time in Las Vegas.";
 
 /* Client logos: use filenames client-logo-01.png through client-logo-05.png in about/ */
 const CLIENT_LOGO_IMAGES = {
@@ -96,19 +105,20 @@ const About = () => {
         background="black"
         heading="About Us"
         alignment="left"
-        imageSrc={ABOUT_IMAGES.aboutUs}
-        imageAlt="TOPAZ dance competition heritage"
-        content="Topaz has proudly been at the forefront of theatrical arts competitions since 1972. Throughout the years we have extended our family to countless studios and thousands of contestants who have become our extended family. Many of the impactful leaders we now feature—choreographers and celebrities in theater—performed at our competitions in the early days. Just as in the core for the line and the journey that led us full circle."
+        imageSrc={ABOUT_IMAGES.founders}
+        imageFallbackSrc={ABOUT_IMAGES.aboutUsFallback}
+        imageAlt="Pat and Bob Heath — TOPAZ founders"
+        content={ABOUT_US_CONTENT}
       />
 
-      {/* Section 3: Our Story (White) - image left, text right. Use bob-pat-heath.jpg when available. */}
       <TextSection
         background="white"
         heading="Our Story"
         alignment="right"
-        imageSrc={ABOUT_IMAGES.ourStory}
-        imageAlt="Pat and Bob Heath, founders"
-        content="Pat and Bob Heath were visionaries in the world of theatrical arts, pioneering a competition framework that not only redefined excellence. Their innovative approach not only captured the imagination of many but also provided a platform where talent could shine, establishing their model. With that their work excellence continue to resonate, proving that great ideas can transcend time and influence generations."
+        imageSrc={ABOUT_IMAGES.founders}
+        imageFallbackSrc={ABOUT_IMAGES.ourStoryFallback}
+        imageAlt="Pat and Bob Heath dancing — vintage TOPAZ era"
+        content={OUR_STORY_CONTENT}
       />
 
       {/* Section 4: Meet The Team (Black) */}
