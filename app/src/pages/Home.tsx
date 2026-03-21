@@ -215,115 +215,6 @@ const Home = () => {
     <div className="min-h-screen bg-white selection:bg-[#2E75B6] selection:text-white">
       <HeroSection />
 
-      {/* TOUR SECTION - Full screen after hero */}
-      <section ref={tourRef} className="relative min-h-screen overflow-hidden flex items-center">
-        {/* Background Image */}
-        <div className="absolute inset-0">
-          <img
-            src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1600&h=900&fit=crop"
-            alt="TOPAZ Competition"
-            className="w-full h-full object-cover grayscale"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/80" />
-        </div>
-
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="tour-content space-y-6">
-            <span className="font-mono text-[#2E75B6] font-bold tracking-[0.3em] uppercase text-sm md:text-base">
-              THE RETURN OF
-            </span>
-            
-            <h1 className="font-display font-black text-5xl sm:text-6xl md:text-7xl lg:text-[10rem] text-white leading-[0.85] tracking-tighter uppercase">
-              TOPAZ 2.0
-            </h1>
-
-            <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8 text-white">
-              <div className="flex items-center gap-2">
-                <Calendar className="w-6 h-6 text-[#2E75B6]" />
-                <span className="font-display font-bold text-2xl md:text-4xl uppercase tracking-wide">
-                  August 22, 2026
-                </span>
-              </div>
-              <span className="hidden md:block text-white/40 text-4xl">|</span>
-              <div className="flex items-center gap-2">
-                <MapPin className="w-6 h-6 text-[#2E75B6]" />
-                <span className="font-display font-bold text-2xl md:text-4xl uppercase tracking-wide">
-                  SEASIDE, OR
-                </span>
-              </div>
-            </div>
-
-            <div className="pt-8">
-              <Link
-                to="/registration"
-                className="inline-flex items-center gap-3 px-12 py-5 bg-[#2E75B6] text-white font-bold text-lg uppercase tracking-wider rounded-full hover:bg-[#1F4E78] transition-all duration-300 hover:scale-105"
-              >
-                REGISTER NOW
-                <ArrowRight className="w-6 h-6" />
-              </Link>
-            </div>
-
-            <p className="text-white/60 text-lg max-w-2xl mx-auto pt-4">
-              Seaside Convention Center • 415 1st Ave, Seaside, OR 97138
-            </p>
-          </div>
-        </div>
-
-        {/* Scroll indicator */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
-          <ChevronRight className="w-8 h-8 text-white/40 rotate-90" />
-        </div>
-      </section>
-
-      {/* TESTIMONIALS SECTION - After Tour */}
-      <section ref={testimonialsRef} className="relative bg-[#6B21A8] py-24 lg:py-32 overflow-hidden">
-        {/* Background pattern */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute inset-0" style={{
-            backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)',
-            backgroundSize: '40px 40px'
-          }} />
-        </div>
-
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <span className="font-mono text-white/60 text-sm tracking-[0.2em] uppercase font-bold">
-              What Studios Say
-            </span>
-            <h2 className="font-display font-black text-4xl md:text-5xl lg:text-6xl text-white tracking-tight mt-4">
-              TESTIMONIALS
-            </h2>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial) => (
-              <div
-                key={testimonial.id}
-                className="testimonial-card relative bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20"
-              >
-                {/* Large quote marks */}
-                <div className="absolute top-4 left-4 text-white/20">
-                  <Quote className="w-12 h-12" />
-                </div>
-                <div className="absolute bottom-4 right-4 text-white/20 rotate-180">
-                  <Quote className="w-12 h-12" />
-                </div>
-
-                <div className="relative z-10 pt-8">
-                  <p className="text-white/90 leading-relaxed text-sm md:text-base mb-8">
-                    {testimonial.quote}
-                  </p>
-                  <div className="border-t border-white/20 pt-4">
-                    <p className="font-bold text-white">{testimonial.author}</p>
-                    <p className="text-white/60 text-sm">{testimonial.studio}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* NOW LIVE / FEATURED SECTION */}
       <section ref={featuredRef} className="relative bg-white py-16 lg:py-24 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -457,6 +348,117 @@ const Home = () => {
                 in a supportive and inspiring environment.
               </p>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* TOUR SECTION - After TOPAZ Legacy */}
+      <section ref={tourRef} className="relative min-h-screen overflow-hidden flex items-center">
+        <div className="absolute inset-0">
+          <img
+            src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1600&h=900&fit=crop"
+            alt="TOPAZ Competition"
+            className="w-full h-full object-cover grayscale"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/80" />
+        </div>
+
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="tour-content space-y-6">
+            <span className="font-mono text-[#2E75B6] font-bold tracking-[0.3em] uppercase text-sm md:text-base">
+              THE RETURN OF
+            </span>
+
+            <h1 className="font-display font-black text-5xl sm:text-6xl md:text-7xl lg:text-[10rem] text-white leading-[0.85] tracking-tighter uppercase">
+              TOPAZ 2.0
+            </h1>
+
+            <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8 text-white">
+              <div className="flex items-center gap-2">
+                <Calendar className="w-6 h-6 text-[#2E75B6]" />
+                <span className="font-display font-bold text-2xl md:text-4xl uppercase tracking-wide">
+                  August 22, 2026
+                </span>
+              </div>
+              <span className="hidden md:block text-white/40 text-4xl">|</span>
+              <div className="flex items-center gap-2">
+                <MapPin className="w-6 h-6 text-[#2E75B6]" />
+                <span className="font-display font-bold text-2xl md:text-4xl uppercase tracking-wide">
+                  SEASIDE, OR
+                </span>
+              </div>
+            </div>
+
+            <div className="pt-8">
+              <Link
+                to="/registration"
+                className="inline-flex items-center gap-3 px-12 py-5 bg-[#2E75B6] text-white font-bold text-lg uppercase tracking-wider rounded-full hover:bg-[#1F4E78] transition-all duration-300 hover:scale-105"
+              >
+                REGISTER NOW
+                <ArrowRight className="w-6 h-6" />
+              </Link>
+            </div>
+
+            <p className="text-white/60 text-lg max-w-2xl mx-auto pt-4">
+              Seaside Convention Center • 415 1st Ave, Seaside, OR 97138
+            </p>
+          </div>
+        </div>
+
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
+          <ChevronRight className="w-8 h-8 text-white/40 rotate-90" />
+        </div>
+      </section>
+
+      {/* TESTIMONIALS - Brand blue (after Tour) */}
+      <section
+        ref={testimonialsRef}
+        className="relative bg-gradient-to-br from-[#1F4E78] via-[#2E75B6] to-[#1F4E78] py-24 lg:py-32 overflow-hidden"
+      >
+        <div className="absolute inset-0 opacity-[0.12]">
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)',
+              backgroundSize: '40px 40px',
+            }}
+          />
+        </div>
+
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <span className="font-mono text-white/80 text-sm tracking-[0.2em] uppercase font-bold">
+              What Studios Say
+            </span>
+            <h2 className="font-display font-black text-4xl md:text-5xl lg:text-6xl text-white tracking-tight mt-4">
+              TESTIMONIALS
+            </h2>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            {testimonials.map((testimonial) => (
+              <div
+                key={testimonial.id}
+                className="testimonial-card relative bg-white rounded-2xl p-8 border border-white/30 shadow-xl shadow-black/10"
+              >
+                <div className="absolute top-4 left-4 text-[#2E75B6]/20">
+                  <Quote className="w-12 h-12" />
+                </div>
+                <div className="absolute bottom-4 right-4 text-[#2E75B6]/20 rotate-180">
+                  <Quote className="w-12 h-12" />
+                </div>
+
+                <div className="relative z-10 pt-8">
+                  <p className="text-gray-700 leading-relaxed text-sm md:text-base mb-8">
+                    {testimonial.quote}
+                  </p>
+                  <div className="border-t border-gray-200 pt-4">
+                    <p className="font-bold text-gray-900">{testimonial.author}</p>
+                    <p className="text-[#2E75B6] text-sm font-medium">{testimonial.studio}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
