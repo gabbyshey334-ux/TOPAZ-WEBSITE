@@ -24,9 +24,9 @@ const CLIENT_LOGO_IMAGES = {
 } as const;
 
 const TEAM_MEMBERS = [
-  { role: 'Vice President', name: 'TBD' },
-  { role: 'Founder', name: 'TBD' },
-  { role: 'President', name: 'TBD' },
+  { role: 'President' },
+  { role: 'Vice President' },
+  { role: 'Founder' },
 ];
 
 /* Add src when you add client-logo-01.png … client-logo-05.png to public/about/ */

@@ -244,12 +244,17 @@ const Registration = () => {
                 </div>
                 <h3 className="font-display font-bold text-2xl text-gray-900">Entry Fees</h3>
               </div>
+              <p className="text-sm text-gray-500 mb-6 leading-relaxed">
+                Amounts follow our registration form (PDF)—download above for the official fee schedule and any add-ons.
+              </p>
               <ul className="space-y-6">
                 {[
-                  { label: 'Solo/Duo/Trio', price: '$75 per entry' },
-                  { label: 'Small Group (4-10)', price: '$100 per entry' },
-                  { label: 'Large Group (11+)', price: '$150 per entry' },
-                  { label: 'Production', price: '$200 per entry' }
+                  { label: 'Solo (1 dancer)', price: '$75 per routine' },
+                  { label: 'Duo (2 dancers)', price: '$75 per routine' },
+                  { label: 'Trio (3 dancers)', price: '$75 per routine' },
+                  { label: 'Small Group (4–10)', price: '$100 per routine' },
+                  { label: 'Large Group (11+)', price: '$150 per routine' },
+                  { label: 'Production (10+)', price: '$200 per routine' },
                 ].map((item, i) => (
                   <li key={i} className="flex items-center justify-between border-b border-gray-100 pb-4 last:border-0 last:pb-0">
                     <span className="text-gray-700 font-medium">{item.label}</span>

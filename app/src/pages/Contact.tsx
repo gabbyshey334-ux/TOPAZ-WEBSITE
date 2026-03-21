@@ -5,7 +5,6 @@ import {
   Mail,
   Phone,
   MapPin,
-  Clock,
   Facebook,
   Instagram,
   Twitter,
@@ -127,11 +126,6 @@ const Contact = () => {
         label: 'Get Directions',
         href: 'https://maps.google.com/?q=PO+BOX+131+BANKS+OR+97106',
       },
-    },
-    {
-      icon: Clock,
-      title: 'Office Hours',
-      content: 'Mon-Fri: 9AM-6PM\nSat: 10AM-4PM\nSun: Closed',
     },
   ];
 

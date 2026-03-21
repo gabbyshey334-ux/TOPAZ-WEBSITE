@@ -103,9 +103,11 @@ const TeamSection = ({
                 </p>
                 <div className="h-1 bg-primary scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left mt-1" />
               </div>
-              <p className="text-lg font-mono text-white/40 uppercase tracking-widest mt-2">
-                {member.name ?? 'TBD'}
-              </p>
+              {member.name ? (
+                <p className="text-lg font-mono text-white/40 uppercase tracking-widest mt-2">
+                  {member.name}
+                </p>
+              ) : null}
             </div>
           ))}
         </div>

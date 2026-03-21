@@ -91,7 +91,7 @@ const CompetitionCard = ({
           </div>
         </div>
 
-        <div className="flex items-start gap-4">
+        <div className="flex flex-col items-center text-center gap-3 sm:flex-row sm:items-start sm:text-left sm:gap-4">
           <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center">
             <MapPin className="w-6 h-6 text-blue-600" />
           </div>
@@ -150,7 +150,7 @@ const CompetitionCard = ({
               <img
                 src={imgSrc}
                 alt={name}
-                className="absolute inset-0 w-full h-full object-cover"
+                className="absolute inset-0 w-full h-full object-cover object-center scale-[1.08] rotate-[1.25deg]"
                 onError={() => setImgError(true)}
               />
               <div className="absolute inset-0 bg-gradient-to-r from-black/10 via-transparent to-transparent" />

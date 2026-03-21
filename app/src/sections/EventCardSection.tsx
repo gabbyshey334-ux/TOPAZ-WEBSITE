@@ -89,12 +89,12 @@ const EventCardSection = () => {
         {/* Left Image Panel */}
         <div
           ref={imageRef}
-          className="relative h-[45vh] lg:h-full overflow-hidden"
+          className="relative h-[45vh] lg:h-full overflow-hidden bg-black"
         >
           <img
             src={`${import.meta.env.BASE_URL}images/events/trophy-gold.jpg`}
             alt="The Return of TOPAZ 2.0"
-            className="w-full h-full object-cover img-monochrome"
+            className="w-full h-full object-cover object-center img-monochrome scale-[1.08] rotate-[1.25deg]"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-transparent to-background/20 lg:to-background/40" />
         </div>
@@ -118,13 +118,13 @@ const EventCardSection = () => {
                 <Calendar className="w-5 h-5 text-primary" />
                 <span className="text-foreground">Sat, Aug 22, 2026</span>
               </div>
-              <div className="flex items-center gap-3">
-                <MapPin className="w-5 h-5 text-primary" />
+              <div className="flex flex-col items-center text-center gap-2 w-full">
+                <MapPin className="w-5 h-5 text-primary shrink-0" aria-hidden />
                 <div>
-                  <span className="text-foreground block">
+                  <span className="text-foreground block font-semibold">
                     Seaside Convention Center
                   </span>
-                  <span className="text-muted-foreground text-sm">
+                  <span className="text-muted-foreground text-sm block">
                     415 1st Ave, Seaside, OR
                   </span>
                 </div>
