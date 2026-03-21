@@ -6,7 +6,6 @@ import {
   ArrowRight,
   Calendar,
   MapPin,
-  Clock,
   Star,
   Award,
   Users,
@@ -18,19 +17,6 @@ import HeroSection from '../sections/HeroSection';
 
 // Register GSAP plugin
 gsap.registerPlugin(ScrollTrigger);
-
-// Competition data - The Return of TOPAZ 2.0
-const tourDates = [
-  {
-    id: '1',
-    city: 'SEASIDE, OR',
-    venue: 'Seaside Convention Center',
-    date: 'August 22, 2026',
-    time: '8:00 AM',
-    status: 'upcoming',
-    image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop'
-  }
-];
 
 // Testimonials data
 const testimonials = [
@@ -101,17 +87,16 @@ const Home = () => {
 
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
-      // Tour dates animation
-      const tourCards = tourRef.current?.querySelectorAll('.tour-card');
-      if (tourCards) {
+      // Tour section animation
+      const tourSection = tourRef.current?.querySelector('.tour-content');
+      if (tourSection) {
         gsap.fromTo(
-          tourCards,
+          tourSection,
           { y: 60, opacity: 0 },
           {
             y: 0,
             opacity: 1,
             duration: 0.8,
-            stagger: 0.15,
             ease: 'power3.out',
             scrollTrigger: {
               trigger: tourRef.current,
@@ -230,7 +215,7 @@ const Home = () => {
     <div className="min-h-screen bg-white selection:bg-[#2E75B6] selection:text-white">
       <HeroSection />
 
-      {/* BIG TOUR SECTION - Featured like Dance Educators Collective */}
+      {/* TOUR SECTION - Full screen after hero */}
       <section ref={tourRef} className="relative min-h-screen overflow-hidden flex items-center">
         {/* Background Image */}
         <div className="absolute inset-0">
@@ -243,7 +228,7 @@ const Home = () => {
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="tour-card space-y-6">
+          <div className="tour-content space-y-6">
             <span className="font-mono text-[#2E75B6] font-bold tracking-[0.3em] uppercase text-sm md:text-base">
               THE RETURN OF
             </span>
@@ -290,7 +275,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* TESTIMONIALS SECTION - Purple background like Dance Educators */}
+      {/* TESTIMONIALS SECTION - After Tour */}
       <section ref={testimonialsRef} className="relative bg-[#6B21A8] py-24 lg:py-32 overflow-hidden">
         {/* Background pattern */}
         <div className="absolute inset-0 opacity-10">
@@ -472,98 +457,6 @@ const Home = () => {
                 in a supportive and inspiring environment.
               </p>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* TOUR DATES CARDS SECTION - Big Featured Event */}
-      <section className="relative bg-[#0a0a0a] py-24 lg:py-32 overflow-hidden">
-        {/* Background */}
-        <div className="absolute inset-0 opacity-30">
-          <img
-            src="https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=1600&h=900&fit=crop"
-            alt="Dance performance"
-            className="w-full h-full object-cover grayscale"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a] via-[#0a0a0a]/80 to-[#0a0a0a]" />
-        </div>
-
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <span className="font-mono text-[#2E75B6] text-sm tracking-[0.3em] uppercase font-bold">
-              Mark Your Calendar
-            </span>
-            <h2 className="font-display font-black text-5xl md:text-6xl lg:text-7xl text-white tracking-tight mt-4 uppercase">
-              TOUR <span className="text-[#2E75B6] italic">DATES</span>
-            </h2>
-            <div className="w-32 h-1 bg-[#2E75B6] mx-auto mt-8" />
-          </div>
-
-          {/* Featured Event Card */}
-          <div className="max-w-4xl mx-auto">
-            <div className="group relative bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-3xl overflow-hidden border border-white/20 hover:border-[#2E75B6]/50 transition-all duration-500">
-              {/* Image Section */}
-              <div className="relative aspect-[21/9] overflow-hidden">
-                <img
-                  src={tourDates[0].image}
-                  alt={tourDates[0].city}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-transparent to-transparent" />
-                
-                {/* Status Badge */}
-                <div className="absolute top-6 left-6">
-                  <span className="px-4 py-2 bg-green-500 text-white text-sm font-bold uppercase tracking-wider rounded-full">
-                    Registration Open
-                  </span>
-                </div>
-              </div>
-
-              {/* Content Section */}
-              <div className="p-8 lg:p-12">
-                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-                  <div>
-                    <h3 className="font-display font-black text-4xl md:text-5xl lg:text-6xl text-white uppercase tracking-tight">
-                      {tourDates[0].city}
-                    </h3>
-                    <p className="text-white/60 text-lg mt-2">{tourDates[0].venue}</p>
-                  </div>
-                  
-                  <div className="flex flex-col items-start lg:items-end gap-2">
-                    <span className="text-[#2E75B6] font-display font-bold text-3xl md:text-4xl uppercase">
-                      {tourDates[0].date}
-                    </span>
-                    <span className="text-white/60 text-lg flex items-center gap-2">
-                      <Clock className="w-5 h-5" />
-                      {tourDates[0].time}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="border-t border-white/10 mt-8 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-                  <p className="text-white/50 text-sm">
-                    415 1st Ave, Seaside, OR 97138
-                  </p>
-                  <Link
-                    to="/registration"
-                    className="inline-flex items-center gap-3 px-8 py-4 bg-[#2E75B6] text-white font-bold text-sm uppercase tracking-wider rounded-full hover:bg-[#1F4E78] transition-all duration-300 hover:scale-105"
-                  >
-                    REGISTER NOW
-                    <ArrowRight className="w-5 h-5" />
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="text-center mt-16">
-            <Link
-              to="/schedule"
-              className="inline-flex items-center gap-3 px-10 py-5 border-2 border-white/30 text-white font-bold text-sm uppercase tracking-wider rounded-full hover:bg-white/10 transition-all duration-300"
-            >
-              VIEW FULL SCHEDULE
-              <ArrowRight className="w-5 h-5" />
-            </Link>
           </div>
         </div>
       </section>
