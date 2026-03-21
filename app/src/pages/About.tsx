@@ -9,11 +9,12 @@ gsap.registerPlugin(ScrollTrigger);
 
 const BASE = import.meta.env.BASE_URL;
 
-/* Pat & Bob founders photo: add public/images/about/pat-bob-founders.jpg (see images/about/README.md) */
+/* About Us: pat-bob founders; Our Story: classic our-story.jpg (see public/about/) */
 const ABOUT_IMAGES = {
   founders: `${BASE}images/about/pat-bob-founders.jpg`,
   aboutUsFallback: `${BASE}about/about-us.jpg`,
-  ourStoryFallback: `${BASE}about/our-story.jpg`,
+  ourStory: `${BASE}about/our-story.jpg`,
+  ourStoryFallback: `${BASE}images/about/pat-bob-founders.jpg`,
   meetTheTeam: `${BASE}about/meet-the-team.jpg`,
 } as const;
 
@@ -115,9 +116,9 @@ const About = () => {
         background="white"
         heading="Our Story"
         alignment="right"
-        imageSrc={ABOUT_IMAGES.founders}
+        imageSrc={ABOUT_IMAGES.ourStory}
         imageFallbackSrc={ABOUT_IMAGES.ourStoryFallback}
-        imageAlt="Pat and Bob Heath dancing — vintage TOPAZ era"
+        imageAlt="TOPAZ — our story"
         content={OUR_STORY_CONTENT}
       />
 
