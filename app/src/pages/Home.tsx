@@ -18,9 +18,9 @@ import HeroSection from '../sections/HeroSection';
 gsap.registerPlugin(ScrollTrigger);
 
 const BASE = import.meta.env.BASE_URL;
-/** Client-requested masks logo for split promo banner */
-const TOPAZ_MASKS_LOGO = `${BASE}images/logos/topaz-logo-masks.png`;
-const TOPAZ_MASKS_LOGO_FALLBACK = `${BASE}images/logos/topaz-masks-only.png`;
+/** Primary banner logo (updated full logo asset) */
+const TOPAZ_BANNER_LOGO = `${BASE}images/logos/topaz-logo.png`;
+const TOPAZ_BANNER_LOGO_FALLBACK = `${BASE}images/logos/topaz-logo-masks.png`;
 
 // Testimonials data
 const testimonials = [
@@ -508,40 +508,34 @@ const Home = () => {
         className="relative overflow-hidden border-y border-white/10"
         aria-labelledby="split-banner-heading"
       >
-        <div className="absolute inset-0">
-          <img
-            src="https://images.unsplash.com/photo-1477959858617-67f85cf4f290?w=1920&h=900&fit=crop"
-            alt=""
-            className="h-full w-full scale-105 object-cover object-center"
-          />
-          {/* Layer 1: deep purple / magenta (educators-collective reference) */}
-          <div
-            className="absolute inset-0 bg-[#4a0e6e]/80 mix-blend-multiply"
-            aria-hidden
-          />
-          {/* Layer 2: blue shift + depth (second reference / TOPAZ brand) */}
-          <div
-            className="absolute inset-0 bg-gradient-to-br from-[#312e81]/75 via-[#5b21b6]/55 to-[#1e3a8a]/80"
-            aria-hidden
-          />
-          <div className="absolute inset-0 bg-black/20" aria-hidden />
-        </div>
+        {/* TOPAZ site colors only — no photo overlay */}
+        <div
+          className="absolute inset-0 bg-gradient-to-br from-[#1F4E78] via-[#2E75B6] to-[#1F4E78]"
+          aria-hidden
+        />
+        <div
+          className="absolute inset-0 opacity-[0.08]"
+          style={{
+            backgroundImage: 'radial-gradient(circle at 30% 20%, white 0, transparent 45%), radial-gradient(circle at 80% 80%, white 0, transparent 40%)',
+          }}
+          aria-hidden
+        />
 
         <div className="relative z-10 mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-10 lg:py-28">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16 xl:gap-24">
             {/* Left: white frame = logo only; city + dates sit BELOW frame (Revel layout) */}
             <div className="split-banner-animate flex flex-col gap-4 sm:gap-5">
-              <div className="flex min-h-[260px] items-center justify-center border-4 border-white bg-black/15 px-8 py-10 shadow-[0_20px_60px_rgba(0,0,0,0.35)] backdrop-blur-[1px] sm:min-h-[300px] sm:px-10 sm:py-12 lg:min-h-[320px]">
+              <div className="flex min-h-[320px] items-center justify-center border-4 border-white bg-black/10 px-6 py-12 shadow-[0_20px_60px_rgba(0,0,0,0.25)] sm:min-h-[380px] sm:px-10 sm:py-14 lg:min-h-[440px] lg:px-12 lg:py-16">
                 <img
-                  src={TOPAZ_MASKS_LOGO}
-                  alt="TOPAZ theatrical masks logo"
-                  className="max-h-40 w-auto max-w-full object-contain sm:max-h-48 lg:max-h-56"
+                  src={TOPAZ_BANNER_LOGO}
+                  alt="TOPAZ logo"
+                  className="h-auto w-full max-w-[min(100%,420px)] object-contain sm:max-w-[min(100%,480px)] lg:max-w-[min(100%,560px)] xl:max-w-[min(100%,640px)]"
                   data-fallback-tried=""
                   onError={(e) => {
                     const el = e.currentTarget;
                     if (!el.dataset.fallbackTried) {
                       el.dataset.fallbackTried = '1';
-                      el.src = TOPAZ_MASKS_LOGO_FALLBACK;
+                      el.src = TOPAZ_BANNER_LOGO_FALLBACK;
                     }
                   }}
                 />
@@ -571,7 +565,7 @@ const Home = () => {
               <div className="pt-2">
                 <Link
                   to="/about"
-                  className="inline-flex items-center justify-center rounded-full border-2 border-white bg-transparent px-10 py-3.5 text-xs font-bold uppercase tracking-[0.22em] text-white transition-all duration-300 hover:bg-white hover:text-[#312e81] sm:text-sm"
+                  className="inline-flex items-center justify-center rounded-full border-2 border-white bg-transparent px-10 py-3.5 text-xs font-bold uppercase tracking-[0.22em] text-white transition-all duration-300 hover:bg-white hover:text-[#1F4E78] sm:text-sm"
                 >
                   Learn More
                 </Link>
