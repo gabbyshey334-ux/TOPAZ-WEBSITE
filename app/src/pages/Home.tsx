@@ -17,6 +17,11 @@ import HeroSection from '../sections/HeroSection';
 // Register GSAP plugin
 gsap.registerPlugin(ScrollTrigger);
 
+const BASE = import.meta.env.BASE_URL;
+/** Client-requested masks logo for split promo banner */
+const TOPAZ_MASKS_LOGO = `${BASE}images/logos/topaz-logo-masks.png`;
+const TOPAZ_MASKS_LOGO_FALLBACK = `${BASE}images/logos/topaz-masks-only.png`;
+
 // Testimonials data
 const testimonials = [
   {
@@ -91,6 +96,7 @@ const Home = () => {
   const promoRef = useRef<HTMLDivElement>(null);
   const aboutRef = useRef<HTMLDivElement>(null);
   const testimonialsRef = useRef<HTMLDivElement>(null);
+  const splitBannerRef = useRef<HTMLElement>(null);
   const comingSoonRef = useRef<HTMLDivElement>(null);
 
   useLayoutEffect(() => {
@@ -190,6 +196,25 @@ const Home = () => {
             scrollTrigger: {
               trigger: testimonialsRef.current,
               start: 'top 80%',
+            },
+          }
+        );
+      }
+
+      const splitBannerEls = splitBannerRef.current?.querySelectorAll('.split-banner-animate');
+      if (splitBannerEls && splitBannerEls.length > 0) {
+        gsap.fromTo(
+          splitBannerEls,
+          { y: 36, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            duration: 0.85,
+            stagger: 0.12,
+            ease: 'power3.out',
+            scrollTrigger: {
+              trigger: splitBannerRef.current,
+              start: 'top 82%',
             },
           }
         );
@@ -467,12 +492,84 @@ const Home = () => {
                     {testimonial.quote}
                   </p>
                   <div className="text-right">
-                    <p className="font-bold text-white text-lg">- {testimonial.author}</p>
+                    <p className="font-bold text-sky-200 text-lg">— {testimonial.author}</p>
                     <p className="text-white/90 text-sm font-medium">{testimonial.studio}</p>
                   </div>
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Split promo banner (reference: framed logo + copy + ghost CTA) */}
+      <section
+        ref={splitBannerRef}
+        className="relative overflow-hidden border-y border-white/10"
+        aria-labelledby="split-banner-heading"
+      >
+        <div className="absolute inset-0">
+          <img
+            src="https://images.unsplash.com/photo-1477959858617-67f85cf4f290?w=1920&h=900&fit=crop"
+            alt=""
+            className="h-full w-full object-cover object-center scale-105"
+          />
+          {/* Duotone-style wash (purple → blue, like reference) */}
+          <div
+            className="absolute inset-0 bg-gradient-to-br from-[#4c1d95]/88 via-[#5b21b6]/82 to-[#1e40af]/88 mix-blend-multiply"
+            aria-hidden
+          />
+          <div className="absolute inset-0 bg-black/25" aria-hidden />
+        </div>
+
+        <div className="relative z-10 mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-16 lg:px-8 lg:py-24">
+          <div className="grid items-stretch gap-10 lg:grid-cols-2 lg:gap-14 xl:gap-20">
+            {/* Left: framed logo */}
+            <div className="split-banner-animate flex min-h-[280px] flex-col border-4 border-white p-6 shadow-2xl sm:p-8 lg:min-h-[340px] lg:p-10">
+              <div className="flex flex-1 items-center justify-center py-4">
+                <img
+                  src={TOPAZ_MASKS_LOGO}
+                  alt="TOPAZ theatrical masks logo"
+                  className="max-h-44 w-auto max-w-full object-contain sm:max-h-52 lg:max-h-64"
+                  data-fallback-tried=""
+                  onError={(e) => {
+                    const el = e.currentTarget;
+                    if (!el.dataset.fallbackTried) {
+                      el.dataset.fallbackTried = '1';
+                      el.src = TOPAZ_MASKS_LOGO_FALLBACK;
+                    }
+                  }}
+                />
+              </div>
+              <div className="mt-auto flex items-end justify-between border-t border-white/35 pt-5 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-white sm:text-xs">
+                <span>Seaside, OR</span>
+                <span>Aug 22, 2026</span>
+              </div>
+            </div>
+
+            {/* Right: headline + ghost button */}
+            <div className="split-banner-animate flex flex-col justify-center space-y-8 text-white">
+              <h2
+                id="split-banner-heading"
+                className="font-display text-2xl font-black uppercase leading-[1.1] tracking-tight sm:text-3xl md:text-4xl lg:text-[2.35rem] xl:text-5xl"
+              >
+                The Return of{' '}
+                <span className="text-white/95">TOPAZ 2.0</span> brings premier theatrical arts
+                competition to the Oregon coast — five decades of legacy, one unforgettable weekend.
+              </h2>
+              <p className="max-w-xl text-sm font-medium leading-relaxed text-white/85 sm:text-base">
+                Seaside Convention Center • Registration closes July 22, 2026. Join studios and
+                dancers from across the region for judging, awards, and community.
+              </p>
+              <div>
+                <Link
+                  to="/about"
+                  className="inline-flex items-center justify-center rounded-full border-2 border-white px-10 py-3.5 text-sm font-bold uppercase tracking-[0.2em] text-white transition-colors duration-300 hover:bg-white hover:text-[#312e81]"
+                >
+                  Learn More
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
       </section>
