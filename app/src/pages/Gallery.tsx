@@ -1,67 +1,102 @@
 import { useState } from 'react';
-import { Play, X, ChevronDown, Clock, Sparkles } from 'lucide-react';
+import { Play, X, ChevronDown, Clock, Sparkles, Images } from 'lucide-react';
 import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
 
-/**
- * TOPAZ History (1972–2023) — add files under /public/images/gallery/
- */
+// ─────────────────────────────────────────────────────────────────────────────
+// TOPAZ HISTORY PHOTOS (1972–2023)
+// Drop images into /public/images/gallery/ and add entries below.
+// ─────────────────────────────────────────────────────────────────────────────
 const historyPhotos = [
-  { id: 1, src: `${import.meta.env.BASE_URL}images/gallery/gallery-01.jpg`, alt: 'Competition 2025', category: 'competitions' },
-  { id: 2, src: `${import.meta.env.BASE_URL}images/gallery/gallery-02.jpg`, alt: 'Dancers performing', category: 'competitions' },
-  { id: 3, src: `${import.meta.env.BASE_URL}images/gallery/gallery-03.jpg`, alt: 'Stage performance', category: 'rehearsals' },
-  { id: 4, src: `${import.meta.env.BASE_URL}images/gallery/gallery-04.jpg`, alt: 'Award ceremony', category: 'awards' },
-  { id: 5, src: `${import.meta.env.BASE_URL}images/gallery/gallery-05.jpg`, alt: 'Group routine', category: 'competitions' },
-  { id: 6, src: `${import.meta.env.BASE_URL}images/gallery/gallery-06.jpg`, alt: 'Solo performance', category: 'rehearsals' },
-  { id: 7, src: `${import.meta.env.BASE_URL}images/gallery/gallery-07.jpg`, alt: 'TOPAZ Competition', category: 'competitions' },
+  { id: 1,  src: `${import.meta.env.BASE_URL}images/gallery/history/founders-duo-ballgown.jpg`, alt: 'TOPAZ founders Pat and Bob dancing together in formal ballgown and suit', category: 'competitions' },
+  { id: 2,  src: `${import.meta.env.BASE_URL}images/gallery/history/founders-duo-striped-pants.jpg`, alt: 'Founding duo in striped dance pants and performance wear', category: 'competitions' },
+  { id: 3,  src: `${import.meta.env.BASE_URL}images/gallery/history/founders-duo-embrace.jpg`, alt: 'Founders in a close dance embrace on the floor', category: 'competitions' },
+  { id: 4,  src: `${import.meta.env.BASE_URL}images/gallery/history/early-competition-registration-1972.jpg`, alt: 'Early TOPAZ competition registration scene, 1972', category: 'competitions' },
+  { id: 5,  src: `${import.meta.env.BASE_URL}images/gallery/history/early-competition-planning-1972.jpg`, alt: 'Organizers planning an early TOPAZ competition, 1972', category: 'competitions' },
+  { id: 6,  src: `${import.meta.env.BASE_URL}images/gallery/history/group-floral-costumes-1972.jpg`, alt: 'Large group of dancers in floral costumes on stage, 1972', category: 'competitions' },
+  { id: 7,  src: `${import.meta.env.BASE_URL}images/gallery/history/large-cast-elaborate-stage.jpg`, alt: 'Large cast in an elaborate staged production number', category: 'competitions' },
+  { id: 8,  src: `${import.meta.env.BASE_URL}images/gallery/history/stage-performance-feather-fans.jpg`, alt: 'Performers with feather fans in a theatrical stage routine', category: 'competitions' },
+  { id: 9,  src: `${import.meta.env.BASE_URL}images/gallery/history/stage-fringe-costumes-performance.jpg`, alt: 'Dancers in fringe costumes performing on stage', category: 'competitions' },
+  { id: 10, src: `${import.meta.env.BASE_URL}images/gallery/history/solo-winner-multiple-trophies-1974.jpg`, alt: 'Soloist posing with multiple trophies, 1974', category: 'awards' },
+  { id: 11, src: `${import.meta.env.BASE_URL}images/gallery/history/newspaper-bridge-entertainment-1975.jpg`, alt: '1975 newspaper clipping featuring TOPAZ in the Bridge Entertainment section', category: 'awards' },
+  { id: 12, src: `${import.meta.env.BASE_URL}images/gallery/history/stage-pink-sequin-group-1980s.jpg`, alt: 'Group number in pink sequin costumes on stage, 1980s', category: 'competitions' },
+  { id: 13, src: `${import.meta.env.BASE_URL}images/gallery/history/stage-dramatic-performance-1980s.jpg`, alt: 'Dramatic stage performance with bold lighting, 1980s', category: 'competitions' },
+  { id: 14, src: `${import.meta.env.BASE_URL}images/gallery/history/stage-colorful-trio-vegas.jpg`, alt: 'Colorful trio in Las Vegas–style costumes on stage', category: 'competitions' },
+  { id: 15, src: `${import.meta.env.BASE_URL}images/gallery/history/group-glitter-costumes-trophy.jpg`, alt: 'Ensemble in glitter costumes celebrating with a trophy', category: 'competitions' },
+  { id: 16, src: `${import.meta.env.BASE_URL}images/gallery/history/newspaper-high-steppin-caesars.jpg`, alt: 'Newspaper clipping about High Steppin\' and TOPAZ at Caesars', category: 'competitions' },
+  { id: 17, src: `${import.meta.env.BASE_URL}images/gallery/history/acrobatic-overhead-lift.jpg`, alt: 'Dancers rehearsing an acrobatic overhead lift', category: 'rehearsals' },
+  { id: 18, src: `${import.meta.env.BASE_URL}images/gallery/history/duo-large-trophy-ribbon.jpg`, alt: 'Duo with a large trophy and award ribbons', category: 'awards' },
+  { id: 19, src: `${import.meta.env.BASE_URL}images/gallery/history/boy-tuxedo-trophy-1990.jpg`, alt: 'Young dancer in tuxedo holding a trophy, circa 1990', category: 'awards' },
+  { id: 20, src: `${import.meta.env.BASE_URL}images/gallery/history/youth-group-teal-hats.jpg`, alt: 'Youth group in matching teal hats performing on stage', category: 'competitions' },
+  { id: 21, src: `${import.meta.env.BASE_URL}images/gallery/history/youth-group-colorful-flapper.jpg`, alt: 'Youth ensemble in colorful flapper-style costumes', category: 'competitions' },
+  { id: 22, src: `${import.meta.env.BASE_URL}images/gallery/history/backstage-duo-portrait.jpg`, alt: 'Two dancers posing together backstage', category: 'rehearsals' },
+  { id: 23, src: `${import.meta.env.BASE_URL}images/gallery/history/topaz-competition-banner-group.jpg`, alt: 'Large group photo with TOPAZ competition banner', category: 'competitions' },
 ];
 
+// ─────────────────────────────────────────────────────────────────────────────
+// TOPAZ HISTORY VIDEOS (1972–2023)
+// Add youtubeId once videos are ready.
+// ─────────────────────────────────────────────────────────────────────────────
 const historyVideos = [
   { id: 1, title: 'Competition Highlights', youtubeId: '', thumbnail: '', category: 'competitions' },
-  { id: 2, title: 'TOPAZ memories', youtubeId: '', thumbnail: '', category: 'competitions' },
+  { id: 2, title: 'TOPAZ Memories',         youtubeId: '', thumbnail: '', category: 'competitions' },
 ];
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Types & constants
+// ─────────────────────────────────────────────────────────────────────────────
 type PhotoCategory = 'all' | 'competitions' | 'rehearsals' | 'awards';
 type VideoCategory = 'all' | 'competitions' | 'rehearsals' | 'awards';
-type GalleryEra = 'history' | 'topaz20';
+type GalleryEra    = 'history' | 'topaz20';
 
 const PHOTO_FILTERS: { label: string; value: PhotoCategory }[] = [
-  { label: 'All', value: 'all' },
+  { label: 'All',          value: 'all'          },
   { label: 'Competitions', value: 'competitions' },
-  { label: 'Rehearsals', value: 'rehearsals' },
-  { label: 'Awards', value: 'awards' },
+  { label: 'Rehearsals',   value: 'rehearsals'   },
+  { label: 'Awards',       value: 'awards'       },
 ];
 
 const VIDEO_FILTERS: { label: string; value: VideoCategory }[] = [
-  { label: 'All', value: 'all' },
+  { label: 'All',          value: 'all'          },
   { label: 'Competitions', value: 'competitions' },
-  { label: 'Rehearsals', value: 'rehearsals' },
-  { label: 'Awards', value: 'awards' },
+  { label: 'Rehearsals',   value: 'rehearsals'   },
+  { label: 'Awards',       value: 'awards'       },
 ];
 
 const PHOTOS_PER_PAGE = 8;
 const VIDEOS_PER_PAGE = 6;
 
+// Fallback placeholder shown when an image file is missing
+const FALLBACK_IMG =
+  'https://images.unsplash.com/photo-1518834107812-67b0b7c58434?w=600&h=800&fit=crop';
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Gallery Component
+// ─────────────────────────────────────────────────────────────────────────────
 const Gallery = () => {
-  const [galleryEra, setGalleryEra] = useState<GalleryEra>('history');
-  const [activeTab, setActiveTab] = useState<'photos' | 'videos'>('photos');
-  const [photoFilter, setPhotoFilter] = useState<PhotoCategory>('all');
-  const [videoFilter, setVideoFilter] = useState<VideoCategory>('all');
-  const [photoLimit, setPhotoLimit] = useState(PHOTOS_PER_PAGE);
-  const [videoLimit, setVideoLimit] = useState(VIDEOS_PER_PAGE);
+  const [galleryEra,    setGalleryEra]    = useState<GalleryEra>('history');
+  const [activeTab,     setActiveTab]     = useState<'photos' | 'videos'>('photos');
+  const [photoFilter,   setPhotoFilter]   = useState<PhotoCategory>('all');
+  const [videoFilter,   setVideoFilter]   = useState<VideoCategory>('all');
+  const [photoLimit,    setPhotoLimit]    = useState(PHOTOS_PER_PAGE);
+  const [videoLimit,    setVideoLimit]    = useState(VIDEOS_PER_PAGE);
   const [lightboxImage, setLightboxImage] = useState<{ src: string; alt: string } | null>(null);
-  const [videoModal, setVideoModal] = useState<{ title: string; youtubeId: string } | null>(null);
+  const [videoModal,    setVideoModal]    = useState<{ title: string; youtubeId: string } | null>(null);
 
   const filteredPhotos =
-    photoFilter === 'all' ? historyPhotos : historyPhotos.filter((p) => p.category === photoFilter);
+    photoFilter === 'all'
+      ? historyPhotos
+      : historyPhotos.filter((p) => p.category === photoFilter);
 
-  const visiblePhotos = filteredPhotos.slice(0, photoLimit);
-  const hasMorePhotos = filteredPhotos.length > photoLimit;
+  const visiblePhotos  = filteredPhotos.slice(0, photoLimit);
+  const hasMorePhotos  = filteredPhotos.length > photoLimit;
 
   const filteredVideos =
-    videoFilter === 'all' ? historyVideos : historyVideos.filter((v) => v.category === videoFilter);
+    videoFilter === 'all'
+      ? historyVideos
+      : historyVideos.filter((v) => v.category === videoFilter);
 
-  const visibleVideos = filteredVideos.slice(0, videoLimit);
-  const hasMoreVideos = filteredVideos.length > videoLimit;
+  const visibleVideos  = filteredVideos.slice(0, videoLimit);
+  const hasMoreVideos  = filteredVideos.length > videoLimit;
 
   const handlePhotoFilterChange = (filter: PhotoCategory) => {
     setPhotoFilter(filter);
@@ -75,7 +110,8 @@ const Gallery = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Hero */}
+
+      {/* ── Hero ──────────────────────────────────────────────────────────── */}
       <section className="relative bg-[#0a0a0a] min-h-screen overflow-hidden flex items-center">
         <div className="absolute inset-0 opacity-20">
           <img
@@ -95,7 +131,7 @@ const Gallery = () => {
         </div>
       </section>
 
-      {/* Era selector */}
+      {/* ── Era selector ──────────────────────────────────────────────────── */}
       <div className="bg-[#0a0a0a] border-b border-white/10 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="flex flex-col sm:flex-row gap-2 sm:gap-0">
@@ -113,6 +149,7 @@ const Gallery = () => {
                 1972 – 2023
               </span>
             </button>
+
             <button
               type="button"
               onClick={() => setGalleryEra('topaz20')}
@@ -131,6 +168,7 @@ const Gallery = () => {
         </div>
       </div>
 
+      {/* ── TOPAZ 2.0 — Coming Soon ───────────────────────────────────────── */}
       {galleryEra === 'topaz20' ? (
         <section className="py-24 lg:py-32 bg-gradient-to-b from-gray-50 to-white">
           <div className="max-w-3xl mx-auto px-6 text-center">
@@ -141,11 +179,11 @@ const Gallery = () => {
               Coming Soon
             </span>
             <h2 className="font-display font-black text-3xl md:text-5xl text-gray-900 mb-6 uppercase tracking-tight">
-              TOPAZ <span className="text-[#2E75B6] italic">2.0</span> media
+              TOPAZ <span className="text-[#2E75B6] italic">2.0</span> Media
             </h2>
             <p className="text-lg text-gray-600 leading-relaxed mb-4">
-              Photos and videos from the new TOPAZ 2.0 competition season will be published here after events.
-              Check back for highlights, awards, and behind-the-scenes content.
+              Photos and videos from the new TOPAZ 2.0 competition season will be published here
+              after events. Check back for highlights, awards, and behind-the-scenes content.
             </p>
             <p className="text-sm text-gray-500 flex items-center justify-center gap-2">
               <Clock className="w-4 h-4 shrink-0" />
@@ -153,43 +191,38 @@ const Gallery = () => {
             </p>
           </div>
         </section>
+
       ) : (
+
+        /* ── TOPAZ HISTORY ──────────────────────────────────────────────── */
         <>
+          {/* Tabs */}
           <div className="border-b border-gray-200 bg-white sticky top-20 z-20">
             <div className="max-w-7xl mx-auto px-6">
               <div className="flex gap-1">
-                <button
-                  onClick={() => setActiveTab('photos')}
-                  className={`px-6 py-4 font-bold text-sm uppercase tracking-wider transition-colors ${
-                    activeTab === 'photos'
-                      ? 'text-[#2E75B6] border-b-2 border-[#2E75B6]'
-                      : 'text-gray-500 hover:text-gray-800'
-                  }`}
-                >
-                  Photos
-                </button>
-                <button
-                  onClick={() => setActiveTab('videos')}
-                  className={`px-6 py-4 font-bold text-sm uppercase tracking-wider transition-colors ${
-                    activeTab === 'videos'
-                      ? 'text-[#2E75B6] border-b-2 border-[#2E75B6]'
-                      : 'text-gray-500 hover:text-gray-800'
-                  }`}
-                >
-                  Videos
-                </button>
+                {(['photos', 'videos'] as const).map((tab) => (
+                  <button
+                    key={tab}
+                    onClick={() => setActiveTab(tab)}
+                    className={`px-6 py-4 font-bold text-sm uppercase tracking-wider transition-colors ${
+                      activeTab === tab
+                        ? 'text-[#2E75B6] border-b-2 border-[#2E75B6]'
+                        : 'text-gray-500 hover:text-gray-800'
+                    }`}
+                  >
+                    {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                  </button>
+                ))}
               </div>
             </div>
           </div>
 
           <div className="max-w-7xl mx-auto px-6 py-12">
-            <p className="text-center text-sm text-gray-500 mb-10 max-w-2xl mx-auto">
-              Historical photos and videos from Topaz through 2023. New files can be added under{' '}
-              <code className="text-xs bg-gray-100 px-1 rounded">public/images/gallery/</code>.
-            </p>
 
+            {/* ── Photos tab ─────────────────────────────────────────────── */}
             {activeTab === 'photos' && (
               <>
+                {/* Filter pills */}
                 <div className="flex flex-wrap gap-2 mb-10">
                   {PHOTO_FILTERS.map((f) => (
                     <button
@@ -211,6 +244,7 @@ const Gallery = () => {
                   ))}
                 </div>
 
+                {/* Masonry grid */}
                 {visiblePhotos.length > 0 ? (
                   <ResponsiveMasonry columnsCountBreakPoints={{ 350: 1, 750: 2, 900: 3, 1200: 4 }}>
                     <Masonry gutter="16px">
@@ -225,8 +259,7 @@ const Gallery = () => {
                             alt={photo.alt}
                             className="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-500 block"
                             onError={(e) => {
-                              (e.target as HTMLImageElement).src =
-                                'https://images.unsplash.com/photo-1518834107812-67b0b7c58434?w=600&h=800&fit=crop';
+                              (e.target as HTMLImageElement).src = FALLBACK_IMG;
                             }}
                           />
                           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
@@ -236,10 +269,12 @@ const Gallery = () => {
                   </ResponsiveMasonry>
                 ) : (
                   <div className="text-center py-20 text-gray-400">
+                    <Images className="w-12 h-12 mx-auto mb-4 opacity-30" />
                     <p className="text-lg font-medium">No photos in this category yet.</p>
                   </div>
                 )}
 
+                {/* Load more */}
                 {hasMorePhotos && (
                   <div className="flex justify-center mt-12">
                     <button
@@ -254,8 +289,10 @@ const Gallery = () => {
               </>
             )}
 
+            {/* ── Videos tab ─────────────────────────────────────────────── */}
             {activeTab === 'videos' && (
               <>
+                {/* Filter pills */}
                 <div className="flex flex-wrap gap-2 mb-10">
                   {VIDEO_FILTERS.map((f) => (
                     <button
@@ -272,6 +309,7 @@ const Gallery = () => {
                   ))}
                 </div>
 
+                {/* Video grid */}
                 {visibleVideos.length > 0 ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                     {visibleVideos.map((video) => (
@@ -282,7 +320,9 @@ const Gallery = () => {
                             ? setVideoModal({ title: video.title, youtubeId: video.youtubeId })
                             : undefined
                         }
-                        className="group text-left rounded-2xl overflow-hidden bg-gray-100 shadow-lg hover:shadow-xl transition-all duration-300"
+                        className={`group text-left rounded-2xl overflow-hidden bg-gray-100 shadow-lg transition-all duration-300 ${
+                          video.youtubeId ? 'hover:shadow-xl cursor-pointer' : 'cursor-default'
+                        }`}
                       >
                         <div className="aspect-video relative bg-gray-900">
                           {video.youtubeId ? (
@@ -305,9 +345,9 @@ const Gallery = () => {
                               </div>
                             </>
                           ) : (
-                            <div className="w-full h-full flex flex-col items-center justify-center text-white/60 p-6">
-                              <Clock className="w-10 h-10 mb-2" />
-                              <span className="text-sm text-center">Video coming soon — add YouTube ID in Gallery.tsx</span>
+                            <div className="w-full h-full flex flex-col items-center justify-center text-white/40 p-6">
+                              <Clock className="w-10 h-10 mb-3" />
+                              <span className="text-sm text-center font-medium">Coming Soon</span>
                             </div>
                           )}
                         </div>
@@ -323,6 +363,7 @@ const Gallery = () => {
                   </div>
                 )}
 
+                {/* Load more */}
                 {hasMoreVideos && (
                   <div className="flex justify-center mt-12">
                     <button
@@ -340,13 +381,14 @@ const Gallery = () => {
         </>
       )}
 
+      {/* ── Photo Lightbox ────────────────────────────────────────────────── */}
       {lightboxImage && (
         <div
           className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4"
           onClick={() => setLightboxImage(null)}
         >
           <button
-            className="absolute top-4 right-4 w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20"
+            className="absolute top-4 right-4 w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
             onClick={() => setLightboxImage(null)}
             aria-label="Close"
           >
@@ -361,13 +403,14 @@ const Gallery = () => {
         </div>
       )}
 
+      {/* ── Video Modal ───────────────────────────────────────────────────── */}
       {videoModal && videoModal.youtubeId && (
         <div
           className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4"
           onClick={() => setVideoModal(null)}
         >
           <button
-            className="absolute top-4 right-4 w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20"
+            className="absolute top-4 right-4 w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
             onClick={() => setVideoModal(null)}
             aria-label="Close"
           >
@@ -387,6 +430,7 @@ const Gallery = () => {
           </div>
         </div>
       )}
+
     </div>
   );
 };

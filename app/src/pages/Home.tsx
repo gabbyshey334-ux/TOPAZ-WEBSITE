@@ -90,6 +90,25 @@ const comingSoonSections = [
   },
 ];
 
+const legacyHistoryPhotos = [
+  {
+    src: `${BASE}images/homepage/boy-tuxedo-trophy.png`,
+    alt: 'Vintage TOPAZ competition — young dancer in tuxedo with trophy',
+  },
+  {
+    src: `${BASE}images/homepage/duo-trophy.png`,
+    alt: 'Vintage TOPAZ competition — duo with trophy',
+  },
+  {
+    src: `${BASE}images/homepage/group-dancers-trophy.png`,
+    alt: 'Vintage TOPAZ competition — group of dancers with trophy',
+  },
+  {
+    src: `${BASE}images/homepage/newspaper-1975.png`,
+    alt: '1975 newspaper clipping featuring TOPAZ',
+  },
+] as const;
+
 const Home = () => {
   const tourRef = useRef<HTMLDivElement>(null);
   const featuredRef = useRef<HTMLDivElement>(null);
@@ -605,6 +624,43 @@ const Home = () => {
                 <p className="text-gray-600 text-sm md:text-base leading-relaxed flex-1">
                   {block.text}
                 </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* TOPAZ Through the Years — after Upcoming Competitions, before Gallery preview */}
+      <section
+        className="relative bg-white py-16 lg:py-24 border-t border-gray-200"
+        aria-labelledby="legacy-history-heading"
+      >
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-10 sm:mb-12">
+            <p className="text-[#2E75B6] font-mono text-sm tracking-[0.2em] uppercase font-bold">
+              Our Legacy
+            </p>
+            <h2
+              id="legacy-history-heading"
+              className="font-display font-black text-3xl md:text-4xl lg:text-5xl text-gray-900 tracking-tight mt-3"
+            >
+              TOPAZ Through the Years
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-6 lg:gap-8">
+            {legacyHistoryPhotos.map((photo) => (
+              <div
+                key={photo.src}
+                className="rounded-2xl bg-gray-100 shadow-md overflow-hidden aspect-[3/4] p-3 sm:p-4"
+              >
+                <img
+                  src={photo.src}
+                  alt={photo.alt}
+                  className="h-full w-full object-contain"
+                  loading="lazy"
+                  decoding="async"
+                />
               </div>
             ))}
           </div>

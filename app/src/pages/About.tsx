@@ -9,12 +9,12 @@ gsap.registerPlugin(ScrollTrigger);
 
 const BASE = import.meta.env.BASE_URL;
 
-/* About Us: pat-bob founders; Our Story: classic our-story.jpg (see public/about/) */
+/* About Us: Pat & Bob vintage (pat-and-bob.jpg from gallery PNG); Our Story: our-story.jpg + same fallback */
 const ABOUT_IMAGES = {
-  founders: `${BASE}images/about/pat-bob-founders.jpg`,
+  founders: `${BASE}images/about/pat-and-bob.jpg`,
   aboutUsFallback: `${BASE}about/about-us.jpg`,
   ourStory: `${BASE}about/our-story.jpg`,
-  ourStoryFallback: `${BASE}images/about/pat-bob-founders.jpg`,
+  ourStoryFallback: `${BASE}images/about/pat-and-bob.jpg`,
   meetTheTeam: `${BASE}about/meet-the-team.jpg`,
 } as const;
 
