@@ -9,12 +9,12 @@ gsap.registerPlugin(ScrollTrigger);
 
 const BASE = import.meta.env.BASE_URL;
 
-/* About Us: Pat & Bob vintage (pat-and-bob.jpg from gallery PNG); Our Story: our-story.jpg + same fallback */
+/* About Us: stage-colorful-trio-vegas; Our Story: stage-dramatic-performance-1980s */
 const ABOUT_IMAGES = {
-  founders: `${BASE}images/about/pat-and-bob.jpg`,
+  founders: `${BASE}images/gallery/history/stage-colorful-trio-vegas.jpg`,
   aboutUsFallback: `${BASE}about/about-us.jpg`,
-  ourStory: `${BASE}about/our-story.jpg`,
-  ourStoryFallback: `${BASE}images/about/pat-and-bob.jpg`,
+  ourStory: `${BASE}images/gallery/history/stage-dramatic-performance-1980s.jpg`,
+  ourStoryFallback: `${BASE}images/gallery/history/stage-dramatic-performance-1980s.jpg`,
   meetTheTeam: `${BASE}about/meet-the-team.jpg`,
 } as const;
 
@@ -108,7 +108,7 @@ const About = () => {
         alignment="left"
         imageSrc={ABOUT_IMAGES.founders}
         imageFallbackSrc={ABOUT_IMAGES.aboutUsFallback}
-        imageAlt="Pat and Bob Heath — TOPAZ founders"
+        imageAlt="TOPAZ performers on stage during the competition era"
         content={ABOUT_US_CONTENT}
       />
 
@@ -118,7 +118,7 @@ const About = () => {
         alignment="right"
         imageSrc={ABOUT_IMAGES.ourStory}
         imageFallbackSrc={ABOUT_IMAGES.ourStoryFallback}
-        imageAlt="TOPAZ — our story"
+        imageAlt="TOPAZ performer on stage — dramatic performance"
         content={OUR_STORY_CONTENT}
       />
 
