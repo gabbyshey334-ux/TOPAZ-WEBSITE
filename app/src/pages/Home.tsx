@@ -48,25 +48,25 @@ const testimonials = [
 const promoCards = [
   {
     id: 1,
-    title: 'SUMMER INTENSIVE',
-    subtitle: 'TRAINING CAMP',
-    description: 'Join our elite summer program',
+    title: 'MASTER CLASSES',
+    subtitle: 'COMING SOON',
+    description: '',
     bg: 'from-blue-600 to-blue-900',
     image: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=600&h=400&fit=crop'
   },
   {
     id: 2,
-    title: 'THE PANEL',
-    subtitle: 'JUDGES & MENTORS',
-    description: 'Meet our industry experts',
+    title: 'SPONSORS',
+    subtitle: 'COMING SOON',
+    description: '',
     bg: 'from-[#2E75B6] to-[#1F4E78]',
     image: 'https://images.unsplash.com/photo-1547153760-18fc86324498?w=600&h=400&fit=crop'
   },
   {
     id: 3,
-    title: 'MASTER CLASS',
-    subtitle: 'EXCLUSIVE WORKSHOP',
-    description: 'Learn from the best',
+    title: 'PANEL & JUDGES',
+    subtitle: 'COMING SOON',
+    description: '',
     bg: 'from-indigo-600 to-indigo-900',
     image: 'https://images.unsplash.com/photo-1518834107812-67b0b7c58434?w=600&h=400&fit=crop'
   }
@@ -332,14 +332,14 @@ const Home = () => {
             {promoCards.map((card) => (
               <div
                 key={card.id}
-                className="promo-card relative h-64 md:h-72 rounded-xl overflow-hidden group cursor-pointer shadow-lg"
+                className="promo-card relative h-64 md:h-72 rounded-xl overflow-hidden shadow-lg"
               >
                 <img
                   src={card.image}
                   alt={card.title}
-                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                  className="absolute inset-0 w-full h-full object-cover"
                 />
-                <div className={`absolute inset-0 bg-gradient-to-br ${card.bg} opacity-80 group-hover:opacity-90 transition-opacity duration-300`} />
+                <div className={`absolute inset-0 bg-gradient-to-br ${card.bg} opacity-80`} />
                 <div className="absolute inset-0 p-6 flex flex-col justify-between">
                   <div>
                     <p className="text-white/80 text-xs font-bold tracking-[0.2em] uppercase">
@@ -350,10 +350,9 @@ const Home = () => {
                     </h3>
                   </div>
                   <div className="flex items-center justify-between">
-                    <p className="text-white/70 text-sm">{card.description}</p>
-                    <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center group-hover:bg-white/30 transition-colors">
-                      <ChevronRight className="w-5 h-5 text-white" />
-                    </div>
+                    <span className="inline-flex items-center px-3 py-1 rounded-full border border-white/30 bg-white/10 text-white text-xs font-bold uppercase tracking-wider backdrop-blur-sm">
+                      Coming Soon
+                    </span>
                   </div>
                 </div>
               </div>
