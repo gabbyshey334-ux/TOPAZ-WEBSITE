@@ -22,28 +22,6 @@ const BASE = import.meta.env.BASE_URL;
 const TOPAZ_BANNER_LOGO = `${BASE}images/logos/topaz-logo-masks.png`;
 const TOPAZ_BANNER_LOGO_FALLBACK = `${BASE}images/logos/topaz-logo.png`;
 
-// Testimonials data
-const testimonials = [
-  {
-    id: 1,
-    quote: "Our dancers attended TOPAZ and had such a FABULOUS time! The faculty were so helpful with everything. Our dancers loved all of the classes so much. It was extremely personal. Teachers tried to learn names and gave personal corrections which is really awesome in a competition setting. The whole event was so professional!",
-    author: "Studio Owner",
-    studio: "Premier Dance Academy"
-  },
-  {
-    id: 2,
-    quote: "My students and parents are still RAVING about TOPAZ! My students had a blast! TOPAZ is truly something special. So organized and their staff is STELLAR! The kids are BEGGING to do all the combos in class. As an educator, I am so pleased with the classes my students received, as well as the entire competition experience.",
-    author: "Studio Owner",
-    studio: "Elite Dance Center"
-  },
-  {
-    id: 3,
-    quote: "Wow! We loved our first TOPAZ weekend! So many of our seasoned advanced dancers said it was their favorite competition weekend to date. Your faculty created a very nurturing vibe, while maintaining challenging classes. Please know how much I appreciate that. I also appreciate that your numbers don't feel too big.",
-    author: "Studio Owner",
-    studio: "Summit Dance Project"
-  }
-];
-
 // Promotional cards
 const promoCards = [
   {
@@ -485,37 +463,15 @@ const Home = () => {
             </h2>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8 md:gap-12">
-            {testimonials.map((testimonial) => (
-              <div
-                key={testimonial.id}
-                className="testimonial-card relative p-8 pt-10 pb-10 flex flex-col justify-between"
-              >
-                {/* Custom Bracket Borders */}
-                <div className="absolute top-0 right-0 h-[4px] bg-white w-[calc(100%-3.5rem)]" />
-                <div className="absolute top-0 right-0 w-[4px] bg-white h-[calc(100%-3.5rem)]" />
-                <div className="absolute bottom-0 left-0 h-[4px] bg-white w-[calc(100%-3.5rem)]" />
-                <div className="absolute bottom-0 left-0 w-[4px] bg-white h-[calc(100%-3.5rem)]" />
-
-                {/* Typography Quotes */}
-                <div className="absolute top-[-3.5rem] left-[-0.5rem] text-white text-[7rem] font-serif font-black leading-none select-none">
-                  “
-                </div>
-                <div className="absolute bottom-[-5rem] right-[-0.5rem] text-white text-[7rem] font-serif font-black leading-none select-none">
-                  ”
-                </div>
-
-                <div className="relative z-10 flex-grow flex flex-col justify-between">
-                  <p className="text-white leading-relaxed text-sm md:text-base text-center md:text-justify mb-8 font-medium">
-                    {testimonial.quote}
-                  </p>
-                  <div className="text-right">
-                    <p className="font-bold text-sky-200 text-lg">— {testimonial.author}</p>
-                    <p className="text-white/90 text-sm font-medium">{testimonial.studio}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
+          <div className="max-w-2xl mx-auto">
+            <div className="testimonial-card relative rounded-2xl border border-white/20 bg-white/5 px-10 py-14 text-center backdrop-blur-sm">
+              <span className="inline-flex items-center rounded-full border border-white/30 bg-white/10 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-white">
+                Coming Soon
+              </span>
+              <p className="mt-6 text-lg text-white/85 leading-relaxed">
+                Studio testimonials will appear here after the season.
+              </p>
+            </div>
           </div>
         </div>
       </section>
@@ -578,7 +534,7 @@ const Home = () => {
               <p className="max-w-xl text-sm font-medium leading-relaxed text-white/88 sm:text-base">
                 Professionally run scheduling, clear registration, and a welcoming environment for
                 dancers and educators — the same standards TOPAZ has stood for since 1972.
-                Seaside Convention Center. Registration closes July 22, 2026.
+                Seaside Convention Center. Registration closes July 31, 2026, 12:00 AM.
               </p>
               <div className="pt-2">
                 <Link
