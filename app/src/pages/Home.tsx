@@ -528,44 +528,43 @@ const Home = () => {
             </h2>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:gap-5">
-            {/* Left column: tall, then shorter */}
-            <div className="flex flex-col gap-3 sm:gap-4 lg:gap-5">
-              <div className="rounded-[1.5rem] sm:rounded-[2rem] bg-gray-100 shadow-md overflow-hidden p-2 sm:p-3 min-h-[200px] sm:min-h-[280px] flex-[1.35]">
+          {/* Staggered 2-col masonry: fixed aspect slots + object-cover (matches mobile reference) */}
+          <div className="grid grid-cols-2 gap-3 sm:gap-[0.875rem] lg:gap-4">
+            <div className="flex min-h-0 flex-col gap-3 sm:gap-[0.875rem] lg:gap-4">
+              <div className="relative w-full overflow-hidden rounded-[1.75rem] sm:rounded-[2rem] bg-neutral-200 shadow-md aspect-[3/5]">
                 <img
                   src={legacyHistoryPhotos[0].src}
                   alt={legacyHistoryPhotos[0].alt}
-                  className="h-full w-full min-h-[180px] sm:min-h-[260px] object-contain"
+                  className="absolute inset-0 h-full w-full object-cover object-center"
                   loading="lazy"
                   decoding="async"
                 />
               </div>
-              <div className="rounded-[1.5rem] sm:rounded-[2rem] bg-gray-100 shadow-md overflow-hidden p-2 sm:p-3 flex-[0.85]">
+              <div className="relative w-full overflow-hidden rounded-[1.75rem] sm:rounded-[2rem] bg-neutral-200 shadow-md aspect-square">
                 <img
                   src={legacyHistoryPhotos[2].src}
                   alt={legacyHistoryPhotos[2].alt}
-                  className="h-full w-full min-h-[120px] sm:min-h-[160px] object-contain"
+                  className="absolute inset-0 h-full w-full object-cover object-center"
                   loading="lazy"
                   decoding="async"
                 />
               </div>
             </div>
-            {/* Right column: shorter (offset down), then tall */}
-            <div className="flex flex-col gap-3 sm:gap-4 lg:gap-5 pt-8 sm:pt-12 lg:pt-16">
-              <div className="rounded-[1.5rem] sm:rounded-[2rem] bg-gray-100 shadow-md overflow-hidden p-2 sm:p-3 flex-[0.85]">
+            <div className="flex min-h-0 flex-col gap-3 sm:gap-[0.875rem] lg:gap-4 pt-9 sm:pt-12 lg:pt-[3.75rem]">
+              <div className="relative w-full overflow-hidden rounded-[1.75rem] sm:rounded-[2rem] bg-neutral-200 shadow-md aspect-square">
                 <img
                   src={legacyHistoryPhotos[1].src}
                   alt={legacyHistoryPhotos[1].alt}
-                  className="h-full w-full min-h-[120px] sm:min-h-[160px] object-contain"
+                  className="absolute inset-0 h-full w-full object-cover object-center"
                   loading="lazy"
                   decoding="async"
                 />
               </div>
-              <div className="rounded-[1.5rem] sm:rounded-[2rem] bg-gray-100 shadow-md overflow-hidden p-2 sm:p-3 flex-[1.35]">
+              <div className="relative w-full overflow-hidden rounded-[1.75rem] sm:rounded-[2rem] bg-neutral-200 shadow-md aspect-[3/5]">
                 <img
                   src={legacyHistoryPhotos[3].src}
                   alt={legacyHistoryPhotos[3].alt}
-                  className="h-full w-full min-h-[180px] sm:min-h-[260px] object-contain"
+                  className="absolute inset-0 h-full w-full object-cover object-center"
                   loading="lazy"
                   decoding="async"
                 />
