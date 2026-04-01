@@ -510,28 +510,16 @@ const Home = () => {
         </div>
       </section>
 
-      {/* TOPAZ Through the Years — staggered masonry (4 photos) */}
+      {/* Legacy photo grid — staggered two columns, no heading */}
       <section
-        className="relative bg-white py-16 lg:py-24 border-t border-gray-200"
-        aria-labelledby="legacy-history-heading"
+        className="relative bg-gray-50 py-14 sm:py-16 lg:py-24"
+        aria-label="Historical TOPAZ photographs"
       >
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-10 sm:mb-14">
-            <p className="text-[#2E75B6] font-mono text-sm tracking-[0.2em] uppercase font-bold">
-              Our Legacy
-            </p>
-            <h2
-              id="legacy-history-heading"
-              className="font-display font-black text-3xl md:text-4xl lg:text-5xl text-gray-900 tracking-tight mt-3"
-            >
-              TOPAZ Through the Years
-            </h2>
-          </div>
-
-          {/* Staggered 2-col masonry: fixed aspect slots + object-cover (matches mobile reference) */}
-          <div className="grid grid-cols-2 gap-3 sm:gap-[0.875rem] lg:gap-4">
-            <div className="flex min-h-0 flex-col gap-3 sm:gap-[0.875rem] lg:gap-4">
-              <div className="relative w-full overflow-hidden rounded-[1.75rem] sm:rounded-[2rem] bg-neutral-200 shadow-md aspect-[3/5]">
+          <div className="grid grid-cols-2 gap-2.5 sm:gap-3 md:gap-4">
+            {/* Left: two tall portrait stacks */}
+            <div className="flex min-h-0 flex-col gap-2.5 sm:gap-3 md:gap-4">
+              <div className="relative w-full overflow-hidden rounded-[1.75rem] sm:rounded-[2rem] md:rounded-[2.25rem] bg-neutral-200 shadow-sm aspect-[3/5]">
                 <img
                   src={legacyHistoryPhotos[0].src}
                   alt={legacyHistoryPhotos[0].alt}
@@ -540,7 +528,7 @@ const Home = () => {
                   decoding="async"
                 />
               </div>
-              <div className="relative w-full overflow-hidden rounded-[1.75rem] sm:rounded-[2rem] bg-neutral-200 shadow-md aspect-square">
+              <div className="relative w-full overflow-hidden rounded-[1.75rem] sm:rounded-[2rem] md:rounded-[2.25rem] bg-neutral-200 shadow-sm aspect-[3/5]">
                 <img
                   src={legacyHistoryPhotos[2].src}
                   alt={legacyHistoryPhotos[2].alt}
@@ -550,8 +538,9 @@ const Home = () => {
                 />
               </div>
             </div>
-            <div className="flex min-h-0 flex-col gap-3 sm:gap-[0.875rem] lg:gap-4 pt-9 sm:pt-12 lg:pt-[3.75rem]">
-              <div className="relative w-full overflow-hidden rounded-[1.75rem] sm:rounded-[2rem] bg-neutral-200 shadow-md aspect-square">
+            {/* Right: two shorter frames, offset down for asymmetric stagger */}
+            <div className="flex min-h-0 flex-col gap-2.5 sm:gap-3 md:gap-4 pt-6 sm:pt-10 md:pt-14 lg:pt-16">
+              <div className="relative w-full overflow-hidden rounded-[1.75rem] sm:rounded-[2rem] md:rounded-[2.25rem] bg-neutral-200 shadow-sm aspect-[5/4]">
                 <img
                   src={legacyHistoryPhotos[1].src}
                   alt={legacyHistoryPhotos[1].alt}
@@ -560,7 +549,7 @@ const Home = () => {
                   decoding="async"
                 />
               </div>
-              <div className="relative w-full overflow-hidden rounded-[1.75rem] sm:rounded-[2rem] bg-neutral-200 shadow-md aspect-[3/5]">
+              <div className="relative w-full overflow-hidden rounded-[1.75rem] sm:rounded-[2rem] md:rounded-[2.25rem] bg-neutral-200 shadow-sm aspect-[5/4]">
                 <img
                   src={legacyHistoryPhotos[3].src}
                   alt={legacyHistoryPhotos[3].alt}

@@ -13,6 +13,7 @@ import {
   ChevronDown,
 } from 'lucide-react';
 import ContactForm from '../components/ContactForm';
+import { TikTokIcon } from '../components/icons/TikTokIcon';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -130,10 +131,31 @@ const Contact = () => {
   ];
 
   const socialLinks = [
-    { icon: Facebook, href: '#facebook', label: 'Facebook', color: 'bg-blue-600' },
-    { icon: Instagram, href: '#instagram', label: 'Instagram', color: 'bg-pink-600' },
-    { icon: Twitter, href: '#twitter', label: 'Twitter', color: 'bg-sky-500' },
-    { icon: Youtube, href: '#youtube', label: 'YouTube', color: 'bg-red-600' },
+    {
+      icon: Facebook,
+      href: 'https://www.facebook.com/profile.php?id=61583857120063',
+      label: 'Facebook',
+    },
+    {
+      icon: Instagram,
+      href: 'https://instagram.com/dancetopaz2.0',
+      label: 'Instagram',
+    },
+    {
+      icon: Twitter,
+      href: 'https://x.com/0topaz20',
+      label: 'Twitter / X',
+    },
+    {
+      icon: TikTokIcon,
+      href: 'https://www.tiktok.com/@dancetopaz2.0',
+      label: 'TikTok',
+    },
+    {
+      icon: Youtube,
+      href: '#',
+      label: 'YouTube',
+    },
   ];
 
   const faqs = [
@@ -257,14 +279,21 @@ const Contact = () => {
               {/* Social Media Card */}
               <div className="info-card bg-[#0a0a0a] rounded-3xl p-10 overflow-hidden relative group">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-1000" />
-                <h3 className="font-display font-black text-2xl text-white mb-8 uppercase tracking-wider relative z-10">
+                <h3 className="font-display font-black text-2xl text-white mb-3 uppercase tracking-wider relative z-10">
                   Follow the <span className="text-primary italic">Movement</span>
                 </h3>
-                <div className="flex gap-4 relative z-10">
+                <p className="text-white/55 text-sm mb-8 relative z-10 max-w-sm leading-relaxed">
+                  TikTok is launching soon. Follow{' '}
+                  <span className="text-white/80 font-medium">@dancetopaz2.0</span> for updates and
+                  behind-the-scenes.
+                </p>
+                <div className="flex flex-wrap gap-4 relative z-10">
                   {socialLinks.map((social) => (
                     <a
                       key={social.label}
                       href={social.href}
+                      target={social.href.startsWith('http') ? '_blank' : undefined}
+                      rel={social.href.startsWith('http') ? 'noopener noreferrer' : undefined}
                       className={`w-14 h-14 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center text-white hover:bg-primary hover:border-primary transition-all duration-500 hover:scale-110 shadow-lg`}
                       aria-label={social.label}
                     >

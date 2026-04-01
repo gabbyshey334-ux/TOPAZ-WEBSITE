@@ -99,12 +99,15 @@ const ClientLogos = ({
         </span>
         <h2
           id="clients-heading"
-          className={`font-display font-black text-4xl md:text-5xl lg:text-6xl mt-4 mb-16 uppercase tracking-tighter ${
+          className={`font-display font-black text-4xl md:text-5xl lg:text-6xl mt-4 mb-5 uppercase tracking-tighter ${
             isBlack ? 'text-white' : 'text-gray-900'
           }`}
         >
           Our <span className="text-primary italic">Clients</span>
         </h2>
+        <p className={`mx-auto mb-10 max-w-2xl text-sm sm:text-base ${isBlack ? 'text-white/65' : 'text-gray-500'}`}>
+          Client and partner features are coming soon. We will add the right information as soon as it is finalized.
+        </p>
         <div className={`w-24 h-1 mx-auto mb-16 ${isBlack ? 'bg-white/30' : 'bg-[#2E75B6]'}`} />
 
         <div

@@ -9,29 +9,25 @@ gsap.registerPlugin(ScrollTrigger);
 
 const BASE = import.meta.env.BASE_URL;
 
-/* About Us: stage-colorful-trio-vegas; Our Story: stage-dramatic-performance-1980s */
+/* pat_and_bob: beside About Us. founders (trio): moved to heritage band before Meet The Team. */
 const ABOUT_IMAGES = {
+  patAndBob: `${BASE}about/pat_and_bob.png`,
   founders: `${BASE}images/gallery/history/stage-colorful-trio-vegas.jpg`,
   aboutUsFallback: `${BASE}about/about-us.jpg`,
-  ourStory: `${BASE}images/gallery/history/stage-dramatic-performance-1980s.jpg`,
-  ourStoryFallback: `${BASE}images/gallery/history/stage-dramatic-performance-1980s.jpg`,
+  ricPortrait: `${BASE}about/ricpic.png`,
   meetTheTeam: `${BASE}about/meet-the-team.jpg`,
 } as const;
 
 const ABOUT_US_CONTENT =
   "Topaz has proudly been at the forefront of theatrical arts competitions since 1972. Throughout the years and across numerous cities, we've built a vibrant community of countless studios and thousands of contestants who form our extended Topaz family. Many of the dedicated teachers who now inspire students were once competitors in our events, showcasing the lasting impact of our competitions. Join us in the love for the arts and the journey of growth that it fosters!";
 
-const OUR_STORY_CONTENT =
-  "Pat and Bob Heath were visionaries in the world of theatrical arts, pioneering a competition framework that set a standard for excellence. Their innovative approach not only captured the imagination of audiences but also inspired countless others to adopt and adapt their model. With dedication and passion, their work continues to resonate, proving that great ideas can transcend time and influence generations.\n\nTopaz alumni have had the incredible opportunity to perform alongside legends like Cher, Michael Jackson, Madonna, and The Pointer Sisters, captivating audiences around the globe.\n\nToday, Randy and Ric, the youngest sons, play vital roles in shaping the future of Topaz. While Randy is dedicated to guiding the organization forward, Ric and his wife run a thriving gymnastics school with students competing on the international stage.\n\nThough we mourn the loss of Bob in 2023, Pat remains passionate about Topaz and is currently enjoying her time in Las Vegas.";
+const OUR_STORY_PART_A =
+  "Pat and Bob Heath were visionaries in the world of theatrical arts, pioneering a competition framework that set a standard for excellence. Their innovative approach not only captured the imagination of audiences but also inspired countless others to adopt and adapt their model. With dedication and passion, their work continues to resonate, proving that great ideas can transcend time and influence generations.\n\nTopaz alumni have had the incredible opportunity to perform alongside legends like Cher, Michael Jackson, Madonna, and The Pointer Sisters, captivating audiences around the globe.";
 
-/* Client logos: use filenames client-logo-01.png through client-logo-05.png in about/ */
-const CLIENT_LOGO_IMAGES = {
-  logo1: `${import.meta.env.BASE_URL}about/client-logo-01.png`,
-  logo2: `${import.meta.env.BASE_URL}about/client-logo-02.png`,
-  logo3: `${import.meta.env.BASE_URL}about/client-logo-03.png`,
-  logo4: `${import.meta.env.BASE_URL}about/client-logo-04.png`,
-  logo5: `${import.meta.env.BASE_URL}about/client-logo-05.png`,
-} as const;
+const OUR_STORY_PART_B =
+  "Today, Randy and Ric, the youngest sons, play vital roles in shaping the future of Topaz. While Randy is dedicated to guiding the organization forward, Ric and his wife run a thriving gymnastics school with students competing on the international stage.\n\nThough we mourn the loss of Bob in 2023, Pat remains passionate about Topaz and is currently enjoying her time in Las Vegas.";
+
+/* Client logos are placeholders until partner list is finalized. */
 
 const TEAM_MEMBERS = [
   { role: 'President' },
@@ -39,13 +35,13 @@ const TEAM_MEMBERS = [
   { role: 'Founder' },
 ];
 
-/* Add src when you add client-logo-01.png … client-logo-05.png to public/about/ */
+/* Placeholder cards until client list is ready. */
 const CLIENT_LOGOS = [
-  { src: CLIENT_LOGO_IMAGES.logo1, alt: 'Client 1', name: 'Client 1' },
-  { src: CLIENT_LOGO_IMAGES.logo2, alt: 'Client 2', name: 'Client 2' },
-  { src: CLIENT_LOGO_IMAGES.logo3, alt: 'Client 3', name: 'Client 3' },
-  { src: CLIENT_LOGO_IMAGES.logo4, alt: 'Client 4', name: 'Client 4' },
-  { src: CLIENT_LOGO_IMAGES.logo5, alt: 'Client 5', name: 'Client 5' },
+  { alt: 'Clients coming soon', name: 'Coming Soon' },
+  { alt: 'Clients coming soon', name: 'Coming Soon' },
+  { alt: 'Clients coming soon', name: 'Coming Soon' },
+  { alt: 'Clients coming soon', name: 'Coming Soon' },
+  { alt: 'Clients coming soon', name: 'Coming Soon' },
 ];
 
 const About = () => {
@@ -106,21 +102,66 @@ const About = () => {
         background="black"
         heading="About Us"
         alignment="left"
-        imageSrc={ABOUT_IMAGES.founders}
+        imageSrc={ABOUT_IMAGES.patAndBob}
         imageFallbackSrc={ABOUT_IMAGES.aboutUsFallback}
-        imageAlt="TOPAZ performers on stage during the competition era"
+        imageAlt="Pat and Bob Heath dancing"
+        imageObjectFit="contain"
+        stackImageFirst
         content={ABOUT_US_CONTENT}
       />
 
-      <TextSection
-        background="white"
-        heading="Our Story"
-        alignment="right"
-        imageSrc={ABOUT_IMAGES.ourStory}
-        imageFallbackSrc={ABOUT_IMAGES.ourStoryFallback}
-        imageAlt="TOPAZ performer on stage — dramatic performance"
-        content={OUR_STORY_CONTENT}
-      />
+      {/* Our Story (warm stage photo removed). Ric portrait sits before the Randy & Ric paragraph. */}
+      <section
+        className="bg-[#fcfcfc] text-black border-y border-gray-100 py-24 lg:py-40"
+        aria-labelledby="our-story-heading"
+      >
+        <div className="w-full px-4 sm:px-6 lg:px-12 max-w-7xl mx-auto">
+          <h2
+            id="our-story-heading"
+            className="font-display font-black text-4xl md:text-5xl lg:text-6xl mb-10 leading-tight uppercase tracking-tighter max-w-[800px]"
+          >
+            Our <span className="text-primary italic">Story</span>
+          </h2>
+          <p className="text-xl leading-relaxed text-gray-500 font-medium whitespace-pre-line max-w-[800px]">
+            {OUR_STORY_PART_A}
+          </p>
+
+          <figure className="my-14 sm:my-16 max-w-lg mx-auto lg:mx-0 lg:max-w-xl">
+            <div className="overflow-hidden rounded-[2.5rem] border border-gray-200 bg-gray-100 shadow-premium p-4 sm:p-6 flex items-center justify-center">
+              <img
+                src={ABOUT_IMAGES.ricPortrait}
+                alt="Ric Heath"
+                loading="lazy"
+                className="w-full h-auto max-h-[min(75vh,720px)] object-contain"
+              />
+            </div>
+            <figcaption className="mt-4 text-center lg:text-left font-display font-semibold text-lg text-gray-800 tracking-wide">
+              Ric Heath
+            </figcaption>
+          </figure>
+
+          <p className="text-xl leading-relaxed text-gray-500 font-medium whitespace-pre-line max-w-[800px]">
+            {OUR_STORY_PART_B}
+          </p>
+        </div>
+      </section>
+
+      {/* Former About Us side image — heritage / founders era (still in project, new placement) */}
+      <section
+        className="bg-gray-50 py-16 lg:py-24 border-t border-gray-100"
+        aria-label="TOPAZ performers on stage, early years"
+      >
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-12">
+          <div className="overflow-hidden rounded-[2rem] sm:rounded-[2.5rem] border border-gray-200 bg-white shadow-md">
+            <img
+              src={ABOUT_IMAGES.founders}
+              alt="TOPAZ performers on stage during the competition era"
+              loading="lazy"
+              className="w-full h-auto object-contain max-h-[min(90vh,900px)] mx-auto block"
+            />
+          </div>
+        </div>
+      </section>
 
       {/* Section 4: Meet The Team (Black) */}
       <TeamSection

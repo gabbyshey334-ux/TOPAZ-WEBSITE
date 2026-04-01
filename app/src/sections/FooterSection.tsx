@@ -2,6 +2,7 @@ import { useRef, useLayoutEffect } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Instagram, Youtube, Mail, MapPin } from 'lucide-react';
+import { TikTokIcon } from '../components/icons/TikTokIcon';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -150,11 +151,13 @@ const FooterSection = () => {
                   <Youtube className="w-5 h-5" />
                 </a>
                 <a
-                  href="#tiktok"
-                  className="p-2 border border-border text-muted-foreground hover:text-primary hover:border-primary transition-colors font-mono text-xs"
+                  href="https://www.tiktok.com/@dancetopaz2.0"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2 border border-border text-muted-foreground hover:text-primary hover:border-primary transition-colors"
                   aria-label="TikTok"
                 >
-                  TT
+                  <TikTokIcon className="w-5 h-5" />
                 </a>
               </div>
             </div>

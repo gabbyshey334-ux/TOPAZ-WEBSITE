@@ -23,12 +23,12 @@ const historyPhotos = [
   { id: 14, src: `${import.meta.env.BASE_URL}images/gallery/history/stage-colorful-trio-vegas.jpg`, alt: 'Colorful trio in Las Vegas–style costumes on stage', category: 'competitions' },
   { id: 15, src: `${import.meta.env.BASE_URL}images/gallery/history/group-glitter-costumes-trophy.jpg`, alt: 'Ensemble in glitter costumes celebrating with a trophy', category: 'competitions' },
   { id: 16, src: `${import.meta.env.BASE_URL}images/gallery/history/newspaper-high-steppin-caesars.jpg`, alt: 'Newspaper clipping about High Steppin\' and TOPAZ at Caesars', category: 'competitions' },
-  { id: 17, src: `${import.meta.env.BASE_URL}images/gallery/history/acrobatic-overhead-lift.jpg`, alt: 'Dancers rehearsing an acrobatic overhead lift', category: 'rehearsals' },
+  { id: 17, src: `${import.meta.env.BASE_URL}images/gallery/history/acrobatic-overhead-lift.jpg`, alt: 'Dancers performing an acrobatic overhead lift', category: 'competitions' },
   { id: 18, src: `${import.meta.env.BASE_URL}images/gallery/history/duo-large-trophy-ribbon.jpg`, alt: 'Duo with a large trophy and award ribbons', category: 'awards' },
   { id: 19, src: `${import.meta.env.BASE_URL}images/gallery/history/boy-tuxedo-trophy-1990.jpg`, alt: 'Young dancer in tuxedo holding a trophy, circa 1990', category: 'awards' },
   { id: 20, src: `${import.meta.env.BASE_URL}images/gallery/history/youth-group-teal-hats.jpg`, alt: 'Youth group in matching teal hats performing on stage', category: 'competitions' },
   { id: 21, src: `${import.meta.env.BASE_URL}images/gallery/history/youth-group-colorful-flapper.jpg`, alt: 'Youth ensemble in colorful flapper-style costumes', category: 'competitions' },
-  { id: 22, src: `${import.meta.env.BASE_URL}images/gallery/history/backstage-duo-portrait.jpg`, alt: 'Two dancers posing together backstage', category: 'rehearsals' },
+  { id: 22, src: `${import.meta.env.BASE_URL}images/gallery/history/backstage-duo-portrait.jpg`, alt: 'Two dancers posing together backstage', category: 'competitions' },
   { id: 23, src: `${import.meta.env.BASE_URL}images/gallery/history/topaz-competition-banner-group.jpg`, alt: 'Large group photo with TOPAZ competition banner', category: 'competitions' },
 ];
 
@@ -37,28 +37,26 @@ const historyPhotos = [
 // Add youtubeId once videos are ready.
 // ─────────────────────────────────────────────────────────────────────────────
 const historyVideos = [
-  { id: 1, title: 'Competition Highlights', youtubeId: '', thumbnail: '', category: 'competitions' },
-  { id: 2, title: 'TOPAZ Memories',         youtubeId: '', thumbnail: '', category: 'competitions' },
+  { id: 1, title: 'TOPAZ Memories', youtubeId: '', thumbnail: '', category: 'competitions' },
+  { id: 2, title: 'TOPAZ 2.0 Future', youtubeId: '', thumbnail: '', category: 'awards' },
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types & constants
 // ─────────────────────────────────────────────────────────────────────────────
-type PhotoCategory = 'all' | 'competitions' | 'rehearsals' | 'awards';
-type VideoCategory = 'all' | 'competitions' | 'rehearsals' | 'awards';
+type PhotoCategory = 'all' | 'competitions' | 'awards';
+type VideoCategory = 'all' | 'competitions' | 'awards';
 type GalleryEra    = 'history' | 'topaz20';
 
 const PHOTO_FILTERS: { label: string; value: PhotoCategory }[] = [
   { label: 'All',          value: 'all'          },
   { label: 'Competitions', value: 'competitions' },
-  { label: 'Rehearsals',   value: 'rehearsals'   },
   { label: 'Awards',       value: 'awards'       },
 ];
 
 const VIDEO_FILTERS: { label: string; value: VideoCategory }[] = [
   { label: 'All',          value: 'all'          },
   { label: 'Competitions', value: 'competitions' },
-  { label: 'Rehearsals',   value: 'rehearsals'   },
   { label: 'Awards',       value: 'awards'       },
 ];
 
@@ -183,7 +181,7 @@ const Gallery = () => {
             </h2>
             <p className="text-lg text-gray-600 leading-relaxed mb-4">
               Photos and videos from the new TOPAZ 2.0 competition season will be published here
-              after events. Check back for highlights, awards, and behind-the-scenes content.
+              after events. We will post the right highlights and details as they become available.
             </p>
             <p className="text-sm text-gray-500 flex items-center justify-center gap-2">
               <Clock className="w-4 h-4 shrink-0" />
