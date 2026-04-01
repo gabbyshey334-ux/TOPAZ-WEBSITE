@@ -201,7 +201,7 @@ const Gallery = () => {
                 key={tab}
                 type="button"
                 onClick={() => setActiveTab(tab)}
-                className={`px-5 py-4 text-sm font-bold uppercase tracking-wider transition-colors sm:px-6 ${
+                className={`flex min-h-[44px] min-w-[44px] items-center justify-center px-5 py-3 text-sm font-bold uppercase tracking-wider transition-colors sm:px-6 sm:py-4 ${
                   activeTab === tab
                     ? 'border-b-2 border-[#2E75B6] text-[#2E75B6]'
                     : 'text-gray-500 hover:text-gray-800'

@@ -290,8 +290,8 @@ const Home = () => {
       </section>
 
       {/* PROMOTIONAL CARDS */}
-      <section ref={promoRef} className="relative bg-gray-50 py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section ref={promoRef} className="relative overflow-x-hidden bg-gray-50 py-8">
+        <div className="mx-auto max-w-7xl min-w-0 px-4 sm:px-6 lg:px-8">
           <div className="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 md:gap-4">
             {promoCards.map((card) => (
               <div
@@ -304,12 +304,12 @@ const Home = () => {
                   className="absolute inset-0 w-full h-full object-cover"
                 />
                 <div className={`absolute inset-0 bg-gradient-to-br ${card.bg} opacity-80`} />
-                <div className="absolute inset-0 p-6 flex flex-col justify-between">
-                  <div>
-                    <p className="text-white/80 text-xs font-bold tracking-[0.2em] uppercase">
+                <div className="absolute inset-0 flex flex-col justify-between p-4 sm:p-6">
+                  <div className="min-w-0">
+                    <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/80">
                       {card.subtitle}
                     </p>
-                    <h3 className="font-display font-black text-2xl md:text-3xl text-white mt-1">
+                    <h3 className="mt-1 break-words font-display text-2xl font-black text-white md:text-3xl">
                       {card.title}
                     </h3>
                   </div>

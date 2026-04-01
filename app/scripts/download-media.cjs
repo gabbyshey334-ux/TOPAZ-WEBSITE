@@ -30,49 +30,49 @@ const IMAGES_DATA = [
     "src": "https://static.wixstatic.com/media/187f75_a536ad47a98747f99ccec44e0e0b3d6f~mv2.jpg/v1/fill/w_320,h_238,q_90,enc_avif,quality_auto/187f75_a536ad47a98747f99ccec44e0e0b3d6f~mv2.jpg",
     "alt": "Gallery Image 1",
     "category": "gallery",
-    "filename": "gallery-01.jpg"
+    "filename": "topaz-import-gallery-01.jpg"
   },
   {
     "index": 2,
     "src": "https://static.wixstatic.com/media/187f75_2240f8ab41234ff49258d404bb6bc179~mv2.jpg/v1/fill/w_320,h_215,q_90,enc_avif,quality_auto/187f75_2240f8ab41234ff49258d404bb6bc179~mv2.jpg",
     "alt": "Gallery Image 2",
     "category": "gallery",
-    "filename": "gallery-02.jpg"
+    "filename": "topaz-import-gallery-02.jpg"
   },
   {
     "index": 3,
     "src": "https://static.wixstatic.com/media/187f75_c8e05c66becf4997bcd14bffdadcca85~mv2.jpg/v1/fill/w_320,h_430,q_90,enc_avif,quality_auto/187f75_c8e05c66becf4997bcd14bffdadcca85~mv2.jpg",
     "alt": "Gallery Image 3",
     "category": "gallery",
-    "filename": "gallery-03.jpg"
+    "filename": "topaz-import-gallery-03.jpg"
   },
   {
     "index": 4,
     "src": "https://static.wixstatic.com/media/187f75_c5f8d9aa9ddb4d81a653acaf95551b39~mv2.jpg/v1/fill/w_320,h_254,q_90,enc_avif,quality_auto/187f75_c5f8d9aa9ddb4d81a653acaf95551b39~mv2.jpg",
     "alt": "Gallery Image 4",
     "category": "gallery",
-    "filename": "gallery-04.jpg"
+    "filename": "topaz-import-gallery-04.jpg"
   },
   {
     "index": 5,
     "src": "https://static.wixstatic.com/media/187f75_6e4e918b9ad64de58d7043943fd1a190~mv2.jpg/v1/fill/w_320,h_444,q_90,enc_avif,quality_auto/187f75_6e4e918b9ad64de58d7043943fd1a190~mv2.jpg",
     "alt": "Gallery Image 5",
     "category": "gallery",
-    "filename": "gallery-05.jpg"
+    "filename": "topaz-import-gallery-05.jpg"
   },
   {
     "index": 6,
     "src": "https://static.wixstatic.com/media/187f75_1e9e85500e3d403cb0f6405d5a19ccf6~mv2.jpg/v1/fill/w_320,h_212,q_90,enc_avif,quality_auto/187f75_1e9e85500e3d403cb0f6405d5a19ccf6~mv2.jpg",
     "alt": "Gallery Image 6",
     "category": "gallery",
-    "filename": "gallery-06.jpg"
+    "filename": "topaz-import-gallery-06.jpg"
   },
   {
     "index": 7,
     "src": "https://static.wixstatic.com/media/187f75_8f1abb5c72134b6887dbd359ed1e0547~mv2.jpg/v1/fill/w_320,h_253,q_90,enc_avif,quality_auto/187f75_8f1abb5c72134b6887dbd359ed1e0547~mv2.jpg",
     "alt": "Gallery Image 7",
     "category": "gallery",
-    "filename": "gallery-07.jpg"
+    "filename": "topaz-import-gallery-07.jpg"
   },
   {
     "index": 8,

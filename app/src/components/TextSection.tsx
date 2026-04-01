@@ -84,7 +84,7 @@ const TextSection = ({
   const contentBlock = (
     <div
       ref={textRef}
-      className={`${textMaxWidth} ${
+      className={`min-w-0 ${textMaxWidth} ${
         alignment === 'right' ? 'lg:order-2' : ''
       } ${stackImageFirst && imgSrc && alignment === 'left' ? 'order-2 lg:order-1' : ''}`}
     >
@@ -101,7 +101,7 @@ const TextSection = ({
   const imageBlock = imgSrc ? (
     <div
       ref={imageRef}
-      className={`relative overflow-hidden rounded-[2.5rem] shadow-premium ${
+      className={`relative min-w-0 overflow-hidden rounded-[2.5rem] shadow-premium ${
         alignment === 'right' ? 'lg:order-1' : ''
       } ${
         stackImageFirst && alignment === 'left'
@@ -137,7 +137,7 @@ const TextSection = ({
       aria-labelledby={headingId}
     >
       <div className="w-full px-4 sm:px-6 lg:px-12 max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+        <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2 lg:gap-16 min-w-0">
           {alignment === 'left' ? (
             <>
               {contentBlock}

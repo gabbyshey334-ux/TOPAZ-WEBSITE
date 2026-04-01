@@ -9,7 +9,7 @@ gsap.registerPlugin(ScrollTrigger);
 
 const BASE = import.meta.env.BASE_URL;
 
-/* pat_and_bob: beside About Us. founders (trio): moved to heritage band before Meet The Team. */
+/* pat-and-bob.png beside About Us; founders trio in heritage band before Meet The Team. */
 const ABOUT_IMAGES = {
   patAndBob: `${BASE}about/pat-and-bob.png`,
   founders: `${BASE}images/gallery/history/stage-colorful-trio-vegas.jpg`,

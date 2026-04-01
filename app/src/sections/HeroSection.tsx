@@ -78,12 +78,12 @@ const HeroSection = () => {
         {/* Logo banner: 100–120px tall, light background, between video and title (C1–C5) */}
         <div
           ref={bannerRef}
-          className="mb-8 flex h-[110px] w-full max-w-xl items-center justify-center rounded-xl bg-neutral-100 px-4 shadow-lg sm:mb-10 sm:px-6"
+          className="mb-8 box-border flex h-[110px] w-full min-w-0 max-w-xl items-center justify-center rounded-xl bg-neutral-100 px-3 shadow-lg sm:mb-10 sm:px-6"
         >
           <img
             src={logoSrc}
             alt="TOPAZ"
-            className="max-h-[72px] w-auto max-w-[min(100%,280px)] object-contain sm:max-h-[80px] sm:max-w-[min(100%,320px)]"
+            className="max-h-[72px] w-auto max-w-full object-contain sm:max-h-[80px] sm:max-w-[min(100%,320px)]"
             data-fallback-tried=""
             onError={(e) => {
               const el = e.currentTarget;
