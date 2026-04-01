@@ -148,9 +148,8 @@ const Contact = () => {
     },
     {
       icon: TikTokIcon,
-      href: 'https://www.tiktok.com',
+      href: 'https://www.tiktok.com/@dancetopaz2.0',
       label: 'TikTok',
-      comingSoon: true,
     },
     {
       icon: Youtube,
@@ -284,32 +283,23 @@ const Contact = () => {
                   Follow the <span className="text-primary italic">Movement</span>
                 </h3>
                 <p className="text-white/55 text-sm mb-8 relative z-10 max-w-sm leading-relaxed">
-                  TikTok is launching soon. Follow{' '}
-                  <span className="text-white/80 font-medium">@dancetopaz2.0</span> for updates and
-                  behind-the-scenes.
+                  Follow{' '}
+                  <span className="text-white/80 font-medium">@dancetopaz2.0</span> on TikTok for updates
+                  and behind-the-scenes content.
                 </p>
                 <div className="flex flex-wrap gap-4 relative z-10">
-                  {socialLinks.map((social) => {
-                    const soon = Boolean(social.comingSoon);
-                    return (
-                      <a
-                        key={social.label}
-                        href={social.href}
-                        target={social.href.startsWith('http') ? '_blank' : undefined}
-                        rel={social.href.startsWith('http') ? 'noopener noreferrer' : undefined}
-                        className={`relative flex h-14 w-14 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-white shadow-lg transition-all duration-500 hover:scale-110 hover:border-primary hover:bg-primary ${soon ? 'opacity-65 hover:opacity-90' : ''}`}
-                        aria-label={soon ? `${social.label} (coming soon)` : social.label}
-                        title={soon ? 'TikTok — coming soon' : undefined}
-                      >
-                        <social.icon className="h-6 w-6" />
-                        {soon ? (
-                          <span className="absolute -right-1 -top-1 rounded bg-primary px-1 py-px text-[7px] font-bold uppercase leading-none text-white">
-                            Soon
-                          </span>
-                        ) : null}
-                      </a>
-                    );
-                  })}
+                  {socialLinks.map((social) => (
+                    <a
+                      key={social.label}
+                      href={social.href}
+                      target={social.href.startsWith('http') ? '_blank' : undefined}
+                      rel={social.href.startsWith('http') ? 'noopener noreferrer' : undefined}
+                      className="flex h-14 w-14 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-white shadow-lg transition-all duration-500 hover:scale-110 hover:border-primary hover:bg-primary"
+                      aria-label={social.label}
+                    >
+                      <social.icon className="h-6 w-6" />
+                    </a>
+                  ))}
                 </div>
               </div>
             </div>

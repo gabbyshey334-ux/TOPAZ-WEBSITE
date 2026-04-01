@@ -21,7 +21,7 @@ const socialLinks = [
   {
     name: 'TikTok',
     icon: TikTokIcon,
-    url: 'https://www.tiktok.com',
+    url: 'https://www.tiktok.com/@dancetopaz2.0',
   },
   {
     name: 'YouTube',
@@ -80,27 +80,18 @@ const Footer = () => {
 
             {/* Social Icons */}
             <div className="flex gap-3">
-              {socialLinks.map((link) => {
-                const isSoon = link.name === 'TikTok';
-                return (
-                  <a
-                    key={link.name}
-                    href={link.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={`relative flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition-all duration-200 hover:bg-[#2E75B6] ${isSoon ? 'opacity-65 hover:opacity-90' : ''}`}
-                    aria-label={isSoon ? `${link.name} (coming soon)` : link.name}
-                    title={isSoon ? 'TikTok — coming soon' : undefined}
-                  >
-                    <link.icon className="h-5 w-5" />
-                    {isSoon ? (
-                      <span className="absolute -right-1 -top-1 rounded bg-[#2E75B6] px-1 py-px text-[7px] font-bold uppercase leading-none text-white">
-                        Soon
-                      </span>
-                    ) : null}
-                  </a>
-                );
-              })}
+              {socialLinks.map((link) => (
+                <a
+                  key={link.name}
+                  href={link.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition-all duration-200 hover:bg-[#2E75B6]"
+                  aria-label={link.name}
+                >
+                  <link.icon className="h-5 w-5" />
+                </a>
+              ))}
             </div>
           </div>
 
