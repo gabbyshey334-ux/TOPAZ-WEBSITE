@@ -228,9 +228,9 @@ const Registration = () => {
                 {[
                   'Completed registration form',
                   'High-resolution photo of all contestants',
-                  'Music selection (MP3, WAV, or CD)',
+                  'Music selection (MP3, WAV, CD, or USB drive)',
                   'Payment (check, cash, or credit card)',
-                  'Parent/guardian signature (for minors)',
+                  'Parent or teacher signature (for minors)',
                   'Submit completed form and materials by email to topaz2.0@yahoo.com'
                 ].map((item, i) => (
                   <li key={i} className="flex items-start gap-4 text-gray-700">

@@ -1,18 +1,30 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { gsap } from 'gsap';
 import { ChevronDown } from 'lucide-react';
 
 const SHOWREEL_VIDEO_URL = 'https://video.wixstatic.com/video/187f75_27990c00a54e450aa41497ecc3f40b68/480p/mp4/file.mp4';
+const BASE = import.meta.env.BASE_URL;
+const MASK_LOGO = `${BASE}images/logos/topaz-logo-masks.png`;
+const MASK_LOGO_FALLBACK = `${BASE}images/logos/topaz-logo.png`;
 
 const HeroSection = () => {
   const sectionRef = useRef<HTMLElement>(null);
+  const bannerRef = useRef<HTMLDivElement>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const taglineRef = useRef<HTMLParagraphElement>(null);
   const underlineRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [logoSrc, setLogoSrc] = useState(MASK_LOGO);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
+      if (bannerRef.current) {
+        gsap.fromTo(
+          bannerRef.current,
+          { y: 24, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.9, ease: 'power3.out', delay: 0.05 }
+        );
+      }
       if (headingRef.current) {
         gsap.fromTo(
           headingRef.current,
@@ -63,6 +75,26 @@ const HeroSection = () => {
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/60" />
 
       <div className="absolute inset-0 flex flex-col items-center justify-center px-4 text-center">
+        {/* Logo banner: 100–120px tall, light background, between video and title (C1–C5) */}
+        <div
+          ref={bannerRef}
+          className="mb-8 flex h-[110px] w-full max-w-xl items-center justify-center rounded-xl bg-neutral-100 px-4 shadow-lg sm:mb-10 sm:px-6"
+        >
+          <img
+            src={logoSrc}
+            alt="TOPAZ"
+            className="max-h-[72px] w-auto max-w-[min(100%,280px)] object-contain sm:max-h-[80px] sm:max-w-[min(100%,320px)]"
+            data-fallback-tried=""
+            onError={(e) => {
+              const el = e.currentTarget;
+              if (!el.dataset.fallbackTried) {
+                el.dataset.fallbackTried = '1';
+                setLogoSrc(MASK_LOGO_FALLBACK);
+              }
+            }}
+          />
+        </div>
+
         <h1
           ref={headingRef}
           className="font-display font-black text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl tracking-tighter text-white leading-[0.9] mb-4"

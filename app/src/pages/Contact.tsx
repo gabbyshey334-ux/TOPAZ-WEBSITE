@@ -148,8 +148,9 @@ const Contact = () => {
     },
     {
       icon: TikTokIcon,
-      href: 'https://www.tiktok.com/@dancetopaz2.0',
+      href: 'https://www.tiktok.com',
       label: 'TikTok',
+      comingSoon: true,
     },
     {
       icon: Youtube,
@@ -288,18 +289,27 @@ const Contact = () => {
                   behind-the-scenes.
                 </p>
                 <div className="flex flex-wrap gap-4 relative z-10">
-                  {socialLinks.map((social) => (
-                    <a
-                      key={social.label}
-                      href={social.href}
-                      target={social.href.startsWith('http') ? '_blank' : undefined}
-                      rel={social.href.startsWith('http') ? 'noopener noreferrer' : undefined}
-                      className={`w-14 h-14 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center text-white hover:bg-primary hover:border-primary transition-all duration-500 hover:scale-110 shadow-lg`}
-                      aria-label={social.label}
-                    >
-                      <social.icon className="w-6 h-6" />
-                    </a>
-                  ))}
+                  {socialLinks.map((social) => {
+                    const soon = Boolean(social.comingSoon);
+                    return (
+                      <a
+                        key={social.label}
+                        href={social.href}
+                        target={social.href.startsWith('http') ? '_blank' : undefined}
+                        rel={social.href.startsWith('http') ? 'noopener noreferrer' : undefined}
+                        className={`relative flex h-14 w-14 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-white shadow-lg transition-all duration-500 hover:scale-110 hover:border-primary hover:bg-primary ${soon ? 'opacity-65 hover:opacity-90' : ''}`}
+                        aria-label={soon ? `${social.label} (coming soon)` : social.label}
+                        title={soon ? 'TikTok — coming soon' : undefined}
+                      >
+                        <social.icon className="h-6 w-6" />
+                        {soon ? (
+                          <span className="absolute -right-1 -top-1 rounded bg-primary px-1 py-px text-[7px] font-bold uppercase leading-none text-white">
+                            Soon
+                          </span>
+                        ) : null}
+                      </a>
+                    );
+                  })}
                 </div>
               </div>
             </div>

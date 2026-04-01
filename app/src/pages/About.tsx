@@ -11,10 +11,10 @@ const BASE = import.meta.env.BASE_URL;
 
 /* pat_and_bob: beside About Us. founders (trio): moved to heritage band before Meet The Team. */
 const ABOUT_IMAGES = {
-  patAndBob: `${BASE}about/pat_and_bob.png`,
+  patAndBob: `${BASE}about/pat-and-bob.png`,
   founders: `${BASE}images/gallery/history/stage-colorful-trio-vegas.jpg`,
   aboutUsFallback: `${BASE}about/about-us.jpg`,
-  ricPortrait: `${BASE}about/ricpic.png`,
+  ricPortrait: `${BASE}about/ric-heath.png`,
   meetTheTeam: `${BASE}about/meet-the-team.jpg`,
 } as const;
 

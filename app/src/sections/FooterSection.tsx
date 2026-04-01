@@ -151,13 +151,17 @@ const FooterSection = () => {
                   <Youtube className="w-5 h-5" />
                 </a>
                 <a
-                  href="https://www.tiktok.com/@dancetopaz2.0"
+                  href="https://www.tiktok.com"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="p-2 border border-border text-muted-foreground hover:text-primary hover:border-primary transition-colors"
-                  aria-label="TikTok"
+                  className="relative p-2 border border-border text-muted-foreground opacity-70 hover:opacity-100 hover:text-primary hover:border-primary transition-colors"
+                  aria-label="TikTok (coming soon)"
+                  title="TikTok — coming soon"
                 >
                   <TikTokIcon className="w-5 h-5" />
+                  <span className="absolute -right-0.5 -top-0.5 rounded bg-primary px-0.5 text-[6px] font-bold uppercase leading-none text-white">
+                    Soon
+                  </span>
                 </a>
               </div>
             </div>

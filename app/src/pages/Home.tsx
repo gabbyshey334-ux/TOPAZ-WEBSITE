@@ -207,6 +207,29 @@ const Home = () => {
     <div className="min-h-screen bg-white selection:bg-[#2E75B6] selection:text-white">
       <HeroSection />
 
+      {/* Four main homepage photos — 1 col mobile, 2×2 desktop; object-contain (no crop) */}
+      <section
+        className="border-b border-gray-200 bg-gray-50 py-10 sm:py-12 lg:py-16"
+        aria-label="TOPAZ heritage photographs"
+      >
+        <div className="mx-auto grid max-w-6xl grid-cols-1 gap-4 px-4 sm:px-6 md:grid-cols-2 md:gap-5 lg:gap-6">
+          {legacyHistoryPhotos.map((photo) => (
+            <div
+              key={photo.src}
+              className="flex min-h-0 items-center justify-center overflow-hidden rounded-2xl border border-gray-200 bg-white p-3 shadow-sm sm:rounded-3xl sm:p-4"
+            >
+              <img
+                src={photo.src}
+                alt={photo.alt}
+                loading="lazy"
+                decoding="async"
+                className="max-h-[min(70vh,520px)] w-full object-contain"
+              />
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* NOW LIVE / FEATURED SECTION */}
       <section ref={featuredRef} className="relative bg-white py-16 lg:py-24 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -269,11 +292,11 @@ const Home = () => {
       {/* PROMOTIONAL CARDS */}
       <section ref={promoRef} className="relative bg-gray-50 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-3 gap-4">
+          <div className="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 md:gap-4">
             {promoCards.map((card) => (
               <div
                 key={card.id}
-                className="promo-card relative h-64 md:h-72 rounded-xl overflow-hidden shadow-lg"
+                className="promo-card relative min-h-[220px] min-w-0 overflow-hidden rounded-xl shadow-lg sm:min-h-[240px] md:h-72"
               >
                 <img
                   src={card.image}
@@ -504,59 +527,6 @@ const Home = () => {
                 >
                   Learn More
                 </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Legacy photo grid — staggered two columns, no heading */}
-      <section
-        className="relative bg-gray-50 py-14 sm:py-16 lg:py-24"
-        aria-label="Historical TOPAZ photographs"
-      >
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 gap-2.5 sm:gap-3 md:gap-4">
-            {/* Left: two tall portrait stacks */}
-            <div className="flex min-h-0 flex-col gap-2.5 sm:gap-3 md:gap-4">
-              <div className="relative w-full overflow-hidden rounded-[1.75rem] sm:rounded-[2rem] md:rounded-[2.25rem] bg-neutral-200 shadow-sm aspect-[3/5]">
-                <img
-                  src={legacyHistoryPhotos[0].src}
-                  alt={legacyHistoryPhotos[0].alt}
-                  className="absolute inset-0 h-full w-full object-cover object-center"
-                  loading="lazy"
-                  decoding="async"
-                />
-              </div>
-              <div className="relative w-full overflow-hidden rounded-[1.75rem] sm:rounded-[2rem] md:rounded-[2.25rem] bg-neutral-200 shadow-sm aspect-[3/5]">
-                <img
-                  src={legacyHistoryPhotos[2].src}
-                  alt={legacyHistoryPhotos[2].alt}
-                  className="absolute inset-0 h-full w-full object-cover object-center"
-                  loading="lazy"
-                  decoding="async"
-                />
-              </div>
-            </div>
-            {/* Right: two shorter frames, offset down for asymmetric stagger */}
-            <div className="flex min-h-0 flex-col gap-2.5 sm:gap-3 md:gap-4 pt-6 sm:pt-10 md:pt-14 lg:pt-16">
-              <div className="relative w-full overflow-hidden rounded-[1.75rem] sm:rounded-[2rem] md:rounded-[2.25rem] bg-neutral-200 shadow-sm aspect-[5/4]">
-                <img
-                  src={legacyHistoryPhotos[1].src}
-                  alt={legacyHistoryPhotos[1].alt}
-                  className="absolute inset-0 h-full w-full object-cover object-center"
-                  loading="lazy"
-                  decoding="async"
-                />
-              </div>
-              <div className="relative w-full overflow-hidden rounded-[1.75rem] sm:rounded-[2rem] md:rounded-[2.25rem] bg-neutral-200 shadow-sm aspect-[5/4]">
-                <img
-                  src={legacyHistoryPhotos[3].src}
-                  alt={legacyHistoryPhotos[3].alt}
-                  className="absolute inset-0 h-full w-full object-cover object-center"
-                  loading="lazy"
-                  decoding="async"
-                />
               </div>
             </div>
           </div>

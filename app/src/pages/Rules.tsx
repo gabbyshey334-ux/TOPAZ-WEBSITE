@@ -577,7 +577,7 @@ const Rules = () => {
                 Group Size, <br/><span className="text-[#2E75B6] italic">Limits & Fees</span>
               </h2>
               <p className="section-animate text-lg text-gray-500 leading-relaxed mb-8">
-                Strict adherence to time limits ensures a smooth schedule. Entrances and exits must not exceed 10 seconds. Points will be deducted for overtime performances.
+                Strict adherence to time limits ensures a smooth schedule. <strong className="text-gray-700">Production: 8 minutes maximum.</strong> Entrances and exits must not exceed 10 seconds. Points will be deducted for overtime performances.
               </p>
               <div className="section-animate hidden lg:flex items-center gap-4 p-6 bg-gray-50 border border-gray-100 rounded-2xl">
                 <Info className="w-8 h-8 text-[#2E75B6] flex-shrink-0" />

@@ -91,16 +91,16 @@ const CompetitionCard = ({
           </div>
         </div>
 
-        <div className="flex flex-col items-center text-center gap-3 sm:flex-row sm:items-start sm:text-left sm:gap-4">
-          <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center">
-            <MapPin className="w-6 h-6 text-blue-600" />
+        <div className="flex flex-col items-center gap-3 text-center">
+          <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-blue-50">
+            <MapPin className="h-6 w-6 text-blue-600" />
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
+          <div className="min-w-0 max-w-md">
+            <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-gray-500">
               Location
             </p>
             <p className="text-base font-bold text-gray-900">{location}</p>
-            {address && <p className="text-sm text-gray-600 mt-1">{address}</p>}
+            {address && <p className="mt-1 text-sm text-gray-600">{address}</p>}
           </div>
         </div>
 
@@ -150,7 +150,7 @@ const CompetitionCard = ({
               <img
                 src={imgSrc}
                 alt={name}
-                className="absolute inset-0 w-full h-full object-cover object-center scale-[1.08] rotate-[1.25deg]"
+                className="absolute inset-0 h-full w-full object-cover object-center"
                 onError={() => setImgError(true)}
               />
               <div className="absolute inset-0 bg-gradient-to-r from-black/10 via-transparent to-transparent" />
