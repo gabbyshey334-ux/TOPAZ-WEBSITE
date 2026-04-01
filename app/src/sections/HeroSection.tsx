@@ -9,7 +9,7 @@ const MASK_LOGO_FALLBACK = `${BASE}images/logos/topaz-logo.png`;
 
 const HeroSection = () => {
   const sectionRef = useRef<HTMLElement>(null);
-  const bannerRef = useRef<HTMLDivElement>(null);
+  const logoRef = useRef<HTMLImageElement>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const taglineRef = useRef<HTMLParagraphElement>(null);
   const underlineRef = useRef<HTMLDivElement>(null);
@@ -18,9 +18,9 @@ const HeroSection = () => {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      if (bannerRef.current) {
+      if (logoRef.current) {
         gsap.fromTo(
-          bannerRef.current,
+          logoRef.current,
           { y: 24, opacity: 0 },
           { y: 0, opacity: 1, duration: 0.9, ease: 'power3.out', delay: 0.05 }
         );
@@ -75,25 +75,21 @@ const HeroSection = () => {
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/60" />
 
       <div className="absolute inset-0 flex flex-col items-center justify-center px-4 text-center">
-        {/* Logo banner: 100–120px tall, light background, between video and title (C1–C5) */}
-        <div
-          ref={bannerRef}
-          className="mb-8 box-border flex h-[110px] w-full min-w-0 max-w-xl items-center justify-center rounded-xl bg-neutral-100 px-3 shadow-lg sm:mb-10 sm:px-6"
-        >
-          <img
-            src={logoSrc}
-            alt="TOPAZ"
-            className="max-h-[72px] w-auto max-w-full object-contain sm:max-h-[80px] sm:max-w-[min(100%,320px)]"
-            data-fallback-tried=""
-            onError={(e) => {
-              const el = e.currentTarget;
-              if (!el.dataset.fallbackTried) {
-                el.dataset.fallbackTried = '1';
-                setLogoSrc(MASK_LOGO_FALLBACK);
-              }
-            }}
-          />
-        </div>
+        {/* Theater masks logo — floats over video, same treatment as heading (no card) */}
+        <img
+          ref={logoRef}
+          src={logoSrc}
+          alt="TOPAZ"
+          className="mb-8 max-h-[72px] w-auto max-w-full min-w-0 object-contain sm:mb-10 sm:max-h-[80px] sm:max-w-[min(100%,320px)]"
+          data-fallback-tried=""
+          onError={(e) => {
+            const el = e.currentTarget;
+            if (!el.dataset.fallbackTried) {
+              el.dataset.fallbackTried = '1';
+              setLogoSrc(MASK_LOGO_FALLBACK);
+            }
+          }}
+        />
 
         <h1
           ref={headingRef}
