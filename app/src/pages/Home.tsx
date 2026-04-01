@@ -278,24 +278,6 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Stats — three figures only; no date text */}
-      <section className="border-y border-gray-100 bg-gray-50 py-10 sm:py-12" aria-label="TOPAZ at a glance">
-        <div className="mx-auto grid max-w-3xl grid-cols-1 gap-8 px-4 text-center sm:grid-cols-3 sm:gap-6 sm:px-6">
-          <div>
-            <p className="font-display text-3xl font-black text-gray-900 sm:text-4xl">50+</p>
-            <p className="mt-1 text-xs font-semibold uppercase tracking-wider text-gray-500">Years of Excellence</p>
-          </div>
-          <div>
-            <p className="font-display text-3xl font-black text-gray-900 sm:text-4xl">10K+</p>
-            <p className="mt-1 text-xs font-semibold uppercase tracking-wider text-gray-500">Dancers Competed</p>
-          </div>
-          <div>
-            <p className="font-display text-3xl font-black text-gray-900 sm:text-4xl">100+</p>
-            <p className="mt-1 text-xs font-semibold uppercase tracking-wider text-gray-500">Cities Visited</p>
-          </div>
-        </div>
-      </section>
-
       {/* PROMOTIONAL CARDS - Glassmorphism Premium */}
       <section ref={promoRef} className="relative py-20 lg:py-28 bg-gradient-to-b from-gray-50 to-white overflow-hidden">
         {/* Background decorations */}
