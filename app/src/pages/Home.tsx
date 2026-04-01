@@ -243,56 +243,56 @@ const Home = () => {
       {/* Heritage Photos - Masonry Layout */}
       <section
         ref={heritageRef}
-        className="relative py-16 sm:py-20 bg-white"
+        className="relative py-12 sm:py-16 bg-white"
         aria-label="TOPAZ heritage photographs"
       >
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Masonry Grid - 2 columns with varying heights like screenshot */}
-          <div className="grid grid-cols-2 gap-3 sm:gap-4">
+        <div className="max-w-md sm:max-w-lg md:max-w-xl mx-auto px-6 sm:px-8">
+          {/* Masonry Grid - 2 columns compact like screenshot */}
+          <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
             {/* Left Column */}
-            <div className="flex flex-col gap-3 sm:gap-4">
+            <div className="flex flex-col gap-2.5 sm:gap-3">
               {/* Photo 1 - Tall */}
-              <div className="heritage-photo overflow-hidden rounded-2xl sm:rounded-3xl bg-gray-100 shadow-lg hover:shadow-xl transition-shadow duration-300">
+              <div className="heritage-photo overflow-hidden rounded-xl sm:rounded-2xl bg-gray-100 shadow-md hover:shadow-lg transition-shadow duration-300">
                 <img
                   src={legacyHistoryPhotos[0].src}
                   alt={legacyHistoryPhotos[0].alt}
                   loading="lazy"
                   decoding="async"
-                  className="w-full h-auto object-cover"
+                  className="w-full h-auto max-h-[280px] sm:max-h-[320px] object-cover"
                 />
               </div>
               {/* Photo 3 - Squareish */}
-              <div className="heritage-photo overflow-hidden rounded-2xl sm:rounded-3xl bg-gray-100 shadow-lg hover:shadow-xl transition-shadow duration-300">
+              <div className="heritage-photo overflow-hidden rounded-xl sm:rounded-2xl bg-gray-100 shadow-md hover:shadow-lg transition-shadow duration-300">
                 <img
                   src={legacyHistoryPhotos[2].src}
                   alt={legacyHistoryPhotos[2].alt}
                   loading="lazy"
                   decoding="async"
-                  className="w-full h-auto object-cover"
+                  className="w-full h-auto max-h-[200px] sm:max-h-[240px] object-cover"
                 />
               </div>
             </div>
 
             {/* Right Column */}
-            <div className="flex flex-col gap-3 sm:gap-4 pt-8 sm:pt-12">
+            <div className="flex flex-col gap-2.5 sm:gap-3 pt-6 sm:pt-8">
               {/* Photo 2 - Squareish */}
-              <div className="heritage-photo overflow-hidden rounded-2xl sm:rounded-3xl bg-gray-100 shadow-lg hover:shadow-xl transition-shadow duration-300">
+              <div className="heritage-photo overflow-hidden rounded-xl sm:rounded-2xl bg-gray-100 shadow-md hover:shadow-lg transition-shadow duration-300">
                 <img
                   src={legacyHistoryPhotos[1].src}
                   alt={legacyHistoryPhotos[1].alt}
                   loading="lazy"
                   decoding="async"
-                  className="w-full h-auto object-cover"
+                  className="w-full h-auto max-h-[200px] sm:max-h-[240px] object-cover"
                 />
               </div>
               {/* Photo 4 - Tall */}
-              <div className="heritage-photo overflow-hidden rounded-2xl sm:rounded-3xl bg-gray-100 shadow-lg hover:shadow-xl transition-shadow duration-300">
+              <div className="heritage-photo overflow-hidden rounded-xl sm:rounded-2xl bg-gray-100 shadow-md hover:shadow-lg transition-shadow duration-300">
                 <img
                   src={legacyHistoryPhotos[3].src}
                   alt={legacyHistoryPhotos[3].alt}
                   loading="lazy"
                   decoding="async"
-                  className="w-full h-auto object-cover"
+                  className="w-full h-auto max-h-[280px] sm:max-h-[320px] object-cover"
                 />
               </div>
             </div>
