@@ -6,7 +6,6 @@ const products = [
     id: 1,
     name: 'TOPAZ Heritage Tee - Black',
     category: 't-shirts',
-    price: 25,
     image: `${import.meta.env.BASE_URL}images/products/tshirt-blue-1.jpg`,
     description: 'Classic black t-shirt with TOPAZ logo',
     sizes: ['S', 'M', 'L', 'XL', 'XXL'],
@@ -16,7 +15,6 @@ const products = [
     id: 2,
     name: 'TOPAZ Performance Blue Tee',
     category: 't-shirts',
-    price: 25,
     image: `${import.meta.env.BASE_URL}images/products/tshirt-black-1.jpg`,
     description: 'Blue performance t-shirt with dancer design',
     sizes: ['S', 'M', 'L', 'XL', 'XXL'],
@@ -26,7 +24,6 @@ const products = [
     id: 3,
     name: 'TOPAZ Legacy Tee - Blue',
     category: 't-shirts',
-    price: 25,
     image: `${import.meta.env.BASE_URL}images/products/sweatshirt-black-1.jpg`,
     description: 'Blue legacy design t-shirt',
     sizes: ['S', 'M', 'L', 'XL', 'XXL'],
@@ -36,7 +33,6 @@ const products = [
     id: 4,
     name: 'TOPAZ Signature Hoodie',
     category: 'sweatshirts',
-    price: 45,
     image: `${import.meta.env.BASE_URL}images/products/tshirt-black-2.jpg`,
     description: 'Black hoodie with signature TOPAZ design',
     sizes: ['S', 'M', 'L', 'XL', 'XXL'],
@@ -76,8 +72,10 @@ const ProductCard = ({ product }: { product: typeof products[0] }) => {
           {product.name}
         </h3>
         
-        <p className="text-2xl font-black text-blue-600 mb-4">
-          ${product.price}
+        <p className="mb-4">
+          <span className="inline-block rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-sm font-medium italic text-gray-500">
+            Coming Soon
+          </span>
         </p>
 
         {/* Size Selector */}

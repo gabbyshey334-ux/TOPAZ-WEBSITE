@@ -37,24 +37,17 @@ const historyPhotos = [
 // Add youtubeId once videos are ready.
 // ─────────────────────────────────────────────────────────────────────────────
 const historyVideos = [
-  { id: 1, title: 'Topaz Memories', youtubeId: '', thumbnail: '', category: 'competitions' },
-  { id: 2, title: 'Topaz 2.0', youtubeId: '', thumbnail: '', category: 'awards' },
+  { id: 1, title: 'Topaz Memories', youtubeId: '', thumbnail: '' },
+  { id: 2, title: 'Topaz 2.0', youtubeId: '', thumbnail: '' },
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types & constants
 // ─────────────────────────────────────────────────────────────────────────────
 type PhotoCategory = 'all' | 'competitions' | 'awards';
-type VideoCategory = 'all' | 'competitions' | 'awards';
 type GalleryEra    = 'history' | 'topaz20';
 
 const PHOTO_FILTERS: { label: string; value: PhotoCategory }[] = [
-  { label: 'All',          value: 'all'          },
-  { label: 'Competitions', value: 'competitions' },
-  { label: 'Awards',       value: 'awards'       },
-];
-
-const VIDEO_FILTERS: { label: string; value: VideoCategory }[] = [
   { label: 'All',          value: 'all'          },
   { label: 'Competitions', value: 'competitions' },
   { label: 'Awards',       value: 'awards'       },
@@ -74,7 +67,6 @@ const Gallery = () => {
   const [galleryEra,    setGalleryEra]    = useState<GalleryEra>('history');
   const [activeTab,     setActiveTab]     = useState<'photos' | 'videos'>('photos');
   const [photoFilter,   setPhotoFilter]   = useState<PhotoCategory>('all');
-  const [videoFilter,   setVideoFilter]   = useState<VideoCategory>('all');
   const [photoLimit,    setPhotoLimit]    = useState(PHOTOS_PER_PAGE);
   const [videoLimit,    setVideoLimit]    = useState(VIDEOS_PER_PAGE);
   const [lightboxImage, setLightboxImage] = useState<{ src: string; alt: string } | null>(null);
@@ -92,22 +84,12 @@ const Gallery = () => {
   const visiblePhotos  = filteredPhotos.slice(0, photoLimit);
   const hasMorePhotos  = filteredPhotos.length > photoLimit;
 
-  const filteredVideos =
-    videoFilter === 'all'
-      ? historyVideos
-      : historyVideos.filter((v) => v.category === videoFilter);
-
-  const visibleVideos  = filteredVideos.slice(0, videoLimit);
-  const hasMoreVideos  = filteredVideos.length > videoLimit;
+  const visibleVideos  = historyVideos.slice(0, videoLimit);
+  const hasMoreVideos  = historyVideos.length > videoLimit;
 
   const handlePhotoFilterChange = (filter: PhotoCategory) => {
     setPhotoFilter(filter);
     setPhotoLimit(PHOTOS_PER_PAGE);
-  };
-
-  const handleVideoFilterChange = (filter: VideoCategory) => {
-    setVideoFilter(filter);
-    setVideoLimit(VIDEOS_PER_PAGE);
   };
 
   return (
@@ -240,23 +222,23 @@ const Gallery = () => {
 
               {visiblePhotos.length > 0 ? (
                 <ResponsiveMasonry columnsCountBreakPoints={{ 350: 1, 750: 2, 900: 3, 1200: 4 }}>
-                  <Masonry gutter="16px">
+                  <Masonry gutter="28px">
                     {visiblePhotos.map((photo) => (
                       <button
                         key={photo.id}
                         type="button"
                         onClick={() => setLightboxImage({ src: photo.src, alt: photo.alt })}
-                        className="group relative mb-4 block w-full overflow-hidden rounded-2xl bg-gray-100 shadow-lg transition-all duration-300 hover:scale-[1.02] hover:shadow-xl"
+                        className="group relative mb-2 block w-full overflow-hidden rounded-2xl bg-gray-100 p-3 shadow-lg transition-all duration-300 hover:shadow-xl sm:rounded-3xl sm:p-4"
                       >
                         <img
                           src={photo.src}
                           alt={photo.alt}
-                          className="block h-auto w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          className="block h-auto max-h-[min(85vh,720px)] w-full object-contain transition-transform duration-500 group-hover:scale-[1.02]"
                           onError={(e) => {
                             (e.target as HTMLImageElement).src = FALLBACK_IMG;
                           }}
                         />
-                        <div className="absolute inset-0 bg-black/0 transition-colors duration-300 group-hover:bg-black/20" />
+                        <div className="pointer-events-none absolute inset-0 rounded-2xl bg-black/0 transition-colors duration-300 group-hover:bg-black/10 sm:rounded-3xl" />
                       </button>
                     ))}
                   </Masonry>
@@ -285,25 +267,8 @@ const Gallery = () => {
 
           {galleryEra === 'history' && activeTab === 'videos' && (
             <>
-              <div className="mb-10 flex flex-wrap gap-2">
-                {VIDEO_FILTERS.map((f) => (
-                  <button
-                    key={f.value}
-                    type="button"
-                    onClick={() => handleVideoFilterChange(f.value)}
-                    className={`rounded-full px-5 py-2 text-sm font-bold transition-all ${
-                      videoFilter === f.value
-                        ? 'bg-[#2E75B6] text-white shadow-md'
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-900'
-                    }`}
-                  >
-                    {f.label}
-                  </button>
-                ))}
-              </div>
-
               {visibleVideos.length > 0 ? (
-                <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 sm:gap-12 lg:grid-cols-3">
                   {visibleVideos.map((video) => (
                     <button
                       key={video.id}
@@ -352,7 +317,7 @@ const Gallery = () => {
                 </div>
               ) : (
                 <div className="py-20 text-center text-gray-400">
-                  <p className="text-lg font-medium">No videos in this category yet.</p>
+                  <p className="text-lg font-medium">No videos yet.</p>
                 </div>
               )}
 
@@ -364,7 +329,7 @@ const Gallery = () => {
                     className="inline-flex items-center gap-2 rounded-xl border-2 border-[#2E75B6] px-8 py-4 font-bold text-[#2E75B6] transition-all duration-200 hover:bg-[#2E75B6] hover:text-white"
                   >
                     <ChevronDown className="h-5 w-5" />
-                    Load More Videos ({filteredVideos.length - videoLimit} remaining)
+                    Load More Videos ({historyVideos.length - videoLimit} remaining)
                   </button>
                 </div>
               )}

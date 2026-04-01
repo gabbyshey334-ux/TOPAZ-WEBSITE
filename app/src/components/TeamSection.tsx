@@ -93,18 +93,20 @@ const TeamSection = ({
 
         <div
           ref={rolesRef}
-          className="grid grid-cols-1 sm:grid-cols-3 gap-12 lg:gap-20"
+          className="grid grid-cols-3 gap-4 sm:gap-8 lg:gap-16 max-w-4xl mx-auto"
+          role="list"
+          aria-label="Team roles, left to right: President, Vice President, Founder"
         >
           {members.map((member, index) => (
-            <div key={index} className="group">
-              <div className="mb-4 inline-block">
-                <p className="font-display font-black text-2xl lg:text-3xl uppercase tracking-tighter text-white group-hover:text-primary transition-colors duration-500">
+            <div key={index} className="group text-center" role="listitem">
+              <div className="mb-2 sm:mb-4">
+                <p className="font-display font-black text-base sm:text-xl lg:text-2xl uppercase tracking-tight text-white group-hover:text-primary transition-colors duration-500 leading-tight">
                   {member.role}
                 </p>
-                <div className="h-1 bg-primary scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left mt-1" />
+                <div className="mx-auto mt-2 h-1 max-w-[4rem] bg-primary scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-center sm:origin-center" />
               </div>
               {member.name ? (
-                <p className="text-lg font-mono text-white/40 uppercase tracking-widest mt-2">
+                <p className="text-xs sm:text-lg font-mono text-white/40 uppercase tracking-widest mt-2">
                   {member.name}
                 </p>
               ) : null}

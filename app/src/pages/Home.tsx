@@ -10,7 +10,6 @@ import {
   Award,
   Users,
   ChevronRight,
-  Play,
   Sparkles,
   Trophy,
   Heart
@@ -83,7 +82,6 @@ const legacyHistoryPhotos = [
 
 const Home = () => {
   const tourRef = useRef<HTMLDivElement>(null);
-  const featuredRef = useRef<HTMLDivElement>(null);
   const promoRef = useRef<HTMLDivElement>(null);
   const aboutRef = useRef<HTMLDivElement>(null);
   const testimonialsRef = useRef<HTMLDivElement>(null);
@@ -127,26 +125,6 @@ const Home = () => {
             scrollTrigger: {
               trigger: tourRef.current,
               start: 'top 80%',
-            },
-          }
-        );
-      }
-
-      // Featured section
-      const featuredElements = featuredRef.current?.querySelectorAll('.featured-animate');
-      if (featuredElements) {
-        gsap.fromTo(
-          featuredElements,
-          { y: 40, opacity: 0 },
-          {
-            y: 0,
-            opacity: 1,
-            duration: 0.8,
-            stagger: 0.1,
-            ease: 'power2.out',
-            scrollTrigger: {
-              trigger: featuredRef.current,
-              start: 'top 75%',
             },
           }
         );
@@ -300,92 +278,20 @@ const Home = () => {
         </div>
       </section>
 
-      {/* NOW LIVE / FEATURED SECTION - Premium asymmetric layout */}
-      <section ref={featuredRef} className="relative bg-white py-20 lg:py-32 overflow-hidden">
-        {/* Decorative elements */}
-        <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-[#2E75B6]/5 to-transparent pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-[#2E75B6]/10 rounded-full blur-[120px] pointer-events-none" />
-
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-            {/* Left - Featured Image with play button */}
-            <div className="featured-animate relative">
-              <div className="relative aspect-[4/3] rounded-[2.5rem] overflow-hidden shadow-2xl group">
-                <img
-                  src="https://images.unsplash.com/photo-1547153760-18fc86324498?w=1200&h=900&fit=crop"
-                  alt="Featured performance"
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                
-                {/* Play button */}
-                <button className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform duration-300 hover:bg-[#2E75B6]">
-                  <Play className="w-8 h-8 text-[#2E75B6] group-hover:text-white ml-1 transition-colors" fill="currentColor" />
-                </button>
-
-                {/* Badge */}
-                <div className="absolute top-6 left-6">
-                  <span className="inline-flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-lg">
-                    <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-                    <span className="font-bold text-sm text-gray-900 uppercase tracking-wider">Now Live</span>
-                  </span>
-                </div>
-
-                {/* Title overlay */}
-                <div className="absolute bottom-0 left-0 right-0 p-8">
-                  <h3 className="font-display font-black text-2xl md:text-3xl text-white">
-                    THE REFLECTION TOUR
-                  </h3>
-                </div>
-              </div>
-
-              {/* Floating accent card */}
-              <div className="absolute -bottom-6 -right-6 bg-white rounded-2xl shadow-xl p-4 hidden lg:block">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#2E75B6] to-[#1F4E78] flex items-center justify-center">
-                    <Calendar className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <p className="font-bold text-gray-900">August 22, 2026</p>
-                    <p className="text-sm text-gray-500">Seaside, Oregon</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Right - Content */}
-            <div className="space-y-8">
-              <div className="featured-animate">
-                <span className="inline-block px-4 py-2 bg-[#2E75B6]/10 text-[#2E75B6] font-mono text-sm tracking-wider uppercase font-bold rounded-full mb-4">
-                  Featured Event
-                </span>
-                <h2 className="font-display font-black text-4xl md:text-5xl lg:text-6xl text-gray-900 leading-[1.1]">
-                  READY TO <span className="text-[#2E75B6] italic">REFLECT</span>?
-                </h2>
-              </div>
-              
-              <p className="featured-animate text-gray-600 text-lg leading-relaxed max-w-lg">
-                Join us for an unforgettable dance experience. The Reflection Tour brings together 
-                the best dancers from across the nation to compete, learn, and grow together in an 
-                atmosphere of excellence and celebration.
-              </p>
-
-              <div className="featured-animate flex flex-wrap gap-4">
-                <Link
-                  to="/registration"
-                  className="inline-flex items-center gap-3 px-8 py-4 bg-[#2E75B6] text-white font-bold text-sm uppercase tracking-wider rounded-full hover:bg-[#1F4E78] transition-all duration-300 hover:scale-105 shadow-lg shadow-[#2E75B6]/25"
-                >
-                  REGISTER NOW
-                  <ArrowRight className="w-5 h-5" />
-                </Link>
-                <Link
-                  to="/about"
-                  className="inline-flex items-center gap-3 px-8 py-4 border-2 border-gray-200 text-gray-700 font-bold text-sm uppercase tracking-wider rounded-full hover:border-[#2E75B6] hover:text-[#2E75B6] transition-all duration-300"
-                >
-                  LEARN MORE
-                </Link>
-              </div>
-            </div>
+      {/* Stats — three figures only; no date text */}
+      <section className="border-y border-gray-100 bg-gray-50 py-10 sm:py-12" aria-label="TOPAZ at a glance">
+        <div className="mx-auto grid max-w-3xl grid-cols-1 gap-8 px-4 text-center sm:grid-cols-3 sm:gap-6 sm:px-6">
+          <div>
+            <p className="font-display text-3xl font-black text-gray-900 sm:text-4xl">50+</p>
+            <p className="mt-1 text-xs font-semibold uppercase tracking-wider text-gray-500">Years of Excellence</p>
+          </div>
+          <div>
+            <p className="font-display text-3xl font-black text-gray-900 sm:text-4xl">10K+</p>
+            <p className="mt-1 text-xs font-semibold uppercase tracking-wider text-gray-500">Dancers Competed</p>
+          </div>
+          <div>
+            <p className="font-display text-3xl font-black text-gray-900 sm:text-4xl">100+</p>
+            <p className="mt-1 text-xs font-semibold uppercase tracking-wider text-gray-500">Cities Visited</p>
           </div>
         </div>
       </section>
@@ -480,14 +386,8 @@ const Home = () => {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             {[
-              {
-                icon: Star,
-                title: 'OVER 50 YEARS',
-                description: 'Since 1972, TOPAZ has been the premier dance competition, nurturing talent and creating unforgettable moments for dancers nationwide.',
-                gradient: 'from-amber-500/20 to-orange-500/20'
-              },
               {
                 icon: Award,
                 title: 'PRESTIGIOUS AWARDS',
@@ -529,16 +429,9 @@ const Home = () => {
         </div>
       </section>
 
-      {/* TOUR SECTION - Dramatic & Premium */}
+      {/* TOUR SECTION - Dramatic & Premium (no full-bleed photo — gradient only) */}
       <section ref={tourRef} className="relative min-h-screen overflow-hidden flex items-center">
-        <div className="absolute inset-0">
-          <img
-            src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1600&h=900&fit=crop"
-            alt="TOPAZ Competition"
-            className="w-full h-full object-cover grayscale"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/60 to-black/80" />
-        </div>
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a] via-[#111827] to-black" aria-hidden />
 
         {/* Animated gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-r from-[#2E75B6]/20 via-transparent to-[#2E75B6]/20 animate-pulse" />
@@ -734,11 +627,7 @@ const Home = () => {
 
       {/* FINAL CTA SECTION — Ultra Premium */}
       <section className="relative bg-gradient-to-br from-[#0F2847] via-[#1F4E78] to-[#2E75B6] py-24 lg:py-32 overflow-hidden">
-        {/* Animated background */}
-        <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=1600&h=900&fit=crop')] opacity-10 bg-cover bg-center" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0F2847] via-transparent to-[#1F4E78]" />
-        </div>
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0F2847]/90 via-transparent to-[#1F4E78]/80" aria-hidden />
 
         {/* Floating decorations */}
         <div className="absolute top-10 left-10 w-40 h-40 bg-white/5 rounded-full blur-[60px]" />

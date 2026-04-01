@@ -312,7 +312,6 @@ const About = () => {
                   
                   <figcaption className="mt-6 text-center">
                     <p className="font-display font-black text-2xl text-gray-900">Ric Heath</p>
-                    <p className="text-[#2E75B6] font-medium">Continuing the Legacy</p>
                   </figcaption>
                 </div>
               </figure>
@@ -404,11 +403,7 @@ const About = () => {
 
       {/* FINAL CTA */}
       <section className="relative bg-gradient-to-br from-[#0F2847] via-[#1F4E78] to-[#2E75B6] py-24 lg:py-32 overflow-hidden">
-        {/* Background elements */}
-        <div className="absolute inset-0 opacity-20">
-          <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=1600&h=900&fit=crop')] bg-cover bg-center" />
-        </div>
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0F2847] via-transparent to-[#1F4E78]" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0F2847]/90 via-transparent to-[#1F4E78]/80" aria-hidden />
 
         {/* Floating orbs */}
         <div className="absolute top-10 left-10 w-40 h-40 bg-white/5 rounded-full blur-[60px]" />
