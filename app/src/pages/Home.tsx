@@ -13,8 +13,7 @@ import {
   Play,
   Sparkles,
   Trophy,
-  Heart,
-  Zap
+  Heart
 } from 'lucide-react';
 import HeroSection from '../sections/HeroSection';
 
@@ -63,31 +62,24 @@ const legacyHistoryPhotos = [
   {
     src: `${BASE}images/homepage/boy-tuxedo-trophy.png`,
     alt: 'Vintage TOPAZ competition — young dancer in tuxedo with trophy',
-    year: '1974'
+    aspect: 'tall'
   },
   {
     src: `${BASE}images/homepage/duo-trophy.png`,
     alt: 'Vintage TOPAZ competition — duo with trophy',
-    year: '1980'
+    aspect: 'square'
   },
   {
     src: `${BASE}images/homepage/group-dancers-trophy.png`,
     alt: 'Vintage TOPAZ competition — group of dancers with trophy',
-    year: '1985'
+    aspect: 'square'
   },
   {
     src: `${BASE}images/homepage/newspaper-1975.png`,
     alt: '1975 newspaper clipping featuring TOPAZ',
-    year: '1975'
+    aspect: 'tall'
   },
 ] as const;
-
-const stats = [
-  { value: '50+', label: 'Years of Excellence', icon: Star },
-  { value: '10K+', label: 'Dancers Competed', icon: Users },
-  { value: '100+', label: 'Cities Visited', icon: MapPin },
-  { value: '500+', label: 'Awards Given', icon: Award },
-];
 
 const Home = () => {
   const tourRef = useRef<HTMLDivElement>(null);
@@ -96,46 +88,25 @@ const Home = () => {
   const aboutRef = useRef<HTMLDivElement>(null);
   const testimonialsRef = useRef<HTMLDivElement>(null);
   const splitBannerRef = useRef<HTMLElement>(null);
-  const statsRef = useRef<HTMLDivElement>(null);
   const heritageRef = useRef<HTMLDivElement>(null);
 
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
-      // Heritage photos - cinematic stagger
+      // Heritage photos - masonry stagger
       const heritagePhotos = heritageRef.current?.querySelectorAll('.heritage-photo');
       if (heritagePhotos) {
         gsap.fromTo(
           heritagePhotos,
-          { y: 80, opacity: 0, scale: 0.9 },
+          { y: 60, opacity: 0, scale: 0.95 },
           {
             y: 0,
             opacity: 1,
             scale: 1,
-            duration: 1,
-            stagger: 0.15,
-            ease: 'power3.out',
-            scrollTrigger: {
-              trigger: heritageRef.current,
-              start: 'top 85%',
-            },
-          }
-        );
-      }
-
-      // Stats counter animation
-      const statItems = statsRef.current?.querySelectorAll('.stat-item');
-      if (statItems) {
-        gsap.fromTo(
-          statItems,
-          { y: 40, opacity: 0 },
-          {
-            y: 0,
-            opacity: 1,
             duration: 0.8,
             stagger: 0.1,
             ease: 'power3.out',
             scrollTrigger: {
-              trigger: statsRef.current,
+              trigger: heritageRef.current,
               start: 'top 85%',
             },
           }
@@ -269,78 +240,62 @@ const Home = () => {
     <div className="min-h-screen bg-white selection:bg-[#2E75B6] selection:text-white">
       <HeroSection />
 
-      {/* Floating Stats Bar - Premium glassmorphism */}
-      <section ref={statsRef} className="relative z-10 -mt-16 mx-4 sm:mx-6 lg:mx-8">
-        <div className="max-w-6xl mx-auto">
-          <div className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/50 p-6 sm:p-8 lg:p-10">
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
-              {stats.map((stat, index) => (
-                <div 
-                  key={index} 
-                  className="stat-item text-center group cursor-default"
-                >
-                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-br from-[#2E75B6]/20 to-[#1F4E78]/20 mb-4 group-hover:scale-110 transition-transform duration-500">
-                    <stat.icon className="w-6 h-6 text-[#2E75B6]" />
-                  </div>
-                  <div className="font-display font-black text-3xl sm:text-4xl lg:text-5xl text-gray-900 mb-1">
-                    {stat.value}
-                  </div>
-                  <div className="text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">
-                    {stat.label}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Heritage Photos - Cinematic Gallery with year badges */}
+      {/* Heritage Photos - Masonry Layout */}
       <section
         ref={heritageRef}
-        className="relative py-20 sm:py-24 lg:py-32 bg-gradient-to-b from-gray-50 via-white to-white"
+        className="relative py-16 sm:py-20 bg-white"
         aria-label="TOPAZ heritage photographs"
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12 lg:mb-16">
-            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#2E75B6]/10 text-[#2E75B6] text-sm font-bold uppercase tracking-wider mb-4">
-              <Zap className="w-4 h-4" />
-              Through The Decades
-            </span>
-            <h2 className="font-display font-black text-3xl sm:text-4xl lg:text-5xl text-gray-900 tracking-tight">
-              A Legacy of <span className="text-[#2E75B6] italic">Excellence</span>
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
-            {legacyHistoryPhotos.map((photo) => (
-              <div
-                key={photo.src}
-                className="heritage-photo group relative overflow-hidden rounded-3xl bg-white shadow-xl hover:shadow-2xl transition-all duration-700"
-              >
-                <div className="relative aspect-[4/3] overflow-hidden">
-                  <img
-                    src={photo.src}
-                    alt={photo.alt}
-                    loading="lazy"
-                    decoding="async"
-                    className="w-full h-full object-contain bg-gray-50 transition-transform duration-700 group-hover:scale-105"
-                  />
-                  {/* Year badge */}
-                  <div className="absolute top-4 left-4 px-3 py-1.5 bg-white/95 backdrop-blur-sm rounded-full shadow-lg">
-                    <span className="font-display font-bold text-sm text-gray-900">{photo.year}</span>
-                  </div>
-                  {/* Hover overlay with description */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                    <div className="absolute bottom-0 left-0 right-0 p-6">
-                      <p className="text-white font-medium text-sm leading-relaxed">
-                        {photo.alt}
-                      </p>
-                    </div>
-                  </div>
-                </div>
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Masonry Grid - 2 columns with varying heights like screenshot */}
+          <div className="grid grid-cols-2 gap-3 sm:gap-4">
+            {/* Left Column */}
+            <div className="flex flex-col gap-3 sm:gap-4">
+              {/* Photo 1 - Tall */}
+              <div className="heritage-photo overflow-hidden rounded-2xl sm:rounded-3xl bg-gray-100 shadow-lg hover:shadow-xl transition-shadow duration-300">
+                <img
+                  src={legacyHistoryPhotos[0].src}
+                  alt={legacyHistoryPhotos[0].alt}
+                  loading="lazy"
+                  decoding="async"
+                  className="w-full h-auto object-cover"
+                />
               </div>
-            ))}
+              {/* Photo 3 - Squareish */}
+              <div className="heritage-photo overflow-hidden rounded-2xl sm:rounded-3xl bg-gray-100 shadow-lg hover:shadow-xl transition-shadow duration-300">
+                <img
+                  src={legacyHistoryPhotos[2].src}
+                  alt={legacyHistoryPhotos[2].alt}
+                  loading="lazy"
+                  decoding="async"
+                  className="w-full h-auto object-cover"
+                />
+              </div>
+            </div>
+
+            {/* Right Column */}
+            <div className="flex flex-col gap-3 sm:gap-4 pt-8 sm:pt-12">
+              {/* Photo 2 - Squareish */}
+              <div className="heritage-photo overflow-hidden rounded-2xl sm:rounded-3xl bg-gray-100 shadow-lg hover:shadow-xl transition-shadow duration-300">
+                <img
+                  src={legacyHistoryPhotos[1].src}
+                  alt={legacyHistoryPhotos[1].alt}
+                  loading="lazy"
+                  decoding="async"
+                  className="w-full h-auto object-cover"
+                />
+              </div>
+              {/* Photo 4 - Tall */}
+              <div className="heritage-photo overflow-hidden rounded-2xl sm:rounded-3xl bg-gray-100 shadow-lg hover:shadow-xl transition-shadow duration-300">
+                <img
+                  src={legacyHistoryPhotos[3].src}
+                  alt={legacyHistoryPhotos[3].alt}
+                  loading="lazy"
+                  decoding="async"
+                  className="w-full h-auto object-cover"
+                />
+              </div>
+            </div>
           </div>
         </div>
       </section>
