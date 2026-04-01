@@ -10,7 +10,11 @@ import {
   Award,
   Users,
   ChevronRight,
-  Play
+  Play,
+  Sparkles,
+  Trophy,
+  Heart,
+  Zap
 } from 'lucide-react';
 import HeroSection from '../sections/HeroSection';
 
@@ -18,35 +22,40 @@ import HeroSection from '../sections/HeroSection';
 gsap.registerPlugin(ScrollTrigger);
 
 const BASE = import.meta.env.BASE_URL;
-/** Banner logo — theater masks (client asset) */
 const TOPAZ_BANNER_LOGO = `${BASE}images/logos/topaz-logo-masks.png`;
 const TOPAZ_BANNER_LOGO_FALLBACK = `${BASE}images/logos/topaz-logo.png`;
 
-// Promotional cards
+// Enhanced promo cards with glassmorphism
 const promoCards = [
   {
     id: 1,
     title: 'MASTER CLASSES',
     subtitle: 'COMING SOON',
-    description: '',
-    bg: 'from-blue-600 to-blue-900',
-    image: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=600&h=400&fit=crop'
+    description: 'Learn from industry professionals',
+    bg: 'from-violet-600/90 via-purple-700/90 to-indigo-900/90',
+    accent: '#8B5CF6',
+    image: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=800&h=600&fit=crop',
+    icon: Sparkles
   },
   {
     id: 2,
     title: 'SPONSORS',
     subtitle: 'COMING SOON',
-    description: '',
-    bg: 'from-[#2E75B6] to-[#1F4E78]',
-    image: 'https://images.unsplash.com/photo-1547153760-18fc86324498?w=600&h=400&fit=crop'
+    description: 'Partner with excellence',
+    bg: 'from-[#2E75B6]/90 via-[#1F4E78]/90 to-[#0F2847]/90',
+    accent: '#2E75B6',
+    image: 'https://images.unsplash.com/photo-1547153760-18fc86324498?w=800&h=600&fit=crop',
+    icon: Trophy
   },
   {
     id: 3,
     title: 'PANEL & JUDGES',
     subtitle: 'COMING SOON',
-    description: '',
-    bg: 'from-indigo-600 to-indigo-900',
-    image: 'https://images.unsplash.com/photo-1518834107812-67b0b7c58434?w=600&h=400&fit=crop'
+    description: 'Expert adjudication panel',
+    bg: 'from-amber-600/90 via-orange-700/90 to-red-900/90',
+    accent: '#F59E0B',
+    image: 'https://images.unsplash.com/photo-1518834107812-67b0b7c58434?w=800&h=600&fit=crop',
+    icon: Heart
   }
 ];
 
@@ -54,20 +63,31 @@ const legacyHistoryPhotos = [
   {
     src: `${BASE}images/homepage/boy-tuxedo-trophy.png`,
     alt: 'Vintage TOPAZ competition — young dancer in tuxedo with trophy',
+    year: '1974'
   },
   {
     src: `${BASE}images/homepage/duo-trophy.png`,
     alt: 'Vintage TOPAZ competition — duo with trophy',
+    year: '1980'
   },
   {
     src: `${BASE}images/homepage/group-dancers-trophy.png`,
     alt: 'Vintage TOPAZ competition — group of dancers with trophy',
+    year: '1985'
   },
   {
     src: `${BASE}images/homepage/newspaper-1975.png`,
     alt: '1975 newspaper clipping featuring TOPAZ',
+    year: '1975'
   },
 ] as const;
+
+const stats = [
+  { value: '50+', label: 'Years of Excellence', icon: Star },
+  { value: '10K+', label: 'Dancers Competed', icon: Users },
+  { value: '100+', label: 'Cities Visited', icon: MapPin },
+  { value: '500+', label: 'Awards Given', icon: Award },
+];
 
 const Home = () => {
   const tourRef = useRef<HTMLDivElement>(null);
@@ -76,9 +96,52 @@ const Home = () => {
   const aboutRef = useRef<HTMLDivElement>(null);
   const testimonialsRef = useRef<HTMLDivElement>(null);
   const splitBannerRef = useRef<HTMLElement>(null);
+  const statsRef = useRef<HTMLDivElement>(null);
+  const heritageRef = useRef<HTMLDivElement>(null);
 
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
+      // Heritage photos - cinematic stagger
+      const heritagePhotos = heritageRef.current?.querySelectorAll('.heritage-photo');
+      if (heritagePhotos) {
+        gsap.fromTo(
+          heritagePhotos,
+          { y: 80, opacity: 0, scale: 0.9 },
+          {
+            y: 0,
+            opacity: 1,
+            scale: 1,
+            duration: 1,
+            stagger: 0.15,
+            ease: 'power3.out',
+            scrollTrigger: {
+              trigger: heritageRef.current,
+              start: 'top 85%',
+            },
+          }
+        );
+      }
+
+      // Stats counter animation
+      const statItems = statsRef.current?.querySelectorAll('.stat-item');
+      if (statItems) {
+        gsap.fromTo(
+          statItems,
+          { y: 40, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            duration: 0.8,
+            stagger: 0.1,
+            ease: 'power3.out',
+            scrollTrigger: {
+              trigger: statsRef.current,
+              start: 'top 85%',
+            },
+          }
+        );
+      }
+
       // Tour section animation
       const tourSection = tourRef.current?.querySelector('.tour-content');
       if (tourSection) {
@@ -118,19 +181,19 @@ const Home = () => {
         );
       }
 
-      // Promo cards
+      // Promo cards - enhanced scale animation
       const promoCards = promoRef.current?.querySelectorAll('.promo-card');
       if (promoCards) {
         gsap.fromTo(
           promoCards,
-          { y: 50, opacity: 0, scale: 0.95 },
+          { y: 60, opacity: 0, scale: 0.92 },
           {
             y: 0,
             opacity: 1,
             scale: 1,
-            duration: 0.7,
-            stagger: 0.12,
-            ease: 'power2.out',
+            duration: 0.9,
+            stagger: 0.15,
+            ease: 'power3.out',
             scrollTrigger: {
               trigger: promoRef.current,
               start: 'top 80%',
@@ -197,7 +260,6 @@ const Home = () => {
           }
         );
       }
-
     });
 
     return () => ctx.revert();
@@ -207,79 +269,163 @@ const Home = () => {
     <div className="min-h-screen bg-white selection:bg-[#2E75B6] selection:text-white">
       <HeroSection />
 
-      {/* Four main homepage photos — 1 col mobile, 2×2 desktop; object-contain (no crop) */}
-      <section
-        className="border-b border-gray-200 bg-gray-50 py-10 sm:py-12 lg:py-16"
-        aria-label="TOPAZ heritage photographs"
-      >
-        <div className="mx-auto grid max-w-6xl grid-cols-1 gap-4 px-4 sm:px-6 md:grid-cols-2 md:gap-5 lg:gap-6">
-          {legacyHistoryPhotos.map((photo) => (
-            <div
-              key={photo.src}
-              className="flex min-h-0 items-center justify-center overflow-hidden rounded-2xl border border-gray-200 bg-white p-3 shadow-sm sm:rounded-3xl sm:p-4"
-            >
-              <img
-                src={photo.src}
-                alt={photo.alt}
-                loading="lazy"
-                decoding="async"
-                className="max-h-[min(70vh,520px)] w-full object-contain"
-              />
+      {/* Floating Stats Bar - Premium glassmorphism */}
+      <section ref={statsRef} className="relative z-10 -mt-16 mx-4 sm:mx-6 lg:mx-8">
+        <div className="max-w-6xl mx-auto">
+          <div className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/50 p-6 sm:p-8 lg:p-10">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+              {stats.map((stat, index) => (
+                <div 
+                  key={index} 
+                  className="stat-item text-center group cursor-default"
+                >
+                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-br from-[#2E75B6]/20 to-[#1F4E78]/20 mb-4 group-hover:scale-110 transition-transform duration-500">
+                    <stat.icon className="w-6 h-6 text-[#2E75B6]" />
+                  </div>
+                  <div className="font-display font-black text-3xl sm:text-4xl lg:text-5xl text-gray-900 mb-1">
+                    {stat.value}
+                  </div>
+                  <div className="text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">
+                    {stat.label}
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
+          </div>
         </div>
       </section>
 
-      {/* NOW LIVE / FEATURED SECTION */}
-      <section ref={featuredRef} className="relative bg-white py-16 lg:py-24 overflow-hidden">
+      {/* Heritage Photos - Cinematic Gallery with year badges */}
+      <section
+        ref={heritageRef}
+        className="relative py-20 sm:py-24 lg:py-32 bg-gradient-to-b from-gray-50 via-white to-white"
+        aria-label="TOPAZ heritage photographs"
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-            {/* Left - Image/Video */}
-            <div className="featured-animate relative aspect-[4/3] rounded-2xl overflow-hidden group shadow-2xl">
-              <img
-                src="https://images.unsplash.com/photo-1547153760-18fc86324498?w=1200&h=900&fit=crop"
-                alt="Featured performance"
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-              <div className="absolute bottom-6 left-6 right-6">
-                <span className="inline-block px-3 py-1 bg-[#2E75B6] text-white text-xs font-bold uppercase tracking-wider rounded mb-3">
-                  Now Live
-                </span>
-                <h3 className="font-display font-black text-2xl md:text-3xl text-white">
-                  THE REFLECTION TOUR
-                </h3>
+          <div className="text-center mb-12 lg:mb-16">
+            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#2E75B6]/10 text-[#2E75B6] text-sm font-bold uppercase tracking-wider mb-4">
+              <Zap className="w-4 h-4" />
+              Through The Decades
+            </span>
+            <h2 className="font-display font-black text-3xl sm:text-4xl lg:text-5xl text-gray-900 tracking-tight">
+              A Legacy of <span className="text-[#2E75B6] italic">Excellence</span>
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
+            {legacyHistoryPhotos.map((photo) => (
+              <div
+                key={photo.src}
+                className="heritage-photo group relative overflow-hidden rounded-3xl bg-white shadow-xl hover:shadow-2xl transition-all duration-700"
+              >
+                <div className="relative aspect-[4/3] overflow-hidden">
+                  <img
+                    src={photo.src}
+                    alt={photo.alt}
+                    loading="lazy"
+                    decoding="async"
+                    className="w-full h-full object-contain bg-gray-50 transition-transform duration-700 group-hover:scale-105"
+                  />
+                  {/* Year badge */}
+                  <div className="absolute top-4 left-4 px-3 py-1.5 bg-white/95 backdrop-blur-sm rounded-full shadow-lg">
+                    <span className="font-display font-bold text-sm text-gray-900">{photo.year}</span>
+                  </div>
+                  {/* Hover overlay with description */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                    <div className="absolute bottom-0 left-0 right-0 p-6">
+                      <p className="text-white font-medium text-sm leading-relaxed">
+                        {photo.alt}
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <button className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-white/90 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                <Play className="w-6 h-6 text-[#2E75B6] ml-1" fill="currentColor" />
-              </button>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* NOW LIVE / FEATURED SECTION - Premium asymmetric layout */}
+      <section ref={featuredRef} className="relative bg-white py-20 lg:py-32 overflow-hidden">
+        {/* Decorative elements */}
+        <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-[#2E75B6]/5 to-transparent pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-[#2E75B6]/10 rounded-full blur-[120px] pointer-events-none" />
+
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+            {/* Left - Featured Image with play button */}
+            <div className="featured-animate relative">
+              <div className="relative aspect-[4/3] rounded-[2.5rem] overflow-hidden shadow-2xl group">
+                <img
+                  src="https://images.unsplash.com/photo-1547153760-18fc86324498?w=1200&h=900&fit=crop"
+                  alt="Featured performance"
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                
+                {/* Play button */}
+                <button className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform duration-300 hover:bg-[#2E75B6]">
+                  <Play className="w-8 h-8 text-[#2E75B6] group-hover:text-white ml-1 transition-colors" fill="currentColor" />
+                </button>
+
+                {/* Badge */}
+                <div className="absolute top-6 left-6">
+                  <span className="inline-flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-lg">
+                    <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                    <span className="font-bold text-sm text-gray-900 uppercase tracking-wider">Now Live</span>
+                  </span>
+                </div>
+
+                {/* Title overlay */}
+                <div className="absolute bottom-0 left-0 right-0 p-8">
+                  <h3 className="font-display font-black text-2xl md:text-3xl text-white">
+                    THE REFLECTION TOUR
+                  </h3>
+                </div>
+              </div>
+
+              {/* Floating accent card */}
+              <div className="absolute -bottom-6 -right-6 bg-white rounded-2xl shadow-xl p-4 hidden lg:block">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#2E75B6] to-[#1F4E78] flex items-center justify-center">
+                    <Calendar className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <p className="font-bold text-gray-900">August 22, 2026</p>
+                    <p className="text-sm text-gray-500">Seaside, Oregon</p>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Right - Content */}
-            <div className="space-y-6">
+            <div className="space-y-8">
               <div className="featured-animate">
-                <span className="text-[#2E75B6] font-mono text-sm tracking-[0.2em] uppercase font-bold">
+                <span className="inline-block px-4 py-2 bg-[#2E75B6]/10 text-[#2E75B6] font-mono text-sm tracking-wider uppercase font-bold rounded-full mb-4">
                   Featured Event
                 </span>
-                <h2 className="font-display font-black text-4xl md:text-5xl lg:text-6xl text-gray-900 mt-2 leading-[1.1]">
-                  READY TO <span className="text-[#2E75B6]">REFLECT</span>?
-              </h2>
+                <h2 className="font-display font-black text-4xl md:text-5xl lg:text-6xl text-gray-900 leading-[1.1]">
+                  READY TO <span className="text-[#2E75B6] italic">REFLECT</span>?
+                </h2>
               </div>
-              <p className="featured-animate text-gray-600 text-lg leading-relaxed">
+              
+              <p className="featured-animate text-gray-600 text-lg leading-relaxed max-w-lg">
                 Join us for an unforgettable dance experience. The Reflection Tour brings together 
-                the best dancers from across the nation to compete, learn, and grow together.
+                the best dancers from across the nation to compete, learn, and grow together in an 
+                atmosphere of excellence and celebration.
               </p>
+
               <div className="featured-animate flex flex-wrap gap-4">
                 <Link
                   to="/registration"
-                  className="inline-flex items-center gap-2 px-8 py-4 bg-[#2E75B6] text-white font-bold text-sm uppercase tracking-wider rounded-full hover:bg-[#1F4E78] transition-all duration-200"
+                  className="inline-flex items-center gap-3 px-8 py-4 bg-[#2E75B6] text-white font-bold text-sm uppercase tracking-wider rounded-full hover:bg-[#1F4E78] transition-all duration-300 hover:scale-105 shadow-lg shadow-[#2E75B6]/25"
                 >
                   REGISTER NOW
-                  <ArrowRight className="w-4 h-4" />
+                  <ArrowRight className="w-5 h-5" />
                 </Link>
                 <Link
                   to="/about"
-                  className="inline-flex items-center gap-2 px-8 py-4 border border-gray-300 text-gray-700 font-bold text-sm uppercase tracking-wider rounded-full hover:bg-gray-50 transition-all duration-200"
+                  className="inline-flex items-center gap-3 px-8 py-4 border-2 border-gray-200 text-gray-700 font-bold text-sm uppercase tracking-wider rounded-full hover:border-[#2E75B6] hover:text-[#2E75B6] transition-all duration-300"
                 >
                   LEARN MORE
                 </Link>
@@ -289,34 +435,66 @@ const Home = () => {
         </div>
       </section>
 
-      {/* PROMOTIONAL CARDS */}
-      <section ref={promoRef} className="relative overflow-x-hidden bg-gray-50 py-8">
-        <div className="mx-auto max-w-7xl min-w-0 px-4 sm:px-6 lg:px-8">
-          <div className="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 md:gap-4">
+      {/* PROMOTIONAL CARDS - Glassmorphism Premium */}
+      <section ref={promoRef} className="relative py-20 lg:py-28 bg-gradient-to-b from-gray-50 to-white overflow-hidden">
+        {/* Background decorations */}
+        <div className="absolute inset-0 opacity-30">
+          <div className="absolute top-20 left-10 w-72 h-72 bg-[#2E75B6]/20 rounded-full blur-[100px]" />
+          <div className="absolute bottom-20 right-10 w-96 h-96 bg-purple-500/10 rounded-full blur-[120px]" />
+        </div>
+
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12 lg:mb-16">
+            <span className="text-[#2E75B6] font-mono text-sm tracking-[0.2em] uppercase font-bold">
+              What's Coming
+            </span>
+            <h2 className="font-display font-black text-3xl sm:text-4xl lg:text-5xl text-gray-900 mt-3 tracking-tight">
+              Exciting <span className="italic">Features</span> Ahead
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
             {promoCards.map((card) => (
               <div
                 key={card.id}
-                className="promo-card relative min-h-[220px] min-w-0 overflow-hidden rounded-xl shadow-lg sm:min-h-[240px] md:h-72"
+                className="promo-card group relative h-[400px] md:h-[450px] rounded-[2rem] overflow-hidden cursor-pointer"
               >
+                {/* Background image */}
                 <img
                   src={card.image}
                   alt={card.title}
-                  className="absolute inset-0 w-full h-full object-cover"
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                 />
-                <div className={`absolute inset-0 bg-gradient-to-br ${card.bg} opacity-80`} />
-                <div className="absolute inset-0 flex flex-col justify-between p-4 sm:p-6">
-                  <div className="min-w-0">
-                    <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/80">
+                
+                {/* Gradient overlay */}
+                <div className={`absolute inset-0 bg-gradient-to-br ${card.bg} transition-opacity duration-500`} />
+                
+                {/* Glassmorphism content card */}
+                <div className="absolute inset-x-6 bottom-6">
+                  <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-6 border border-white/20 shadow-2xl transform transition-transform duration-500 group-hover:translate-y-[-8px]">
+                    {/* Icon */}
+                    <div 
+                      className="w-12 h-12 rounded-xl flex items-center justify-center mb-4"
+                      style={{ backgroundColor: `${card.accent}30` }}
+                    >
+                      <card.icon className="w-6 h-6" style={{ color: card.accent === '#2E75B6' ? 'white' : card.accent }} />
+                    </div>
+
+                    <p className="text-white/80 text-xs font-bold uppercase tracking-[0.2em] mb-2">
                       {card.subtitle}
                     </p>
-                    <h3 className="mt-1 break-words font-display text-2xl font-black text-white md:text-3xl">
+                    <h3 className="font-display font-black text-2xl text-white mb-2">
                       {card.title}
                     </h3>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="inline-flex items-center px-3 py-1 rounded-full border border-white/30 bg-white/10 text-white text-xs font-bold uppercase tracking-wider backdrop-blur-sm">
-                      Coming Soon
-                    </span>
+                    <p className="text-white/70 text-sm">
+                      {card.description}
+                    </p>
+
+                    {/* Coming Soon badge */}
+                    <div className="mt-4 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/20 backdrop-blur-sm">
+                      <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
+                      <span className="text-xs font-bold uppercase tracking-wider text-white">Coming Soon</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -325,48 +503,78 @@ const Home = () => {
         </div>
       </section>
 
-      {/* ABOUT / LEGACY SECTION */}
-      <section ref={aboutRef} className="relative bg-white py-20 lg:py-32 overflow-hidden">
+      {/* TOPAZ LEGACY SECTION - Premium Cards */}
+      <section ref={aboutRef} className="relative bg-white py-24 lg:py-32 overflow-hidden">
+        {/* Decorative background */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-0 left-1/4 w-px h-full bg-gradient-to-b from-transparent via-[#2E75B6]/20 to-transparent" />
+          <div className="absolute top-0 right-1/4 w-px h-full bg-gradient-to-b from-transparent via-[#2E75B6]/20 to-transparent" />
+        </div>
+
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
+          <div className="text-center mb-16 lg:mb-20">
+            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#2E75B6]/10 text-[#2E75B6] text-sm font-bold uppercase tracking-wider mb-4">
+              <Star className="w-4 h-4" />
+              Why Choose TOPAZ
+            </span>
             <h2 className="about-animate font-display font-black text-4xl md:text-5xl lg:text-6xl text-gray-900 tracking-tight">
-              TOPAZ <span className="text-[#2E75B6]">LEGACY</span>
+              TOPAZ <span className="text-[#2E75B6] italic">Legacy</span>
             </h2>
-            <div className="about-animate w-24 h-1 bg-[#2E75B6] mx-auto mt-6" />
+            <p className="mt-4 text-gray-500 text-lg max-w-2xl mx-auto">
+              Over five decades of nurturing talent and creating unforgettable moments
+            </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <div className="about-animate bg-gray-50 rounded-2xl p-8 border border-gray-100 hover:border-[#2E75B6]/30 transition-colors duration-300">
-              <Star className="w-10 h-10 text-[#2E75B6] mb-4" />
-              <h3 className="font-display font-bold text-xl text-gray-900 mb-3">OVER 50 YEARS</h3>
-              <p className="text-gray-600 leading-relaxed">
-                Since 1972, TOPAZ has been the premier dance competition, 
-                nurturing talent and creating unforgettable moments for dancers nationwide.
-              </p>
-            </div>
-
-            <div className="about-animate bg-gray-50 rounded-2xl p-8 border border-gray-100 hover:border-[#2E75B6]/30 transition-colors duration-300">
-              <Award className="w-10 h-10 text-[#2E75B6] mb-4" />
-              <h3 className="font-display font-bold text-xl text-gray-900 mb-3">PRESTIGIOUS AWARDS</h3>
-              <p className="text-gray-600 leading-relaxed">
-                Our unique cumulative scoring system lets dancers earn bronze, 
-                silver, and gold medals as they progress through the competition season.
-              </p>
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              {
+                icon: Star,
+                title: 'OVER 50 YEARS',
+                description: 'Since 1972, TOPAZ has been the premier dance competition, nurturing talent and creating unforgettable moments for dancers nationwide.',
+                gradient: 'from-amber-500/20 to-orange-500/20'
+              },
+              {
+                icon: Award,
+                title: 'PRESTIGIOUS AWARDS',
+                description: 'Our unique cumulative scoring system lets dancers earn bronze, silver, and gold medals as they progress through the competition season.',
+                gradient: 'from-[#2E75B6]/20 to-blue-600/20'
+              },
+              {
+                icon: Users,
+                title: 'INCLUSIVE COMMUNITY',
+                description: 'Welcoming dancers of all ages, backgrounds, and skill levels in a supportive and inspiring environment.',
+                gradient: 'from-purple-500/20 to-pink-500/20'
+              }
+            ].map((item, index) => (
+              <div 
+                key={index}
+                className="about-animate group relative"
+              >
+                <div className="relative bg-white rounded-[2rem] p-8 lg:p-10 border border-gray-100 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 overflow-hidden">
+                  {/* Gradient background on hover */}
+                  <div className={`absolute inset-0 bg-gradient-to-br ${item.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
+                  
+                  <div className="relative">
+                    {/* Icon with gradient background */}
+                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#2E75B6] to-[#1F4E78] flex items-center justify-center mb-6 shadow-lg shadow-[#2E75B6]/25 group-hover:scale-110 transition-transform duration-500">
+                      <item.icon className="w-8 h-8 text-white" />
+                    </div>
+                    
+                    <h3 className="font-display font-black text-xl lg:text-2xl text-gray-900 mb-4">
+                      {item.title}
+                    </h3>
+                    <p className="text-gray-600 leading-relaxed">
+                      {item.description}
+                    </p>
+                  </div>
                 </div>
-
-            <div className="about-animate bg-gray-50 rounded-2xl p-8 border border-gray-100 hover:border-[#2E75B6]/30 transition-colors duration-300">
-              <Users className="w-10 h-10 text-[#2E75B6] mb-4" />
-              <h3 className="font-display font-bold text-xl text-gray-900 mb-3">INCLUSIVE COMMUNITY</h3>
-              <p className="text-gray-600 leading-relaxed">
-                Welcoming dancers of all ages, backgrounds, and skill levels 
-                in a supportive and inspiring environment.
-                </p>
               </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* TOUR SECTION - After TOPAZ Legacy */}
+      {/* TOUR SECTION - Dramatic & Premium */}
       <section ref={tourRef} className="relative min-h-screen overflow-hidden flex items-center">
         <div className="absolute inset-0">
           <img
@@ -374,31 +582,33 @@ const Home = () => {
             alt="TOPAZ Competition"
             className="w-full h-full object-cover grayscale"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/80" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/60 to-black/80" />
         </div>
 
+        {/* Animated gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-r from-[#2E75B6]/20 via-transparent to-[#2E75B6]/20 animate-pulse" />
+
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="tour-content space-y-6">
-            <span className="font-mono text-[#2E75B6] font-bold tracking-[0.3em] uppercase text-sm md:text-base">
-              THE RETURN OF
+          <div className="tour-content space-y-8">
+            <span className="inline-block px-6 py-3 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 font-mono text-[#2E75B6] font-bold tracking-[0.3em] uppercase text-sm">
+              The Return Of
             </span>
 
-            <h1 className="font-display font-black text-5xl sm:text-6xl md:text-7xl lg:text-[10rem] text-white leading-[0.85] tracking-tighter uppercase">
-              TOPAZ 2.0
+            <h1 className="font-display font-black text-6xl sm:text-7xl md:text-8xl lg:text-[10rem] text-white leading-[0.85] tracking-tighter uppercase">
+              TOPAZ <span className="text-[#2E75B6] italic">2.0</span>
             </h1>
 
-            <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8 text-white">
-              <div className="flex items-center gap-2">
+            <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-12 text-white">
+              <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-full px-6 py-3 border border-white/20">
                 <Calendar className="w-6 h-6 text-[#2E75B6]" />
-                <span className="font-display font-bold text-2xl md:text-4xl uppercase tracking-wide">
+                <span className="font-display font-bold text-xl md:text-2xl uppercase tracking-wide">
                   August 22, 2026
                 </span>
               </div>
-              <span className="hidden md:block text-white/40 text-4xl">|</span>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-full px-6 py-3 border border-white/20">
                 <MapPin className="w-6 h-6 text-[#2E75B6]" />
-                <span className="font-display font-bold text-2xl md:text-4xl uppercase tracking-wide">
-                  SEASIDE, OR
+                <span className="font-display font-bold text-xl md:text-2xl uppercase tracking-wide">
+                  Seaside, OR
                 </span>
               </div>
             </div>
@@ -406,7 +616,7 @@ const Home = () => {
             <div className="pt-8">
               <Link
                 to="/registration"
-                className="inline-flex items-center gap-3 px-12 py-5 bg-[#2E75B6] text-white font-bold text-lg uppercase tracking-wider rounded-full hover:bg-[#1F4E78] transition-all duration-300 hover:scale-105"
+                className="inline-flex items-center gap-3 px-12 py-5 bg-[#2E75B6] text-white font-bold text-lg uppercase tracking-wider rounded-full hover:bg-[#1F4E78] transition-all duration-300 hover:scale-105 shadow-2xl shadow-[#2E75B6]/50"
               >
                 REGISTER NOW
                 <ArrowRight className="w-6 h-6" />
@@ -424,12 +634,13 @@ const Home = () => {
         </div>
       </section>
 
-      {/* TESTIMONIALS — Coming Soon (after Tour) */}
+      {/* TESTIMONIALS — Premium Glassmorphism */}
       <section
         ref={testimonialsRef}
         className="relative bg-gradient-to-br from-[#1F4E78] via-[#2E75B6] to-[#1F4E78] py-24 lg:py-32 overflow-hidden"
       >
-        <div className="absolute inset-0 opacity-[0.12]">
+        {/* Animated background pattern */}
+        <div className="absolute inset-0 opacity-[0.08]">
           <div
             className="absolute inset-0"
             style={{
@@ -439,55 +650,69 @@ const Home = () => {
           />
         </div>
 
-        <div className="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="text-center mb-10">
-            <span className="font-mono text-white/80 text-sm tracking-[0.2em] uppercase font-bold">
+        {/* Floating orbs */}
+        <div className="absolute top-20 left-20 w-64 h-64 bg-white/10 rounded-full blur-[80px] animate-pulse" />
+        <div className="absolute bottom-20 right-20 w-80 h-80 bg-white/10 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '1s' }} />
+
+        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="text-center mb-12">
+            <span className="inline-block px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 font-mono text-white/80 text-sm tracking-[0.2em] uppercase font-bold mb-4">
               What Studios Say
             </span>
-            <h2 className="font-display font-black text-4xl md:text-5xl lg:text-6xl text-white tracking-tight mt-4">
+            <h2 className="font-display font-black text-4xl md:text-5xl lg:text-6xl text-white tracking-tight">
               TESTIMONIALS
             </h2>
           </div>
 
-          <div className="testimonial-card rounded-3xl border border-white/20 bg-white/10 backdrop-blur-sm px-8 py-14 sm:px-12 sm:py-16 shadow-xl">
-            <span className="inline-flex items-center px-3 py-1 rounded-full border border-white/30 bg-white/10 text-white text-xs font-bold uppercase tracking-wider backdrop-blur-sm">
-              Coming Soon
-            </span>
-            <p className="mt-6 text-white/90 text-lg leading-relaxed">
-              Studio testimonials will appear here after the competition season. Check back soon.
+          <div className="testimonial-card rounded-[2.5rem] border border-white/20 bg-white/10 backdrop-blur-xl px-8 py-14 sm:px-12 sm:py-16 shadow-2xl">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 mb-6">
+              <span className="w-2 h-2 bg-white rounded-full animate-pulse" />
+              <span className="text-xs font-bold uppercase tracking-wider text-white">Coming Soon</span>
+            </div>
+            <p className="text-white/90 text-xl leading-relaxed font-light">
+              Studio testimonials will appear here after the competition season. 
+              Check back soon to hear what dance studios are saying about their TOPAZ experience.
             </p>
+            <div className="mt-8 flex justify-center gap-1">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="w-2 h-2 rounded-full bg-white/30" />
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Single promo banner — blends Revel-style split (logo frame + meta below) + bold story column + ghost CTA */}
+      {/* PREMIUM SPLIT BANNER — Revel-inspired */}
       <section
         ref={splitBannerRef}
-        className="relative overflow-hidden border-y border-white/10"
+        className="relative overflow-hidden"
         aria-labelledby="split-banner-heading"
       >
-        {/* TOPAZ site colors only — no photo overlay */}
-        <div
-          className="absolute inset-0 bg-gradient-to-br from-[#1F4E78] via-[#2E75B6] to-[#1F4E78]"
-          aria-hidden
-        />
-        <div
-          className="absolute inset-0 opacity-[0.08]"
-          style={{
-            backgroundImage: 'radial-gradient(circle at 30% 20%, white 0, transparent 45%), radial-gradient(circle at 80% 80%, white 0, transparent 40%)',
-          }}
-          aria-hidden
-        />
+        {/* Luxurious gradient background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[#0F2847] via-[#1F4E78] to-[#2E75B6]" />
+        
+        {/* Animated spotlight effect */}
+        <div className="absolute inset-0 opacity-20">
+          <div 
+            className="absolute inset-0"
+            style={{
+              background: 'radial-gradient(ellipse at 30% 20%, rgba(255,255,255,0.3) 0%, transparent 50%)',
+            }}
+          />
+        </div>
 
-        <div className="relative z-10 mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-10 lg:py-28">
+        <div className="relative z-10 mx-auto max-w-7xl px-4 py-20 sm:px-6 sm:py-24 lg:px-10 lg:py-32">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16 xl:gap-24">
-            {/* Left: white frame = logo only; city + dates sit BELOW frame (Revel layout) */}
+            {/* Left: Logo Frame */}
             <div className="split-banner-animate flex flex-col gap-4 sm:gap-5">
-              <div className="flex min-h-[320px] items-center justify-center border-4 border-white bg-black/10 px-6 py-12 shadow-[0_20px_60px_rgba(0,0,0,0.25)] sm:min-h-[380px] sm:px-10 sm:py-14 lg:min-h-[440px] lg:px-12 lg:py-16">
+              <div className="relative flex min-h-[340px] items-center justify-center rounded-[2rem] border-2 border-white/30 bg-white/5 backdrop-blur-sm px-6 py-12 shadow-[0_20px_60px_rgba(0,0,0,0.3)] sm:min-h-[400px] sm:px-10 sm:py-14 lg:min-h-[460px] lg:px-12 lg:py-16 overflow-hidden group">
+                {/* Inner glow */}
+                <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                
                 <img
                   src={TOPAZ_BANNER_LOGO}
                   alt="TOPAZ logo"
-                  className="h-auto w-full max-w-[min(100%,420px)] object-contain sm:max-w-[min(100%,480px)] lg:max-w-[min(100%,560px)] xl:max-w-[min(100%,640px)]"
+                  className="relative z-10 h-auto w-full max-w-[min(100%,400px)] object-contain drop-shadow-2xl sm:max-w-[min(100%,460px)] lg:max-w-[min(100%,520px)] xl:max-w-[min(100%,600px)]"
                   data-fallback-tried=""
                   onError={(e) => {
                     const el = e.currentTarget;
@@ -498,34 +723,53 @@ const Home = () => {
                   }}
                 />
               </div>
-              <div className="flex justify-between gap-4 px-1 font-serif text-[0.8125rem] font-medium tracking-[0.12em] text-white sm:text-base md:text-lg">
-                <span className="uppercase">Seaside, OR</span>
-                <span className="uppercase">Aug 22, 2026</span>
+              
+              {/* Meta info with glass effect */}
+              <div className="flex justify-between gap-4 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 px-4 py-3 sm:px-6 sm:py-4">
+                <span className="font-serif text-sm font-medium tracking-[0.12em] text-white/90 uppercase sm:text-base">
+                  Seaside, OR
+                </span>
+                <span className="font-serif text-sm font-medium tracking-[0.12em] text-white/90 uppercase sm:text-base">
+                  Aug 22, 2026
+                </span>
               </div>
             </div>
 
-            {/* Right: bold condensed copy (Revel paragraph) + trust line (second ref tone) + ghost button */}
+            {/* Right: Content */}
             <div className="split-banner-animate flex flex-col justify-center space-y-6 text-white lg:space-y-8">
               <h2
                 id="split-banner-heading"
-                className="font-display text-[1.35rem] font-black uppercase leading-[1.12] tracking-[0.02em] sm:text-2xl md:text-3xl lg:text-[1.65rem] xl:text-4xl xl:leading-[1.15]"
+                className="font-display text-[1.5rem] font-black uppercase leading-[1.15] tracking-[0.02em] sm:text-2xl md:text-3xl lg:text-[1.85rem] xl:text-4xl"
               >
                 From the legacy you know and love comes{' '}
-                <span className="text-white">The Return of TOPAZ 2.0</span> — a theatrical arts
+                <span className="text-[#7EB8E8]">The Return of TOPAZ 2.0</span> — a theatrical arts
                 competition featuring respected adjudication, studio community, awards recognition,
                 and one powerful weekend on the Oregon coast.
               </h2>
-              <p className="max-w-xl text-sm font-medium leading-relaxed text-white/88 sm:text-base">
+              
+              <p className="max-w-xl text-base font-medium leading-relaxed text-white/85 sm:text-lg">
                 Professionally run scheduling, clear registration, and a welcoming environment for
                 dancers and educators — the same standards TOPAZ has stood for since 1972.
-                Seaside Convention Center. Registration opens April 1, 2026. Registration closes July 30, 2026, 12:00 AM.
               </p>
+
+              {/* Date pills */}
+              <div className="flex flex-wrap gap-3">
+                <div className="inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 px-4 py-2">
+                  <Calendar className="w-4 h-4 text-[#7EB8E8]" />
+                  <span className="text-sm font-bold uppercase tracking-wider">Registration opens April 1, 2026</span>
+                </div>
+                <div className="inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 px-4 py-2">
+                  <span className="text-sm font-bold uppercase tracking-wider">Closes July 30, 2026</span>
+                </div>
+              </div>
+
               <div className="pt-2">
                 <Link
                   to="/about"
-                  className="inline-flex items-center justify-center rounded-full border-2 border-white bg-transparent px-10 py-3.5 text-xs font-bold uppercase tracking-[0.22em] text-white transition-all duration-300 hover:bg-white hover:text-[#1F4E78] sm:text-sm"
+                  className="inline-flex items-center justify-center gap-2 rounded-full border-2 border-white bg-transparent px-10 py-4 text-sm font-bold uppercase tracking-[0.2em] text-white transition-all duration-300 hover:bg-white hover:text-[#1F4E78] sm:text-base"
                 >
                   Learn More
+                  <ChevronRight className="w-5 h-5" />
                 </Link>
               </div>
             </div>
@@ -533,30 +777,43 @@ const Home = () => {
         </div>
       </section>
 
-      {/* FINAL CTA SECTION */}
-      <section className="relative bg-gradient-to-br from-[#1F4E78] to-[#2E75B6] py-20 lg:py-28 overflow-hidden">
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=1600&h=900&fit=crop')] opacity-20 bg-cover bg-center" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#1F4E78] via-transparent to-[#1F4E78]" />
+      {/* FINAL CTA SECTION — Ultra Premium */}
+      <section className="relative bg-gradient-to-br from-[#0F2847] via-[#1F4E78] to-[#2E75B6] py-24 lg:py-32 overflow-hidden">
+        {/* Animated background */}
+        <div className="absolute inset-0">
+          <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=1600&h=900&fit=crop')] opacity-10 bg-cover bg-center" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0F2847] via-transparent to-[#1F4E78]" />
+        </div>
+
+        {/* Floating decorations */}
+        <div className="absolute top-10 left-10 w-40 h-40 bg-white/5 rounded-full blur-[60px]" />
+        <div className="absolute bottom-10 right-10 w-60 h-60 bg-[#2E75B6]/30 rounded-full blur-[80px]" />
 
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="font-display font-black text-4xl md:text-5xl lg:text-6xl text-white mb-6">
-            READY TO TAKE THE <span className="text-white/90 italic">STAGE</span>?
+          <span className="inline-block px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 font-mono text-white/80 text-sm tracking-wider uppercase font-bold mb-6">
+            Join The Legacy
+          </span>
+          
+          <h2 className="font-display font-black text-4xl md:text-5xl lg:text-6xl text-white mb-6 leading-tight">
+            READY TO TAKE THE <span className="text-[#7EB8E8] italic">STAGE</span>?
           </h2>
-          <p className="text-white/80 text-lg md:text-xl mb-10 max-w-2xl mx-auto">
+          
+          <p className="text-white/80 text-lg md:text-xl mb-10 max-w-2xl mx-auto leading-relaxed">
             Join thousands of dancers who have made TOPAZ their home. 
             Register today and start your journey to excellence.
           </p>
+          
           <div className="flex flex-wrap justify-center gap-4">
             <Link
               to="/registration"
-              className="inline-flex items-center gap-2 px-10 py-5 bg-white text-[#2E75B6] font-bold text-sm uppercase tracking-wider rounded-full hover:bg-white/90 transition-all duration-200"
+              className="inline-flex items-center gap-3 px-10 py-5 bg-white text-[#2E75B6] font-bold text-sm uppercase tracking-wider rounded-full hover:bg-white/90 transition-all duration-300 hover:scale-105 shadow-2xl"
             >
               REGISTER NOW
               <ArrowRight className="w-5 h-5" />
             </Link>
             <Link
               to="/contact"
-              className="inline-flex items-center gap-2 px-10 py-5 border border-white/30 text-white font-bold text-sm uppercase tracking-wider rounded-full hover:bg-white/10 transition-all duration-200"
+              className="inline-flex items-center gap-3 px-10 py-5 border-2 border-white/30 text-white font-bold text-sm uppercase tracking-wider rounded-full hover:bg-white/10 hover:border-white/50 transition-all duration-300"
             >
               CONTACT US
             </Link>
