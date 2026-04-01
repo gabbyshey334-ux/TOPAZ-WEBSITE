@@ -19,8 +19,12 @@ const Registration = () => {
 
   const faqs = [
     {
+      question: 'When does registration open?',
+      answer: 'Registration opens April 1, 2026. All completed forms must be emailed to topaz2.0@yahoo.com before the deadline of July 30, 2026, 12:00 AM.'
+    },
+    {
       question: 'Can I register on competition day?',
-      answer: 'No. All registrations must be received by email before July 31, 2026, 12:00 AM. NO day-of-event registration is accepted. Plan ahead and submit in time.'
+      answer: 'No. All registrations must be received by email before July 30, 2026, 12:00 AM. NO day-of-event registration is accepted. Plan ahead and submit in time.'
     },
     {
       question: 'Can I register multiple entries?',
@@ -32,11 +36,11 @@ const Registration = () => {
     },
     {
       question: 'Can I make changes after submitting?',
-      answer: 'Yes, please contact us at topaz2.0@yahoo.com before the registration deadline (July 31, 2026, 12:00 AM) to request changes to your entry.'
+      answer: 'Yes, please contact us at topaz2.0@yahoo.com before the registration deadline (July 30, 2026, 12:00 AM) to request changes to your entry.'
     },
     {
       question: 'What if I miss the deadline?',
-      answer: 'Registrations are not accepted after the deadline. All entries must be received by email at topaz2.0@yahoo.com before July 31, 2026, 12:00 AM. There are no exceptions and no late or day-of-event registration.'
+      answer: 'Registrations are not accepted after the deadline. All entries must be received by email at topaz2.0@yahoo.com before July 30, 2026, 12:00 AM. There are no exceptions and no late or day-of-event registration.'
     },
     {
       question: 'Do I need to register for each category separately?',
@@ -67,9 +71,12 @@ const Registration = () => {
             Competition <span className="text-primary italic">Registration</span>
           </h1>
           <div className="w-24 h-1 bg-primary mx-auto rounded-full mb-8" />
-          <p className="text-xl text-white/70 max-w-2xl mx-auto mb-10">
+          <p className="text-xl text-white/70 max-w-2xl mx-auto mb-4">
             Join The Return of TOPAZ 2.0<br/>
             <span className="text-white/60 text-lg mt-2 block">August 22, 2026 • Seaside Convention Center</span>
+          </p>
+          <p className="text-base text-white/80 max-w-2xl mx-auto mb-10 font-medium">
+            Registration opens April 1, 2026 • Registration closes July 30, 2026, 12:00 AM
           </p>
 
           <a
@@ -140,9 +147,9 @@ const Registration = () => {
                 <AlertCircle className="w-6 h-6 text-red-600" />
               </div>
               <div>
-                <h3 className="font-bold text-lg text-red-900 mb-2">Registration Deadline — No Exceptions</h3>
+                <h3 className="font-bold text-lg text-red-900 mb-2">Registration Window — No Exceptions</h3>
                 <p className="text-red-800 leading-relaxed mb-4">
-                  All registrations must be received by email at <strong>topaz2.0@yahoo.com</strong> before <strong>July 31, 2026, 12:00 AM</strong>. 
+                  Registration opens <strong>April 1, 2026</strong>. All registrations must be received by email at <strong>topaz2.0@yahoo.com</strong> before <strong>July 30, 2026, 12:00 AM</strong>.
                   NO late registration. NO day-of-event registration. Email submissions only. Plan ahead!
                 </p>
                 <p className="text-red-700 text-sm font-semibold">
@@ -163,7 +170,7 @@ const Registration = () => {
             </h2>
             <p className="text-gray-500 text-lg mb-4">Follow these steps and submit by email before the deadline.</p>
             <p className="text-red-600 font-semibold text-sm max-w-2xl mx-auto">
-              You must complete registration before July 31, 2026, 12:00 AM. No registration on competition day.
+              Registration opens April 1, 2026. You must complete registration before July 30, 2026, 12:00 AM. No registration on competition day.
             </p>
           </div>
           
@@ -299,8 +306,8 @@ const Registration = () => {
             
             <div className="space-y-12">
               {[
-                { label: 'Registration Opens', date: 'March 1, 2026', status: 'past' },
-                { label: 'Registration Closes', date: 'July 31, 2026, 12:00 AM', desc: 'No exceptions. No day-of-event registration.', status: 'future', highlight: true },
+                { label: 'Registration Opens', date: 'April 1, 2026', status: 'future' },
+                { label: 'Registration Closes', date: 'July 30, 2026, 12:00 AM', desc: 'No exceptions. No day-of-event registration.', status: 'future', highlight: true },
                 { label: 'Competition Day', date: 'August 22, 2026', status: 'future' }
               ].map((item, i) => (
                 <div key={i} className={`relative flex items-center lg:justify-center ${i % 2 === 0 ? 'lg:flex-row-reverse' : ''}`}>
@@ -326,7 +333,7 @@ const Registration = () => {
 
           <div className="mt-12 text-center">
             <p className="text-red-600 font-bold text-sm md:text-base">
-              NO registrations accepted after July 31, 2026, 12:00 AM. NO day-of-event registration. Email only.
+              NO registrations accepted after July 30, 2026, 12:00 AM. NO day-of-event registration. Email only.
             </p>
           </div>
         </div>

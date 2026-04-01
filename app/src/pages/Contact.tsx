@@ -140,12 +140,12 @@ const Contact = () => {
     {
       question: 'How do I register for a competition?',
       answer:
-        'You can register online through our Schedule page. Select the competition you want to enter, fill out the registration form, and submit your payment. Early registration is recommended as spots fill up quickly!',
+        'Download the registration PDF from our Registration page, complete it, and email it to topaz2.0@yahoo.com. Registration opens April 1, 2026. Submit before the deadline of July 30, 2026, 12:00 AM. See Registration for full instructions.',
     },
     {
       question: 'What is the registration deadline?',
       answer:
-        'Registration deadlines vary by competition but are typically 2-3 weeks before the event date. Check the specific competition page for exact deadlines. Late registrations may be accepted with an additional fee if space permits.',
+        'For The Return of TOPAZ 2.0 (August 22, 2026), registration closes July 30, 2026, 12:00 AM. There is no late or day-of registration.',
     },
     {
       question: 'Can I compete in multiple categories?',

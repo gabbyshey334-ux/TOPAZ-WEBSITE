@@ -50,24 +50,6 @@ const promoCards = [
   }
 ];
 
-const comingSoonSections = [
-  {
-    id: 'master-classes',
-    title: 'Master Classes',
-    text: 'Exclusive training opportunities with industry professionals. Stay tuned for announcements.',
-  },
-  {
-    id: 'sponsors',
-    title: 'Our Sponsors',
-    text: "We're proud to partner with leading brands in dance and performing arts. Sponsor information coming soon.",
-  },
-  {
-    id: 'panel',
-    title: 'Panel & Judges',
-    text: 'Meet our distinguished panel of judges and industry experts. Details coming soon.',
-  },
-];
-
 const legacyHistoryPhotos = [
   {
     src: `${BASE}images/homepage/boy-tuxedo-trophy.png`,
@@ -94,7 +76,6 @@ const Home = () => {
   const aboutRef = useRef<HTMLDivElement>(null);
   const testimonialsRef = useRef<HTMLDivElement>(null);
   const splitBannerRef = useRef<HTMLElement>(null);
-  const comingSoonRef = useRef<HTMLDivElement>(null);
 
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
@@ -217,24 +198,6 @@ const Home = () => {
         );
       }
 
-      const comingSoonCards = comingSoonRef.current?.querySelectorAll('.coming-soon-card');
-      if (comingSoonCards) {
-        gsap.fromTo(
-          comingSoonCards,
-          { y: 28, opacity: 0 },
-          {
-            y: 0,
-            opacity: 1,
-            duration: 0.65,
-            stagger: 0.12,
-            ease: 'power2.out',
-            scrollTrigger: {
-              trigger: comingSoonRef.current,
-              start: 'top 85%',
-            },
-          }
-        );
-      }
     });
 
     return () => ctx.revert();
@@ -277,7 +240,7 @@ const Home = () => {
                 </span>
                 <h2 className="font-display font-black text-4xl md:text-5xl lg:text-6xl text-gray-900 mt-2 leading-[1.1]">
                   READY TO <span className="text-[#2E75B6]">REFLECT</span>?
-                </h2>
+              </h2>
               </div>
               <p className="featured-animate text-gray-600 text-lg leading-relaxed">
                 Join us for an unforgettable dance experience. The Reflection Tour brings together 
@@ -366,7 +329,7 @@ const Home = () => {
                 Our unique cumulative scoring system lets dancers earn bronze, 
                 silver, and gold medals as they progress through the competition season.
               </p>
-            </div>
+                </div>
 
             <div className="about-animate bg-gray-50 rounded-2xl p-8 border border-gray-100 hover:border-[#2E75B6]/30 transition-colors duration-300">
               <Users className="w-10 h-10 text-[#2E75B6] mb-4" />
@@ -374,8 +337,8 @@ const Home = () => {
               <p className="text-gray-600 leading-relaxed">
                 Welcoming dancers of all ages, backgrounds, and skill levels 
                 in a supportive and inspiring environment.
-              </p>
-            </div>
+                </p>
+              </div>
           </div>
         </div>
       </section>
@@ -438,7 +401,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* TESTIMONIALS - Brand blue (after Tour) */}
+      {/* TESTIMONIALS — Coming Soon (after Tour) */}
       <section
         ref={testimonialsRef}
         className="relative bg-gradient-to-br from-[#1F4E78] via-[#2E75B6] to-[#1F4E78] py-24 lg:py-32 overflow-hidden"
@@ -453,8 +416,8 @@ const Home = () => {
           />
         </div>
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
+        <div className="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="text-center mb-10">
             <span className="font-mono text-white/80 text-sm tracking-[0.2em] uppercase font-bold">
               What Studios Say
             </span>
@@ -463,15 +426,13 @@ const Home = () => {
             </h2>
           </div>
 
-          <div className="max-w-2xl mx-auto">
-            <div className="testimonial-card relative rounded-2xl border border-white/20 bg-white/5 px-10 py-14 text-center backdrop-blur-sm">
-              <span className="inline-flex items-center rounded-full border border-white/30 bg-white/10 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-white">
-                Coming Soon
-              </span>
-              <p className="mt-6 text-lg text-white/85 leading-relaxed">
-                Studio testimonials will appear here after the season.
-              </p>
-            </div>
+          <div className="testimonial-card rounded-3xl border border-white/20 bg-white/10 backdrop-blur-sm px-8 py-14 sm:px-12 sm:py-16 shadow-xl">
+            <span className="inline-flex items-center px-3 py-1 rounded-full border border-white/30 bg-white/10 text-white text-xs font-bold uppercase tracking-wider backdrop-blur-sm">
+              Coming Soon
+            </span>
+            <p className="mt-6 text-white/90 text-lg leading-relaxed">
+              Studio testimonials will appear here after the competition season. Check back soon.
+            </p>
           </div>
         </div>
       </section>
@@ -534,7 +495,7 @@ const Home = () => {
               <p className="max-w-xl text-sm font-medium leading-relaxed text-white/88 sm:text-base">
                 Professionally run scheduling, clear registration, and a welcoming environment for
                 dancers and educators — the same standards TOPAZ has stood for since 1972.
-                Seaside Convention Center. Registration closes July 31, 2026, 12:00 AM.
+                Seaside Convention Center. Registration opens April 1, 2026. Registration closes July 30, 2026, 12:00 AM.
               </p>
               <div className="pt-2">
                 <Link
@@ -549,49 +510,13 @@ const Home = () => {
         </div>
       </section>
 
-      {/* COMING SOON — Master Classes, Sponsors, Panel */}
-      <section
-        ref={comingSoonRef}
-        className="relative bg-gray-50 py-20 lg:py-28 border-t border-gray-200"
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-14">
-            <span className="text-[#2E75B6] font-mono text-sm tracking-[0.2em] uppercase font-bold">
-              More to come
-            </span>
-            <h2 className="font-display font-black text-3xl md:text-4xl lg:text-5xl text-gray-900 tracking-tight mt-3">
-              WHAT&apos;S <span className="text-[#2E75B6] italic">NEXT</span>
-            </h2>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
-            {comingSoonSections.map((block) => (
-              <div
-                key={block.id}
-                className="coming-soon-card flex flex-col rounded-2xl border border-gray-200 bg-white p-8 shadow-sm hover:border-[#2E75B6]/35 hover:shadow-md transition-all duration-300 text-center"
-              >
-                <span className="inline-flex self-center items-center rounded-full border border-[#2E75B6]/30 bg-[#2E75B6]/5 px-4 py-1 text-xs font-bold uppercase tracking-wider text-[#2E75B6] mb-5">
-                  Coming Soon
-                </span>
-                <h3 className="font-display font-black text-xl md:text-2xl text-gray-900 mb-4 uppercase tracking-tight">
-                  {block.title}
-                </h3>
-                <p className="text-gray-600 text-sm md:text-base leading-relaxed flex-1">
-                  {block.text}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* TOPAZ Through the Years — after Upcoming Competitions, before Gallery preview */}
+      {/* TOPAZ Through the Years — staggered masonry (4 photos) */}
       <section
         className="relative bg-white py-16 lg:py-24 border-t border-gray-200"
         aria-labelledby="legacy-history-heading"
       >
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-10 sm:mb-12">
+          <div className="text-center mb-10 sm:mb-14">
             <p className="text-[#2E75B6] font-mono text-sm tracking-[0.2em] uppercase font-bold">
               Our Legacy
             </p>
@@ -603,21 +528,49 @@ const Home = () => {
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-6 lg:gap-8">
-            {legacyHistoryPhotos.map((photo) => (
-              <div
-                key={photo.src}
-                className="rounded-2xl bg-gray-100 shadow-md overflow-hidden aspect-[3/4] p-3 sm:p-4"
-              >
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:gap-5">
+            {/* Left column: tall, then shorter */}
+            <div className="flex flex-col gap-3 sm:gap-4 lg:gap-5">
+              <div className="rounded-[1.5rem] sm:rounded-[2rem] bg-gray-100 shadow-md overflow-hidden p-2 sm:p-3 min-h-[200px] sm:min-h-[280px] flex-[1.35]">
                 <img
-                  src={photo.src}
-                  alt={photo.alt}
-                  className="h-full w-full object-contain"
+                  src={legacyHistoryPhotos[0].src}
+                  alt={legacyHistoryPhotos[0].alt}
+                  className="h-full w-full min-h-[180px] sm:min-h-[260px] object-contain"
                   loading="lazy"
                   decoding="async"
                 />
               </div>
-            ))}
+              <div className="rounded-[1.5rem] sm:rounded-[2rem] bg-gray-100 shadow-md overflow-hidden p-2 sm:p-3 flex-[0.85]">
+                <img
+                  src={legacyHistoryPhotos[2].src}
+                  alt={legacyHistoryPhotos[2].alt}
+                  className="h-full w-full min-h-[120px] sm:min-h-[160px] object-contain"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+            </div>
+            {/* Right column: shorter (offset down), then tall */}
+            <div className="flex flex-col gap-3 sm:gap-4 lg:gap-5 pt-8 sm:pt-12 lg:pt-16">
+              <div className="rounded-[1.5rem] sm:rounded-[2rem] bg-gray-100 shadow-md overflow-hidden p-2 sm:p-3 flex-[0.85]">
+                <img
+                  src={legacyHistoryPhotos[1].src}
+                  alt={legacyHistoryPhotos[1].alt}
+                  className="h-full w-full min-h-[120px] sm:min-h-[160px] object-contain"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+              <div className="rounded-[1.5rem] sm:rounded-[2rem] bg-gray-100 shadow-md overflow-hidden p-2 sm:p-3 flex-[1.35]">
+                <img
+                  src={legacyHistoryPhotos[3].src}
+                  alt={legacyHistoryPhotos[3].alt}
+                  className="h-full w-full min-h-[180px] sm:min-h-[260px] object-contain"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+            </div>
           </div>
         </div>
       </section>

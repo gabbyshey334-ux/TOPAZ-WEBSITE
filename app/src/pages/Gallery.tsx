@@ -213,171 +213,171 @@ const Gallery = () => {
                     {tab.charAt(0).toUpperCase() + tab.slice(1)}
                   </button>
                 ))}
-              </div>
-            </div>
           </div>
+        </div>
+      </div>
 
-          <div className="max-w-7xl mx-auto px-6 py-12">
+      <div className="max-w-7xl mx-auto px-6 py-12">
 
             {/* ── Photos tab ─────────────────────────────────────────────── */}
-            {activeTab === 'photos' && (
-              <>
+        {activeTab === 'photos' && (
+          <>
                 {/* Filter pills */}
-                <div className="flex flex-wrap gap-2 mb-10">
-                  {PHOTO_FILTERS.map((f) => (
-                    <button
-                      key={f.value}
-                      onClick={() => handlePhotoFilterChange(f.value)}
-                      className={`px-5 py-2 rounded-full font-bold text-sm transition-all ${
-                        photoFilter === f.value
-                          ? 'bg-[#2E75B6] text-white shadow-md'
-                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-900'
-                      }`}
-                    >
-                      {f.label}
-                      {f.value !== 'all' && (
-                        <span className="ml-1.5 text-xs opacity-70">
+            <div className="flex flex-wrap gap-2 mb-10">
+              {PHOTO_FILTERS.map((f) => (
+                <button
+                  key={f.value}
+                  onClick={() => handlePhotoFilterChange(f.value)}
+                  className={`px-5 py-2 rounded-full font-bold text-sm transition-all ${
+                    photoFilter === f.value
+                      ? 'bg-[#2E75B6] text-white shadow-md'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-900'
+                  }`}
+                >
+                  {f.label}
+                  {f.value !== 'all' && (
+                    <span className="ml-1.5 text-xs opacity-70">
                           ({historyPhotos.filter((p) => p.category === f.value).length})
-                        </span>
-                      )}
-                    </button>
-                  ))}
-                </div>
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
 
                 {/* Masonry grid */}
-                {visiblePhotos.length > 0 ? (
-                  <ResponsiveMasonry columnsCountBreakPoints={{ 350: 1, 750: 2, 900: 3, 1200: 4 }}>
-                    <Masonry gutter="16px">
-                      {visiblePhotos.map((photo) => (
-                        <button
-                          key={photo.id}
-                          onClick={() => setLightboxImage({ src: photo.src, alt: photo.alt })}
-                          className="relative group w-full rounded-2xl overflow-hidden bg-gray-100 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] block mb-4"
-                        >
-                          <img
-                            src={photo.src}
-                            alt={photo.alt}
-                            className="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-500 block"
-                            onError={(e) => {
+            {visiblePhotos.length > 0 ? (
+              <ResponsiveMasonry columnsCountBreakPoints={{ 350: 1, 750: 2, 900: 3, 1200: 4 }}>
+                <Masonry gutter="16px">
+                  {visiblePhotos.map((photo) => (
+                    <button
+                      key={photo.id}
+                      onClick={() => setLightboxImage({ src: photo.src, alt: photo.alt })}
+                      className="relative group w-full rounded-2xl overflow-hidden bg-gray-100 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] block mb-4"
+                    >
+                      <img
+                        src={photo.src}
+                        alt={photo.alt}
+                        className="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-500 block"
+                        onError={(e) => {
                               (e.target as HTMLImageElement).src = FALLBACK_IMG;
-                            }}
-                          />
-                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
-                        </button>
-                      ))}
-                    </Masonry>
-                  </ResponsiveMasonry>
-                ) : (
-                  <div className="text-center py-20 text-gray-400">
-                    <Images className="w-12 h-12 mx-auto mb-4 opacity-30" />
-                    <p className="text-lg font-medium">No photos in this category yet.</p>
-                  </div>
-                )}
-
-                {/* Load more */}
-                {hasMorePhotos && (
-                  <div className="flex justify-center mt-12">
-                    <button
-                      onClick={() => setPhotoLimit((prev) => prev + PHOTOS_PER_PAGE)}
-                      className="inline-flex items-center gap-2 px-8 py-4 border-2 border-[#2E75B6] text-[#2E75B6] font-bold rounded-xl hover:bg-[#2E75B6] hover:text-white transition-all duration-200"
-                    >
-                      <ChevronDown className="w-5 h-5" />
-                      Load More Photos ({filteredPhotos.length - photoLimit} remaining)
-                    </button>
-                  </div>
-                )}
-              </>
-            )}
-
-            {/* ── Videos tab ─────────────────────────────────────────────── */}
-            {activeTab === 'videos' && (
-              <>
-                {/* Filter pills */}
-                <div className="flex flex-wrap gap-2 mb-10">
-                  {VIDEO_FILTERS.map((f) => (
-                    <button
-                      key={f.value}
-                      onClick={() => handleVideoFilterChange(f.value)}
-                      className={`px-5 py-2 rounded-full font-bold text-sm transition-all ${
-                        videoFilter === f.value
-                          ? 'bg-[#2E75B6] text-white shadow-md'
-                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-900'
-                      }`}
-                    >
-                      {f.label}
+                        }}
+                      />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
                     </button>
                   ))}
-                </div>
+                </Masonry>
+              </ResponsiveMasonry>
+            ) : (
+              <div className="text-center py-20 text-gray-400">
+                    <Images className="w-12 h-12 mx-auto mb-4 opacity-30" />
+                <p className="text-lg font-medium">No photos in this category yet.</p>
+              </div>
+            )}
+
+                {/* Load more */}
+            {hasMorePhotos && (
+              <div className="flex justify-center mt-12">
+                <button
+                  onClick={() => setPhotoLimit((prev) => prev + PHOTOS_PER_PAGE)}
+                  className="inline-flex items-center gap-2 px-8 py-4 border-2 border-[#2E75B6] text-[#2E75B6] font-bold rounded-xl hover:bg-[#2E75B6] hover:text-white transition-all duration-200"
+                >
+                  <ChevronDown className="w-5 h-5" />
+                  Load More Photos ({filteredPhotos.length - photoLimit} remaining)
+                </button>
+              </div>
+            )}
+          </>
+        )}
+
+            {/* ── Videos tab ─────────────────────────────────────────────── */}
+        {activeTab === 'videos' && (
+          <>
+                {/* Filter pills */}
+            <div className="flex flex-wrap gap-2 mb-10">
+              {VIDEO_FILTERS.map((f) => (
+                <button
+                  key={f.value}
+                  onClick={() => handleVideoFilterChange(f.value)}
+                  className={`px-5 py-2 rounded-full font-bold text-sm transition-all ${
+                    videoFilter === f.value
+                      ? 'bg-[#2E75B6] text-white shadow-md'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-900'
+                  }`}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
 
                 {/* Video grid */}
-                {visibleVideos.length > 0 ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {visibleVideos.map((video) => (
-                      <button
-                        key={video.id}
-                        onClick={() =>
-                          video.youtubeId
-                            ? setVideoModal({ title: video.title, youtubeId: video.youtubeId })
-                            : undefined
-                        }
+            {visibleVideos.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                {visibleVideos.map((video) => (
+                  <button
+                    key={video.id}
+                    onClick={() =>
+                      video.youtubeId
+                        ? setVideoModal({ title: video.title, youtubeId: video.youtubeId })
+                        : undefined
+                    }
                         className={`group text-left rounded-2xl overflow-hidden bg-gray-100 shadow-lg transition-all duration-300 ${
                           video.youtubeId ? 'hover:shadow-xl cursor-pointer' : 'cursor-default'
                         }`}
-                      >
-                        <div className="aspect-video relative bg-gray-900">
-                          {video.youtubeId ? (
-                            <>
-                              <img
-                                src={
-                                  video.thumbnail ||
-                                  `https://img.youtube.com/vi/${video.youtubeId}/maxresdefault.jpg`
-                                }
-                                alt={video.title}
-                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                onError={(e) => {
-                                  (e.target as HTMLImageElement).src = `https://img.youtube.com/vi/${video.youtubeId}/hqdefault.jpg`;
-                                }}
-                              />
-                              <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/20 transition-colors">
-                                <span className="w-16 h-16 rounded-full bg-[#2E75B6] flex items-center justify-center text-white">
-                                  <Play className="w-8 h-8 fill-white ml-1" />
-                                </span>
-                              </div>
-                            </>
-                          ) : (
+                  >
+                    <div className="aspect-video relative bg-gray-900">
+                      {video.youtubeId ? (
+                        <>
+                          <img
+                            src={
+                              video.thumbnail ||
+                              `https://img.youtube.com/vi/${video.youtubeId}/maxresdefault.jpg`
+                            }
+                            alt={video.title}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = `https://img.youtube.com/vi/${video.youtubeId}/hqdefault.jpg`;
+                            }}
+                          />
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/20 transition-colors">
+                            <span className="w-16 h-16 rounded-full bg-[#2E75B6] flex items-center justify-center text-white">
+                              <Play className="w-8 h-8 fill-white ml-1" />
+                            </span>
+                          </div>
+                        </>
+                      ) : (
                             <div className="w-full h-full flex flex-col items-center justify-center text-white/40 p-6">
                               <Clock className="w-10 h-10 mb-3" />
                               <span className="text-sm text-center font-medium">Coming Soon</span>
-                            </div>
-                          )}
                         </div>
-                        <div className="p-4">
-                          <h3 className="font-display font-bold text-lg text-gray-900">{video.title}</h3>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-20 text-gray-400">
-                    <p className="text-lg font-medium">No videos in this category yet.</p>
-                  </div>
-                )}
+                      )}
+                    </div>
+                    <div className="p-4">
+                      <h3 className="font-display font-bold text-lg text-gray-900">{video.title}</h3>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-20 text-gray-400">
+                <p className="text-lg font-medium">No videos in this category yet.</p>
+              </div>
+            )}
 
                 {/* Load more */}
-                {hasMoreVideos && (
-                  <div className="flex justify-center mt-12">
-                    <button
-                      onClick={() => setVideoLimit((prev) => prev + VIDEOS_PER_PAGE)}
-                      className="inline-flex items-center gap-2 px-8 py-4 border-2 border-[#2E75B6] text-[#2E75B6] font-bold rounded-xl hover:bg-[#2E75B6] hover:text-white transition-all duration-200"
-                    >
-                      <ChevronDown className="w-5 h-5" />
-                      Load More Videos ({filteredVideos.length - videoLimit} remaining)
-                    </button>
-                  </div>
-                )}
-              </>
+            {hasMoreVideos && (
+              <div className="flex justify-center mt-12">
+                <button
+                  onClick={() => setVideoLimit((prev) => prev + VIDEOS_PER_PAGE)}
+                  className="inline-flex items-center gap-2 px-8 py-4 border-2 border-[#2E75B6] text-[#2E75B6] font-bold rounded-xl hover:bg-[#2E75B6] hover:text-white transition-all duration-200"
+                >
+                  <ChevronDown className="w-5 h-5" />
+                  Load More Videos ({filteredVideos.length - videoLimit} remaining)
+                </button>
+              </div>
             )}
-          </div>
+          </>
+        )}
+      </div>
         </>
       )}
 
