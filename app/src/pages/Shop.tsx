@@ -4,37 +4,51 @@ import { ShoppingBag } from 'lucide-react';
 const products = [
   {
     id: 1,
-    name: 'TOPAZ Heritage Tee - Black',
+    name: 'Blue Topaz 2.0 Shirt',
     category: 't-shirts',
     image: `${import.meta.env.BASE_URL}images/products/tshirt-blue-1.jpg`,
-    description: 'Classic black t-shirt with TOPAZ logo',
+    description: 'Blue Topaz 2.0 shirt',
+    price: '$48',
     sizes: ['S', 'M', 'L', 'XL', 'XXL'],
     available: false // Coming soon
   },
   {
     id: 2,
-    name: 'TOPAZ Performance Blue Tee',
+    name: 'Black Topaz 2.0 T-Shirt',
     category: 't-shirts',
     image: `${import.meta.env.BASE_URL}images/products/tshirt-black-1.jpg`,
-    description: 'Blue performance t-shirt with dancer design',
+    description: 'Black Topaz 2.0 t-shirt',
+    price: '$45',
     sizes: ['S', 'M', 'L', 'XL', 'XXL'],
     available: false
   },
   {
     id: 3,
-    name: 'TOPAZ Legacy Tee - Blue',
-    category: 't-shirts',
+    name: 'Black Topaz 3.0 Hoodie New Logo',
+    category: 'sweatshirts',
     image: `${import.meta.env.BASE_URL}images/products/sweatshirt-black-1.jpg`,
-    description: 'Blue legacy design t-shirt',
+    description: 'Black Topaz 3.0 hoodie with the new logo',
+    price: '$60',
     sizes: ['S', 'M', 'L', 'XL', 'XXL'],
     available: false
   },
   {
     id: 4,
-    name: 'TOPAZ Signature Hoodie',
-    category: 'sweatshirts',
+    name: 'Blue Topaz 2.0 Original T-Shirt',
+    category: 't-shirts',
     image: `${import.meta.env.BASE_URL}images/products/tshirt-black-2.jpg`,
-    description: 'Black hoodie with signature TOPAZ design',
+    description: 'Blue Topaz 2.0 original t-shirt',
+    price: '$48',
+    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
+    available: false
+  },
+  {
+    id: 5,
+    name: 'Black Topaz 2.0 T-Shirt Worn style',
+    category: 't-shirts',
+    image: `${import.meta.env.BASE_URL}images/products/tshirt-black-2.jpg`,
+    description: 'Black Topaz 2.0 t-shirt in worn style',
+    price: '$45',
     sizes: ['S', 'M', 'L', 'XL', 'XXL'],
     available: false
   }
@@ -72,11 +86,7 @@ const ProductCard = ({ product }: { product: typeof products[0] }) => {
           {product.name}
         </h3>
         
-        <p className="mb-4">
-          <span className="inline-block rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-sm font-medium italic text-gray-500">
-            Coming Soon
-          </span>
-        </p>
+        <p className="mb-4 text-2xl font-black text-[#2E75B6]">{product.price}</p>
 
         {/* Size Selector */}
         <div className="mb-4">

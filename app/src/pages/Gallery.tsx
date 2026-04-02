@@ -20,7 +20,6 @@ const historyPhotos = [
   { id: 11, src: `${import.meta.env.BASE_URL}images/gallery/history/newspaper-bridge-entertainment-1975.jpg`, alt: '1975 newspaper clipping featuring TOPAZ in the Bridge Entertainment section', category: 'awards' },
   { id: 12, src: `${import.meta.env.BASE_URL}images/gallery/history/stage-pink-sequin-group-1980s.jpg`, alt: 'Group number in pink sequin costumes on stage, 1980s', category: 'competitions' },
   { id: 13, src: `${import.meta.env.BASE_URL}images/gallery/history/stage-dramatic-performance-1980s.jpg`, alt: 'Dramatic stage performance with bold lighting, 1980s', category: 'competitions' },
-  { id: 14, src: `${import.meta.env.BASE_URL}images/gallery/history/stage-colorful-trio-vegas.jpg`, alt: 'Colorful trio in Las Vegas–style costumes on stage', category: 'competitions' },
   { id: 15, src: `${import.meta.env.BASE_URL}images/gallery/history/group-glitter-costumes-trophy.jpg`, alt: 'Ensemble in glitter costumes celebrating with a trophy', category: 'competitions' },
   { id: 16, src: `${import.meta.env.BASE_URL}images/gallery/history/newspaper-high-steppin-caesars.jpg`, alt: 'Newspaper clipping about High Steppin\' and TOPAZ at Caesars', category: 'competitions' },
   { id: 17, src: `${import.meta.env.BASE_URL}images/gallery/history/acrobatic-overhead-lift.jpg`, alt: 'Dancers performing an acrobatic overhead lift', category: 'competitions' },
@@ -28,7 +27,7 @@ const historyPhotos = [
   { id: 19, src: `${import.meta.env.BASE_URL}images/gallery/history/boy-tuxedo-trophy-1990.jpg`, alt: 'Young dancer in tuxedo holding a trophy, circa 1990', category: 'awards' },
   { id: 20, src: `${import.meta.env.BASE_URL}images/gallery/history/youth-group-teal-hats.jpg`, alt: 'Youth group in matching teal hats performing on stage', category: 'competitions' },
   { id: 21, src: `${import.meta.env.BASE_URL}images/gallery/history/youth-group-colorful-flapper.jpg`, alt: 'Youth ensemble in colorful flapper-style costumes', category: 'competitions' },
-  { id: 22, src: `${import.meta.env.BASE_URL}images/gallery/history/backstage-duo-portrait.jpg`, alt: 'Two dancers posing together backstage', category: 'competitions' },
+  { id: 22, src: `${import.meta.env.BASE_URL}images/gallery/history/topaz-performers-vintage-duo.png`, alt: 'Vintage black and white performers photo with a man in a military-style hat beside a woman', category: 'competitions' },
   { id: 23, src: `${import.meta.env.BASE_URL}images/gallery/history/topaz-competition-banner-group.jpg`, alt: 'Large group photo with TOPAZ competition banner', category: 'competitions' },
 ];
 
@@ -130,7 +129,7 @@ const Gallery = () => {
             >
               TOPAZ HISTORY
               <span className="block text-[10px] font-mono font-normal tracking-widest opacity-80 mt-0.5">
-                1972 – 2023
+                1972 – 2023 · The Return
               </span>
             </button>
 
@@ -161,7 +160,7 @@ const Gallery = () => {
                 TOPAZ HISTORY
               </h2>
               <p className="mt-2 font-mono text-sm font-bold uppercase tracking-widest text-[#2E75B6]">
-                1972 – 2023
+                1972 – 2023 · The Return
               </p>
             </div>
           ) : (
@@ -267,6 +266,10 @@ const Gallery = () => {
 
           {galleryEra === 'history' && activeTab === 'videos' && (
             <>
+              <div className="mb-8 rounded-2xl border border-[#2E75B6]/20 bg-[#2E75B6]/5 p-5 text-center sm:p-6">
+                <p className="text-sm font-bold uppercase tracking-wider text-[#2E75B6]">Coming Soon</p>
+                <p className="mt-2 text-base font-medium text-gray-700">History videos coming soon</p>
+              </div>
               {visibleVideos.length > 0 ? (
                 <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 sm:gap-12 lg:grid-cols-3">
                   {visibleVideos.map((video) => (

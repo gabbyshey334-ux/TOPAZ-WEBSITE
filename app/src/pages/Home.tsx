@@ -22,6 +22,7 @@ gsap.registerPlugin(ScrollTrigger);
 const BASE = import.meta.env.BASE_URL;
 const TOPAZ_BANNER_LOGO = `${BASE}images/logos/topaz-logo-masks.png`;
 const TOPAZ_BANNER_LOGO_FALLBACK = `${BASE}images/logos/topaz-logo.png`;
+const TOPAZ_OFFICIAL_BANNER = `${BASE}images/homepage/topaz-2-0-banner.png`;
 
 // Enhanced promo cards with glassmorphism
 const promoCards = [
@@ -236,7 +237,7 @@ const Home = () => {
                   alt={legacyHistoryPhotos[0].alt}
                   loading="lazy"
                   decoding="async"
-                  className="w-full h-auto max-h-[280px] sm:max-h-[320px] object-cover"
+                  className="h-[290px] w-full object-cover object-top sm:h-[330px]"
                 />
               </div>
               {/* Photo 3 - Squareish */}
@@ -246,7 +247,7 @@ const Home = () => {
                   alt={legacyHistoryPhotos[2].alt}
                   loading="lazy"
                   decoding="async"
-                  className="w-full h-auto max-h-[200px] sm:max-h-[240px] object-cover"
+                  className="h-[230px] w-full object-cover object-top sm:h-[270px]"
                 />
               </div>
             </div>
@@ -260,7 +261,7 @@ const Home = () => {
                   alt={legacyHistoryPhotos[1].alt}
                   loading="lazy"
                   decoding="async"
-                  className="w-full h-auto max-h-[200px] sm:max-h-[240px] object-cover"
+                  className="h-[230px] w-full object-cover object-top sm:h-[270px]"
                 />
               </div>
               {/* Photo 4 - Tall */}
@@ -270,11 +271,22 @@ const Home = () => {
                   alt={legacyHistoryPhotos[3].alt}
                   loading="lazy"
                   decoding="async"
-                  className="w-full h-auto max-h-[280px] sm:max-h-[320px] object-cover"
+                  className="h-[290px] w-full object-cover object-top sm:h-[330px]"
                 />
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Official TOPAZ 2.0 banner */}
+      <section className="bg-white py-10 sm:py-14">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <img
+            src={TOPAZ_OFFICIAL_BANNER}
+            alt="TOPAZ 2.0 Dance and Performing Arts Competition banner"
+            className="w-full h-auto object-contain"
+          />
         </div>
       </section>
 
