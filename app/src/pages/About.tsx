@@ -12,7 +12,7 @@ const BASE = import.meta.env.BASE_URL;
 
 const ABOUT_IMAGES = {
   patBobStripedPants: `${BASE}images/gallery/topaz-legacy-photo-img284.jpg`,
-  continuingDreamDuo: `${BASE}images/about/Screenshot_20260401_140745.png`,
+  continuingDreamDuo: `${BASE}images/about/Screenshot_20260401_140745.jpg`,
   colorfulTrio: `${BASE}images/gallery/history/stage-colorful-trio-vegas.jpg`,
   aboutUsFallback: `${BASE}about/about-us.jpg`,
   ricPortrait: `${BASE}about/ric-heath.png`,
