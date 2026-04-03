@@ -18,41 +18,34 @@ function historyImageOnError(e: SyntheticEvent<HTMLImageElement>) {
 // Note: stage-colorful-trio-vegas is reserved for the About page only — not listed here.
 // ─────────────────────────────────────────────────────────────────────────────
 const historyPhotos = [
-  { id: 1,  src: `${BASE}images/gallery/history/founders-duo-ballgown.jpg`, alt: 'TOPAZ founders Pat and Bob dancing together in formal ballgown and suit', category: 'competitions' },
-  { id: 2,  src: `${BASE}images/gallery/history/founders-duo-striped-pants.jpg`, alt: 'Founding duo in striped dance pants and performance wear', category: 'competitions' },
-  { id: 3,  src: `${BASE}images/gallery/history/founders-duo-embrace.jpg`, alt: 'Founders in a close dance embrace on the floor', category: 'competitions' },
-  { id: 4,  src: `${BASE}images/gallery/history/early-competition-registration-1972.jpg`, alt: 'Early TOPAZ competition registration scene, 1972', category: 'competitions' },
-  { id: 5,  src: `${BASE}images/gallery/history/early-competition-planning-1972.jpg`, alt: 'Organizers planning an early TOPAZ competition, 1972', category: 'competitions' },
-  { id: 6,  src: `${BASE}images/gallery/history/group-floral-costumes-1972.jpg`, alt: 'Large group of dancers in floral costumes on stage, 1972', category: 'competitions' },
-  { id: 7,  src: `${BASE}images/gallery/history/large-cast-elaborate-stage.jpg`, alt: 'Large cast in an elaborate staged production number', category: 'competitions' },
-  { id: 8,  src: `${BASE}images/gallery/history/stage-performance-feather-fans.jpg`, alt: 'Performers with feather fans in a theatrical stage routine', category: 'competitions' },
-  { id: 9,  src: `${BASE}images/gallery/history/stage-fringe-costumes-performance.jpg`, alt: 'Dancers in fringe costumes performing on stage', category: 'competitions' },
-  { id: 10, src: `${BASE}images/gallery/history/solo-winner-multiple-trophies-1974.jpg`, alt: 'Soloist posing with multiple trophies, 1974', category: 'awards' },
-  { id: 11, src: `${BASE}images/gallery/history/newspaper-bridge-entertainment-1975.jpg`, alt: '1975 newspaper clipping featuring TOPAZ in the Bridge Entertainment section', category: 'awards' },
-  { id: 12, src: `${BASE}images/gallery/history/stage-pink-sequin-group-1980s.jpg`, alt: 'Group number in pink sequin costumes on stage, 1980s', category: 'competitions' },
-  { id: 13, src: `${BASE}images/gallery/history/stage-dramatic-performance-1980s.jpg`, alt: 'Dramatic stage performance with bold lighting, 1980s', category: 'competitions' },
-  { id: 15, src: `${BASE}images/gallery/history/group-glitter-costumes-trophy.jpg`, alt: 'Ensemble in glitter costumes celebrating with a trophy', category: 'competitions' },
-  { id: 16, src: `${BASE}images/gallery/history/newspaper-high-steppin-caesars.jpg`, alt: 'Newspaper clipping about High Steppin\' and TOPAZ at Caesars', category: 'competitions' },
-  { id: 17, src: `${BASE}images/gallery/history/acrobatic-overhead-lift.jpg`, alt: 'Dancers performing an acrobatic overhead lift', category: 'competitions' },
-  { id: 18, src: `${BASE}images/gallery/history/duo-large-trophy-ribbon.jpg`, alt: 'Duo with a large trophy and award ribbons', category: 'awards' },
-  { id: 19, src: `${BASE}images/gallery/history/boy-tuxedo-trophy-1990.jpg`, alt: 'Young dancer in tuxedo holding a trophy, circa 1990', category: 'awards' },
-  { id: 20, src: `${BASE}images/gallery/history/youth-group-teal-hats.jpg`, alt: 'Youth group in matching teal hats performing on stage', category: 'competitions' },
-  { id: 21, src: `${BASE}images/gallery/history/youth-group-colorful-flapper.jpg`, alt: 'Youth ensemble in colorful flapper-style costumes', category: 'competitions' },
-  { id: 22, src: `${BASE}images/gallery/history/topaz-performers-vintage-duo.png`, alt: 'Vintage black and white performers photo with a man in a military-style hat beside a woman', category: 'competitions' },
-  { id: 23, src: `${BASE}images/gallery/history/topaz-competition-banner-group.jpg`, alt: 'Large group photo with TOPAZ competition banner', category: 'competitions' },
+  { id: 1,  src: `${BASE}images/gallery/history/founders-duo-ballgown.jpg`, alt: 'TOPAZ founders Pat and Bob dancing together in formal ballgown and suit' },
+  { id: 2,  src: `${BASE}images/gallery/history/founders-duo-striped-pants.jpg`, alt: 'Founding duo in striped dance pants and performance wear' },
+  { id: 3,  src: `${BASE}images/gallery/history/founders-duo-embrace.jpg`, alt: 'Founders in a close dance embrace on the floor' },
+  { id: 4,  src: `${BASE}images/gallery/history/early-competition-registration-1972.jpg`, alt: 'Early TOPAZ competition registration scene, 1972' },
+  { id: 5,  src: `${BASE}images/gallery/history/early-competition-planning-1972.jpg`, alt: 'Organizers planning an early TOPAZ competition, 1972' },
+  { id: 6,  src: `${BASE}images/gallery/history/group-floral-costumes-1972.jpg`, alt: 'Large group of dancers in floral costumes on stage, 1972' },
+  { id: 7,  src: `${BASE}images/gallery/history/large-cast-elaborate-stage.jpg`, alt: 'Large cast in an elaborate staged production number' },
+  { id: 8,  src: `${BASE}images/gallery/history/stage-performance-feather-fans.jpg`, alt: 'Performers with feather fans in a theatrical stage routine' },
+  { id: 9,  src: `${BASE}images/gallery/history/stage-fringe-costumes-performance.jpg`, alt: 'Dancers in fringe costumes performing on stage' },
+  { id: 10, src: `${BASE}images/gallery/history/solo-winner-multiple-trophies-1974.jpg`, alt: 'Soloist posing with multiple trophies, 1974' },
+  { id: 11, src: `${BASE}images/gallery/history/newspaper-bridge-entertainment-1975.jpg`, alt: '1975 newspaper clipping featuring TOPAZ in the Bridge Entertainment section' },
+  { id: 12, src: `${BASE}images/gallery/history/stage-pink-sequin-group-1980s.jpg`, alt: 'Group number in pink sequin costumes on stage, 1980s' },
+  { id: 13, src: `${BASE}images/gallery/history/stage-dramatic-performance-1980s.jpg`, alt: 'Dramatic stage performance with bold lighting, 1980s' },
+  { id: 15, src: `${BASE}images/gallery/history/group-glitter-costumes-trophy.jpg`, alt: 'Ensemble in glitter costumes celebrating with a trophy' },
+  { id: 16, src: `${BASE}images/gallery/history/newspaper-high-steppin-caesars.jpg`, alt: 'Newspaper clipping about High Steppin\' and TOPAZ at Caesars' },
+  { id: 17, src: `${BASE}images/gallery/history/acrobatic-overhead-lift.jpg`, alt: 'Dancers performing an acrobatic overhead lift' },
+  { id: 18, src: `${BASE}images/gallery/history/duo-large-trophy-ribbon.jpg`, alt: 'Duo with a large trophy and award ribbons' },
+  { id: 19, src: `${BASE}images/gallery/history/boy-tuxedo-trophy-1990.jpg`, alt: 'Young dancer in tuxedo holding a trophy, circa 1990' },
+  { id: 20, src: `${BASE}images/gallery/history/youth-group-teal-hats.jpg`, alt: 'Youth group in matching teal hats performing on stage' },
+  { id: 21, src: `${BASE}images/gallery/history/youth-group-colorful-flapper.jpg`, alt: 'Youth ensemble in colorful flapper-style costumes' },
+  { id: 22, src: `${BASE}images/gallery/history/backstage-duo-portrait.jpg`, alt: 'Vintage black and white performers photo with a man in a military-style hat beside a woman' },
+  { id: 23, src: `${BASE}images/gallery/history/topaz-competition-banner-group.jpg`, alt: 'Large group photo with TOPAZ competition banner' },
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types & constants
 // ─────────────────────────────────────────────────────────────────────────────
-type PhotoCategory = 'all' | 'competitions' | 'awards';
-type GalleryEra    = 'history' | 'topaz20';
-
-const PHOTO_FILTERS: { label: string; value: PhotoCategory }[] = [
-  { label: 'All',          value: 'all'          },
-  { label: 'Competitions', value: 'competitions' },
-  { label: 'Awards',       value: 'awards'       },
-];
+type GalleryEra = 'history' | 'topaz20';
 
 const PHOTOS_PER_PAGE = 8;
 
@@ -62,7 +55,6 @@ const PHOTOS_PER_PAGE = 8;
 const Gallery = () => {
   const [galleryEra,    setGalleryEra]    = useState<GalleryEra>('history');
   const [activeTab,     setActiveTab]     = useState<'photos' | 'videos'>('photos');
-  const [photoFilter,   setPhotoFilter]   = useState<PhotoCategory>('all');
   const [photoLimit,    setPhotoLimit]    = useState(PHOTOS_PER_PAGE);
   const [lightboxImage, setLightboxImage] = useState<{ src: string; alt: string } | null>(null);
   const [videoModal,    setVideoModal]    = useState<{ title: string; youtubeId: string } | null>(null);
@@ -71,18 +63,8 @@ const Gallery = () => {
     setActiveTab('photos');
   }, [galleryEra]);
 
-  const filteredPhotos =
-    photoFilter === 'all'
-      ? historyPhotos
-      : historyPhotos.filter((p) => p.category === photoFilter);
-
-  const visiblePhotos  = filteredPhotos.slice(0, photoLimit);
-  const hasMorePhotos  = filteredPhotos.length > photoLimit;
-
-  const handlePhotoFilterChange = (filter: PhotoCategory) => {
-    setPhotoFilter(filter);
-    setPhotoLimit(PHOTOS_PER_PAGE);
-  };
+  const visiblePhotos  = historyPhotos.slice(0, photoLimit);
+  const hasMorePhotos  = historyPhotos.length > photoLimit;
 
   return (
     <div className="min-h-screen bg-white">
@@ -186,28 +168,6 @@ const Gallery = () => {
         <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
           {galleryEra === 'history' && activeTab === 'photos' && (
             <>
-              <div className="mb-10 flex flex-wrap gap-2">
-                {PHOTO_FILTERS.map((f) => (
-                  <button
-                    key={f.value}
-                    type="button"
-                    onClick={() => handlePhotoFilterChange(f.value)}
-                    className={`rounded-full px-5 py-2 text-sm font-bold transition-all ${
-                      photoFilter === f.value
-                        ? 'bg-[#2E75B6] text-white shadow-md'
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-900'
-                    }`}
-                  >
-                    {f.label}
-                    {f.value !== 'all' && (
-                      <span className="ml-1.5 text-xs opacity-70">
-                        ({historyPhotos.filter((ph) => ph.category === f.value).length})
-                      </span>
-                    )}
-                  </button>
-                ))}
-              </div>
-
               {visiblePhotos.length > 0 ? (
                 <ResponsiveMasonry columnsCountBreakPoints={{ 350: 1, 750: 2, 900: 3, 1200: 4 }}>
                   <Masonry gutter="28px">
@@ -244,7 +204,7 @@ const Gallery = () => {
                     className="inline-flex items-center gap-2 rounded-xl border-2 border-[#2E75B6] px-8 py-4 font-bold text-[#2E75B6] transition-all duration-200 hover:bg-[#2E75B6] hover:text-white"
                   >
                     <ChevronDown className="h-5 w-5" />
-                    Load More Photos ({filteredPhotos.length - photoLimit} remaining)
+                    Load More Photos ({historyPhotos.length - photoLimit} remaining)
                   </button>
                 </div>
               )}

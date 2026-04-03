@@ -10,9 +10,6 @@ import {
   Award,
   Users,
   ChevronRight,
-  Sparkles,
-  Trophy,
-  Heart
 } from 'lucide-react';
 import HeroSection from '../sections/HeroSection';
 
@@ -20,43 +17,7 @@ import HeroSection from '../sections/HeroSection';
 gsap.registerPlugin(ScrollTrigger);
 
 const BASE = import.meta.env.BASE_URL;
-const TOPAZ_BANNER_LOGO = `${BASE}images/logos/topaz-logo-masks.png`;
-const TOPAZ_BANNER_LOGO_FALLBACK = `${BASE}images/logos/topaz-logo.png`;
 const TOPAZ_OFFICIAL_BANNER = `${BASE}images/homepage/topaz-2-0-banner.png`;
-
-// Enhanced promo cards with glassmorphism
-const promoCards = [
-  {
-    id: 1,
-    title: 'MASTER CLASSES',
-    subtitle: 'COMING SOON',
-    description: 'Learn from industry professionals',
-    bg: 'from-violet-600/90 via-purple-700/90 to-indigo-900/90',
-    accent: '#8B5CF6',
-    image: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=800&h=600&fit=crop',
-    icon: Sparkles
-  },
-  {
-    id: 2,
-    title: 'SPONSORS',
-    subtitle: 'COMING SOON',
-    description: 'Partner with excellence',
-    bg: 'from-[#2E75B6]/90 via-[#1F4E78]/90 to-[#0F2847]/90',
-    accent: '#2E75B6',
-    image: 'https://images.unsplash.com/photo-1547153760-18fc86324498?w=800&h=600&fit=crop',
-    icon: Trophy
-  },
-  {
-    id: 3,
-    title: 'PANEL & JUDGES',
-    subtitle: 'COMING SOON',
-    description: 'Expert adjudication panel',
-    bg: 'from-amber-600/90 via-orange-700/90 to-red-900/90',
-    accent: '#F59E0B',
-    image: 'https://images.unsplash.com/photo-1518834107812-67b0b7c58434?w=800&h=600&fit=crop',
-    icon: Heart
-  }
-];
 
 const legacyHistoryPhotos = [
   {
@@ -83,10 +44,8 @@ const legacyHistoryPhotos = [
 
 const Home = () => {
   const tourRef = useRef<HTMLDivElement>(null);
-  const promoRef = useRef<HTMLDivElement>(null);
   const aboutRef = useRef<HTMLDivElement>(null);
   const testimonialsRef = useRef<HTMLDivElement>(null);
-  const splitBannerRef = useRef<HTMLElement>(null);
   const heritageRef = useRef<HTMLDivElement>(null);
 
   useLayoutEffect(() => {
@@ -125,27 +84,6 @@ const Home = () => {
             ease: 'power3.out',
             scrollTrigger: {
               trigger: tourRef.current,
-              start: 'top 80%',
-            },
-          }
-        );
-      }
-
-      // Promo cards - enhanced scale animation
-      const promoCards = promoRef.current?.querySelectorAll('.promo-card');
-      if (promoCards) {
-        gsap.fromTo(
-          promoCards,
-          { y: 60, opacity: 0, scale: 0.92 },
-          {
-            y: 0,
-            opacity: 1,
-            scale: 1,
-            duration: 0.9,
-            stagger: 0.15,
-            ease: 'power3.out',
-            scrollTrigger: {
-              trigger: promoRef.current,
               start: 'top 80%',
             },
           }
@@ -192,24 +130,6 @@ const Home = () => {
         );
       }
 
-      const splitBannerEls = splitBannerRef.current?.querySelectorAll('.split-banner-animate');
-      if (splitBannerEls && splitBannerEls.length > 0) {
-        gsap.fromTo(
-          splitBannerEls,
-          { y: 36, opacity: 0 },
-          {
-            y: 0,
-            opacity: 1,
-            duration: 0.85,
-            stagger: 0.12,
-            ease: 'power3.out',
-            scrollTrigger: {
-              trigger: splitBannerRef.current,
-              start: 'top 82%',
-            },
-          }
-        );
-      }
     });
 
     return () => ctx.revert();
@@ -287,74 +207,6 @@ const Home = () => {
             alt="TOPAZ 2.0 Dance and Performing Arts Competition banner"
             className="w-full h-auto object-contain"
           />
-        </div>
-      </section>
-
-      {/* PROMOTIONAL CARDS - Glassmorphism Premium */}
-      <section ref={promoRef} className="relative py-20 lg:py-28 bg-gradient-to-b from-gray-50 to-white overflow-hidden">
-        {/* Background decorations */}
-        <div className="absolute inset-0 opacity-30">
-          <div className="absolute top-20 left-10 w-72 h-72 bg-[#2E75B6]/20 rounded-full blur-[100px]" />
-          <div className="absolute bottom-20 right-10 w-96 h-96 bg-purple-500/10 rounded-full blur-[120px]" />
-        </div>
-
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12 lg:mb-16">
-            <span className="text-[#2E75B6] font-mono text-sm tracking-[0.2em] uppercase font-bold">
-              What's Coming
-            </span>
-            <h2 className="font-display font-black text-3xl sm:text-4xl lg:text-5xl text-gray-900 mt-3 tracking-tight">
-              Exciting <span className="italic">Features</span> Ahead
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
-            {promoCards.map((card) => (
-              <div
-                key={card.id}
-                className="promo-card group relative h-[400px] md:h-[450px] rounded-[2rem] overflow-hidden cursor-pointer"
-              >
-                {/* Background image */}
-                <img
-                  src={card.image}
-                  alt={card.title}
-                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                />
-                
-                {/* Gradient overlay */}
-                <div className={`absolute inset-0 bg-gradient-to-br ${card.bg} transition-opacity duration-500`} />
-                
-                {/* Glassmorphism content card */}
-                <div className="absolute inset-x-6 bottom-6">
-                  <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-6 border border-white/20 shadow-2xl transform transition-transform duration-500 group-hover:translate-y-[-8px]">
-                    {/* Icon */}
-                    <div 
-                      className="w-12 h-12 rounded-xl flex items-center justify-center mb-4"
-                      style={{ backgroundColor: `${card.accent}30` }}
-                    >
-                      <card.icon className="w-6 h-6" style={{ color: card.accent === '#2E75B6' ? 'white' : card.accent }} />
-                    </div>
-
-                    <p className="text-white/80 text-xs font-bold uppercase tracking-[0.2em] mb-2">
-                      {card.subtitle}
-                    </p>
-                    <h3 className="font-display font-black text-2xl text-white mb-2">
-                      {card.title}
-                    </h3>
-                    <p className="text-white/70 text-sm">
-                      {card.description}
-                    </p>
-
-                    {/* Coming Soon badge */}
-                    <div className="mt-4 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/20 backdrop-blur-sm">
-                      <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
-                      <span className="text-xs font-bold uppercase tracking-wider text-white">Coming Soon</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 
@@ -519,101 +371,6 @@ const Home = () => {
               {[1, 2, 3].map((i) => (
                 <div key={i} className="w-2 h-2 rounded-full bg-white/30" />
               ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* PREMIUM SPLIT BANNER — Revel-inspired */}
-      <section
-        ref={splitBannerRef}
-        className="relative overflow-hidden"
-        aria-labelledby="split-banner-heading"
-      >
-        {/* Luxurious gradient background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[#0F2847] via-[#1F4E78] to-[#2E75B6]" />
-        
-        {/* Animated spotlight effect */}
-        <div className="absolute inset-0 opacity-20">
-          <div 
-            className="absolute inset-0"
-            style={{
-              background: 'radial-gradient(ellipse at 30% 20%, rgba(255,255,255,0.3) 0%, transparent 50%)',
-            }}
-          />
-        </div>
-
-        <div className="relative z-10 mx-auto max-w-7xl px-4 py-20 sm:px-6 sm:py-24 lg:px-10 lg:py-32">
-          <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16 xl:gap-24">
-            {/* Left: Logo Frame */}
-            <div className="split-banner-animate flex flex-col gap-4 sm:gap-5">
-              <div className="relative flex min-h-[340px] items-center justify-center rounded-[2rem] border-2 border-white/30 bg-white/5 backdrop-blur-sm px-6 py-12 shadow-[0_20px_60px_rgba(0,0,0,0.3)] sm:min-h-[400px] sm:px-10 sm:py-14 lg:min-h-[460px] lg:px-12 lg:py-16 overflow-hidden group">
-                {/* Inner glow */}
-                <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-                
-                <img
-                  src={TOPAZ_BANNER_LOGO}
-                  alt="TOPAZ logo"
-                  className="relative z-10 h-auto w-full max-w-[min(100%,400px)] object-contain drop-shadow-2xl sm:max-w-[min(100%,460px)] lg:max-w-[min(100%,520px)] xl:max-w-[min(100%,600px)]"
-                  data-fallback-tried=""
-                  onError={(e) => {
-                    const el = e.currentTarget;
-                    if (!el.dataset.fallbackTried) {
-                      el.dataset.fallbackTried = '1';
-                      el.src = TOPAZ_BANNER_LOGO_FALLBACK;
-                    }
-                  }}
-                />
-              </div>
-              
-              {/* Meta info with glass effect */}
-              <div className="flex justify-between gap-4 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 px-4 py-3 sm:px-6 sm:py-4">
-                <span className="font-serif text-sm font-medium tracking-[0.12em] text-white/90 uppercase sm:text-base">
-                  Seaside, OR
-                </span>
-                <span className="font-serif text-sm font-medium tracking-[0.12em] text-white/90 uppercase sm:text-base">
-                  Aug 22, 2026
-                </span>
-              </div>
-            </div>
-
-            {/* Right: Content */}
-            <div className="split-banner-animate flex flex-col justify-center space-y-6 text-white lg:space-y-8">
-              <h2
-                id="split-banner-heading"
-                className="font-display text-[1.5rem] font-black uppercase leading-[1.15] tracking-[0.02em] sm:text-2xl md:text-3xl lg:text-[1.85rem] xl:text-4xl"
-              >
-                From the legacy you know and love comes{' '}
-                <span className="text-[#7EB8E8]">The Return of TOPAZ 2.0</span> — a theatrical arts
-                competition featuring respected adjudication, studio community, awards recognition,
-                and one powerful weekend on the Oregon coast.
-              </h2>
-              
-              <p className="max-w-xl text-base font-medium leading-relaxed text-white/85 sm:text-lg">
-                Professionally run scheduling, clear registration, and a welcoming environment for
-                dancers and educators — the same standards TOPAZ has stood for since 1972.
-              </p>
-
-              {/* Date pills */}
-              <div className="flex flex-wrap gap-3">
-                <div className="inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 px-4 py-2">
-                  <Calendar className="w-4 h-4 text-[#7EB8E8]" />
-                  <span className="text-sm font-bold uppercase tracking-wider">Registration opens April 1, 2026</span>
-                </div>
-                <div className="inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 px-4 py-2">
-                  <span className="text-sm font-bold uppercase tracking-wider">Closes July 30, 2026</span>
-                </div>
-              </div>
-
-              <div className="pt-2">
-                <Link
-                  to="/about"
-                  className="inline-flex items-center justify-center gap-2 rounded-full border-2 border-white bg-transparent px-10 py-4 text-sm font-bold uppercase tracking-[0.2em] text-white transition-all duration-300 hover:bg-white hover:text-[#1F4E78] sm:text-base"
-                >
-                  Learn More
-                  <ChevronRight className="w-5 h-5" />
-                </Link>
-              </div>
             </div>
           </div>
         </div>
