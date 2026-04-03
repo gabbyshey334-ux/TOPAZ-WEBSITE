@@ -1,34 +1,45 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type SyntheticEvent } from 'react';
 import { X, ChevronDown, Clock, Sparkles, Images } from 'lucide-react';
 import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
 
+const BASE = import.meta.env.BASE_URL;
+/** Local fallback if a history file 404s (avoids blank cells when external CDNs are blocked). */
+const FALLBACK_HISTORY_IMG = `${BASE}images/gallery/history/founders-duo-striped-pants.jpg`;
+
+function historyImageOnError(e: SyntheticEvent<HTMLImageElement>) {
+  const el = e.currentTarget;
+  if (el.dataset.fallbackApplied === '1') return;
+  el.dataset.fallbackApplied = '1';
+  el.src = FALLBACK_HISTORY_IMG;
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
-// TOPAZ HISTORY PHOTOS
-// Drop images into /public/images/gallery/ and add entries below.
+// TOPAZ HISTORY PHOTOS (paths must match files under public/images/gallery/history/)
+// Note: stage-colorful-trio-vegas is reserved for the About page only — not listed here.
 // ─────────────────────────────────────────────────────────────────────────────
 const historyPhotos = [
-  { id: 1,  src: `${import.meta.env.BASE_URL}images/gallery/history/founders-duo-ballgown.jpg`, alt: 'TOPAZ founders Pat and Bob dancing together in formal ballgown and suit', category: 'competitions' },
-  { id: 2,  src: `${import.meta.env.BASE_URL}images/gallery/history/founders-duo-striped-pants.jpg`, alt: 'Founding duo in striped dance pants and performance wear', category: 'competitions' },
-  { id: 3,  src: `${import.meta.env.BASE_URL}images/gallery/history/founders-duo-embrace.jpg`, alt: 'Founders in a close dance embrace on the floor', category: 'competitions' },
-  { id: 4,  src: `${import.meta.env.BASE_URL}images/gallery/history/early-competition-registration-1972.jpg`, alt: 'Early TOPAZ competition registration scene, 1972', category: 'competitions' },
-  { id: 5,  src: `${import.meta.env.BASE_URL}images/gallery/history/early-competition-planning-1972.jpg`, alt: 'Organizers planning an early TOPAZ competition, 1972', category: 'competitions' },
-  { id: 6,  src: `${import.meta.env.BASE_URL}images/gallery/history/group-floral-costumes-1972.jpg`, alt: 'Large group of dancers in floral costumes on stage, 1972', category: 'competitions' },
-  { id: 7,  src: `${import.meta.env.BASE_URL}images/gallery/history/large-cast-elaborate-stage.jpg`, alt: 'Large cast in an elaborate staged production number', category: 'competitions' },
-  { id: 8,  src: `${import.meta.env.BASE_URL}images/gallery/history/stage-performance-feather-fans.jpg`, alt: 'Performers with feather fans in a theatrical stage routine', category: 'competitions' },
-  { id: 9,  src: `${import.meta.env.BASE_URL}images/gallery/history/stage-fringe-costumes-performance.jpg`, alt: 'Dancers in fringe costumes performing on stage', category: 'competitions' },
-  { id: 10, src: `${import.meta.env.BASE_URL}images/gallery/history/solo-winner-multiple-trophies-1974.jpg`, alt: 'Soloist posing with multiple trophies, 1974', category: 'awards' },
-  { id: 11, src: `${import.meta.env.BASE_URL}images/gallery/history/newspaper-bridge-entertainment-1975.jpg`, alt: '1975 newspaper clipping featuring TOPAZ in the Bridge Entertainment section', category: 'awards' },
-  { id: 12, src: `${import.meta.env.BASE_URL}images/gallery/history/stage-pink-sequin-group-1980s.jpg`, alt: 'Group number in pink sequin costumes on stage, 1980s', category: 'competitions' },
-  { id: 13, src: `${import.meta.env.BASE_URL}images/gallery/history/stage-dramatic-performance-1980s.jpg`, alt: 'Dramatic stage performance with bold lighting, 1980s', category: 'competitions' },
-  { id: 15, src: `${import.meta.env.BASE_URL}images/gallery/history/group-glitter-costumes-trophy.jpg`, alt: 'Ensemble in glitter costumes celebrating with a trophy', category: 'competitions' },
-  { id: 16, src: `${import.meta.env.BASE_URL}images/gallery/history/newspaper-high-steppin-caesars.jpg`, alt: 'Newspaper clipping about High Steppin\' and TOPAZ at Caesars', category: 'competitions' },
-  { id: 17, src: `${import.meta.env.BASE_URL}images/gallery/history/acrobatic-overhead-lift.jpg`, alt: 'Dancers performing an acrobatic overhead lift', category: 'competitions' },
-  { id: 18, src: `${import.meta.env.BASE_URL}images/gallery/history/duo-large-trophy-ribbon.jpg`, alt: 'Duo with a large trophy and award ribbons', category: 'awards' },
-  { id: 19, src: `${import.meta.env.BASE_URL}images/gallery/history/boy-tuxedo-trophy-1990.jpg`, alt: 'Young dancer in tuxedo holding a trophy, circa 1990', category: 'awards' },
-  { id: 20, src: `${import.meta.env.BASE_URL}images/gallery/history/youth-group-teal-hats.jpg`, alt: 'Youth group in matching teal hats performing on stage', category: 'competitions' },
-  { id: 21, src: `${import.meta.env.BASE_URL}images/gallery/history/youth-group-colorful-flapper.jpg`, alt: 'Youth ensemble in colorful flapper-style costumes', category: 'competitions' },
-  { id: 22, src: `${import.meta.env.BASE_URL}images/gallery/history/topaz-performers-vintage-duo.png`, alt: 'Vintage black and white performers photo with a man in a military-style hat beside a woman', category: 'competitions' },
-  { id: 23, src: `${import.meta.env.BASE_URL}images/gallery/history/topaz-competition-banner-group.jpg`, alt: 'Large group photo with TOPAZ competition banner', category: 'competitions' },
+  { id: 1,  src: `${BASE}images/gallery/history/founders-duo-ballgown.jpg`, alt: 'TOPAZ founders Pat and Bob dancing together in formal ballgown and suit', category: 'competitions' },
+  { id: 2,  src: `${BASE}images/gallery/history/founders-duo-striped-pants.jpg`, alt: 'Founding duo in striped dance pants and performance wear', category: 'competitions' },
+  { id: 3,  src: `${BASE}images/gallery/history/founders-duo-embrace.jpg`, alt: 'Founders in a close dance embrace on the floor', category: 'competitions' },
+  { id: 4,  src: `${BASE}images/gallery/history/early-competition-registration-1972.jpg`, alt: 'Early TOPAZ competition registration scene, 1972', category: 'competitions' },
+  { id: 5,  src: `${BASE}images/gallery/history/early-competition-planning-1972.jpg`, alt: 'Organizers planning an early TOPAZ competition, 1972', category: 'competitions' },
+  { id: 6,  src: `${BASE}images/gallery/history/group-floral-costumes-1972.jpg`, alt: 'Large group of dancers in floral costumes on stage, 1972', category: 'competitions' },
+  { id: 7,  src: `${BASE}images/gallery/history/large-cast-elaborate-stage.jpg`, alt: 'Large cast in an elaborate staged production number', category: 'competitions' },
+  { id: 8,  src: `${BASE}images/gallery/history/stage-performance-feather-fans.jpg`, alt: 'Performers with feather fans in a theatrical stage routine', category: 'competitions' },
+  { id: 9,  src: `${BASE}images/gallery/history/stage-fringe-costumes-performance.jpg`, alt: 'Dancers in fringe costumes performing on stage', category: 'competitions' },
+  { id: 10, src: `${BASE}images/gallery/history/solo-winner-multiple-trophies-1974.jpg`, alt: 'Soloist posing with multiple trophies, 1974', category: 'awards' },
+  { id: 11, src: `${BASE}images/gallery/history/newspaper-bridge-entertainment-1975.jpg`, alt: '1975 newspaper clipping featuring TOPAZ in the Bridge Entertainment section', category: 'awards' },
+  { id: 12, src: `${BASE}images/gallery/history/stage-pink-sequin-group-1980s.jpg`, alt: 'Group number in pink sequin costumes on stage, 1980s', category: 'competitions' },
+  { id: 13, src: `${BASE}images/gallery/history/stage-dramatic-performance-1980s.jpg`, alt: 'Dramatic stage performance with bold lighting, 1980s', category: 'competitions' },
+  { id: 15, src: `${BASE}images/gallery/history/group-glitter-costumes-trophy.jpg`, alt: 'Ensemble in glitter costumes celebrating with a trophy', category: 'competitions' },
+  { id: 16, src: `${BASE}images/gallery/history/newspaper-high-steppin-caesars.jpg`, alt: 'Newspaper clipping about High Steppin\' and TOPAZ at Caesars', category: 'competitions' },
+  { id: 17, src: `${BASE}images/gallery/history/acrobatic-overhead-lift.jpg`, alt: 'Dancers performing an acrobatic overhead lift', category: 'competitions' },
+  { id: 18, src: `${BASE}images/gallery/history/duo-large-trophy-ribbon.jpg`, alt: 'Duo with a large trophy and award ribbons', category: 'awards' },
+  { id: 19, src: `${BASE}images/gallery/history/boy-tuxedo-trophy-1990.jpg`, alt: 'Young dancer in tuxedo holding a trophy, circa 1990', category: 'awards' },
+  { id: 20, src: `${BASE}images/gallery/history/youth-group-teal-hats.jpg`, alt: 'Youth group in matching teal hats performing on stage', category: 'competitions' },
+  { id: 21, src: `${BASE}images/gallery/history/youth-group-colorful-flapper.jpg`, alt: 'Youth ensemble in colorful flapper-style costumes', category: 'competitions' },
+  { id: 22, src: `${BASE}images/gallery/history/topaz-performers-vintage-duo.png`, alt: 'Vintage black and white performers photo with a man in a military-style hat beside a woman', category: 'competitions' },
+  { id: 23, src: `${BASE}images/gallery/history/topaz-competition-banner-group.jpg`, alt: 'Large group photo with TOPAZ competition banner', category: 'competitions' },
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -44,10 +55,6 @@ const PHOTO_FILTERS: { label: string; value: PhotoCategory }[] = [
 ];
 
 const PHOTOS_PER_PAGE = 8;
-
-// Fallback placeholder shown when an image file is missing
-const FALLBACK_IMG =
-  'https://images.unsplash.com/photo-1518834107812-67b0b7c58434?w=600&h=800&fit=crop';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Gallery Component
@@ -209,15 +216,13 @@ const Gallery = () => {
                         key={photo.id}
                         type="button"
                         onClick={() => setLightboxImage({ src: photo.src, alt: photo.alt })}
-                        className="group relative mb-2 block w-full overflow-hidden rounded-2xl bg-gray-100 p-3 shadow-lg transition-all duration-300 hover:shadow-xl sm:rounded-3xl sm:p-4"
+                        className="group relative mb-2 block min-h-[200px] w-full overflow-hidden rounded-2xl bg-gray-100 p-3 shadow-lg transition-all duration-300 hover:shadow-xl sm:rounded-3xl sm:p-4"
                       >
                         <img
                           src={photo.src}
                           alt={photo.alt}
-                          className="block h-auto max-h-[min(85vh,720px)] w-full object-contain transition-transform duration-500 group-hover:scale-[1.02]"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).src = FALLBACK_IMG;
-                          }}
+                          className="block min-h-[180px] h-auto max-h-[min(85vh,720px)] w-full object-contain transition-transform duration-500 group-hover:scale-[1.02]"
+                          onError={historyImageOnError}
                         />
                         <div className="pointer-events-none absolute inset-0 rounded-2xl bg-black/0 transition-colors duration-300 group-hover:bg-black/10 sm:rounded-3xl" />
                       </button>
@@ -313,8 +318,9 @@ const Gallery = () => {
           <img
             src={lightboxImage.src}
             alt={lightboxImage.alt}
-            className="max-w-full max-h-[90vh] object-contain rounded-lg"
+            className="max-w-full max-h-[90vh] min-h-[120px] object-contain rounded-lg"
             onClick={(e) => e.stopPropagation()}
+            onError={historyImageOnError}
           />
         </div>
       )}

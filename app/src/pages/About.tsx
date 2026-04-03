@@ -5,7 +5,6 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, Star, Award, Heart, Sparkles, Quote } from 'lucide-react';
 import TextSection from '../components/TextSection';
 import TeamSection from '../components/TeamSection';
-import ClientLogos from '../components/ClientLogos';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -33,18 +32,13 @@ const LEGACY_QUOTE = "Topaz alumni have had the incredible opportunity to perfor
 
 const TRIBUTE_TEXT = "Though we mourn the loss of Bob in 2023, Pat remains passionate about Topaz and is currently enjoying her time in Las Vegas.";
 
+const RIC_MENTION =
+  "Ric Heath, alongside his brother Randy, helps guide TOPAZ forward—honoring the foundation Pat and Bob built and the community they inspired.";
+
 const TEAM_MEMBERS = [
   { role: 'Vice President' },
   { role: 'Founder' },
   { role: 'President' },
-];
-
-const CLIENT_LOGOS = [
-  { alt: 'Clients coming soon', name: 'Coming Soon' },
-  { alt: 'Clients coming soon', name: 'Coming Soon' },
-  { alt: 'Clients coming soon', name: 'Coming Soon' },
-  { alt: 'Clients coming soon', name: 'Coming Soon' },
-  { alt: 'Clients coming soon', name: 'Coming Soon' },
 ];
 
 const About = () => {
@@ -189,61 +183,56 @@ const About = () => {
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-[#2E75B6]/5 rounded-full blur-[120px] pointer-events-none" />
 
         <div className="relative w-full px-4 sm:px-6 lg:px-12 max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-start">
-            {/* Left: Story Content */}
-            <div>
-              <div className="story-animate">
-                <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#2E75B6]/10 text-[#2E75B6] text-sm font-bold uppercase tracking-wider mb-6">
-                  <Sparkles className="w-4 h-4" />
-                  The Founders
-                </span>
-                <h2 className="font-display font-black text-4xl md:text-5xl lg:text-6xl mb-8 leading-tight uppercase tracking-tighter">
-                  Our <span className="text-[#2E75B6] italic">Story</span>
-                </h2>
-              </div>
-
-              <p className="story-animate text-xl leading-relaxed text-gray-600 font-medium mb-8">
-                {OUR_STORY_PART_A}
-              </p>
-
-              {/* Legacy Quote Card */}
-              <div 
-                ref={quoteRef}
-                className="story-animate relative bg-gradient-to-br from-[#2E75B6]/10 to-[#1F4E78]/10 rounded-[2rem] p-8 border border-[#2E75B6]/20 mb-8"
-              >
-                <Quote className="absolute top-6 left-6 w-8 h-8 text-[#2E75B6]/30" />
-                <p className="relative pl-12 text-lg italic text-gray-700 leading-relaxed">
-                  {LEGACY_QUOTE}
-                </p>
-              </div>
+          {/* Our Story — text only (Position 2 photo is only in Continuing the Dream below) */}
+          <div className="max-w-3xl">
+            <div className="story-animate">
+              <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#2E75B6]/10 text-[#2E75B6] text-sm font-bold uppercase tracking-wider mb-6">
+                <Sparkles className="w-4 h-4" />
+                The Founders
+              </span>
+              <h2 className="font-display font-black text-4xl md:text-5xl lg:text-6xl mb-8 leading-tight uppercase tracking-tighter">
+                Our <span className="text-[#2E75B6] italic">Story</span>
+              </h2>
             </div>
 
-            {/* Right: Ric Portrait Card */}
-            <div className="story-animate lg:sticky lg:top-24">
-              <figure className="relative">
-                {/* Decorative elements */}
-                <div className="absolute -top-4 -left-4 w-24 h-24 bg-[#2E75B6]/20 rounded-full blur-2xl" />
-                <div className="absolute -bottom-4 -right-4 w-32 h-32 bg-[#2E75B6]/10 rounded-full blur-3xl" />
-                
-                <div className="relative overflow-hidden rounded-[2.5rem] border border-gray-200 bg-white shadow-2xl p-6 sm:p-8">
-                  <div className="aspect-[3/4] overflow-hidden rounded-[1.5rem] bg-gradient-to-br from-gray-100 to-gray-50">
-                    <img
-                      src={ABOUT_IMAGES.ricPortrait}
-                      alt="Ric Heath"
-                      loading="lazy"
-                      className="w-full h-full object-contain transition-transform duration-700 hover:scale-105"
-                    />
-                  </div>
-                  
-                  <figcaption className="mt-6 text-center">
-                    <p className="font-display font-black text-2xl text-gray-900">Ric Heath</p>
-                  </figcaption>
-                </div>
-              </figure>
+            <p className="story-animate text-xl leading-relaxed text-gray-600 font-medium mb-8">
+              {OUR_STORY_PART_A}
+            </p>
+
+            <div
+              ref={quoteRef}
+              className="story-animate relative bg-gradient-to-br from-[#2E75B6]/10 to-[#1F4E78]/10 rounded-[2rem] p-8 border border-[#2E75B6]/20 mb-8"
+            >
+              <Quote className="absolute top-6 left-6 w-8 h-8 text-[#2E75B6]/30" />
+              <p className="relative pl-12 text-lg italic text-gray-700 leading-relaxed">
+                {LEGACY_QUOTE}
+              </p>
             </div>
           </div>
 
-          {/* Next Generation Section */}
+          {/* Ric Heath — single placement beside copy that names him */}
+          <div className="mt-16 grid grid-cols-1 gap-10 lg:grid-cols-2 lg:items-center lg:gap-16">
+            <p className="story-animate text-xl leading-relaxed text-gray-600 font-medium lg:pr-4">
+              {RIC_MENTION}
+            </p>
+            <figure className="story-animate mx-auto w-full max-w-md lg:max-w-none">
+              <div className="overflow-hidden rounded-[2rem] border border-gray-200 bg-white shadow-xl">
+                <div className="aspect-[3/4] bg-gradient-to-br from-gray-100 to-gray-50">
+                  <img
+                    src={ABOUT_IMAGES.ricPortrait}
+                    alt="Ric Heath"
+                    loading="lazy"
+                    className="h-full w-full object-contain"
+                  />
+                </div>
+                <figcaption className="border-t border-gray-100 px-4 py-4 text-center">
+                  <p className="font-display font-black text-xl text-gray-900">Ric Heath</p>
+                </figcaption>
+              </div>
+            </figure>
+          </div>
+
+          {/* Next Generation — Position 2: B&W military-hat duo only */}
           <div className="mt-20 lg:mt-32">
             <div className="grid lg:grid-cols-2 gap-12 items-center">
               <div className="story-animate order-2 lg:order-1">
@@ -315,12 +304,6 @@ const About = () => {
         teamImageSrc={ABOUT_IMAGES.meetTheTeam}
         teamImageAlt="TOPAZ team with banner"
         members={TEAM_MEMBERS}
-      />
-
-      {/* CLIENTS SECTION */}
-      <ClientLogos
-        background="white"
-        logos={CLIENT_LOGOS}
       />
 
       {/* FINAL CTA */}
