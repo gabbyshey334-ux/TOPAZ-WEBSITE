@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Play, X, ChevronDown, Clock, Sparkles, Images } from 'lucide-react';
+import { X, ChevronDown, Clock, Sparkles, Images } from 'lucide-react';
 import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// TOPAZ HISTORY PHOTOS (1972–2023)
+// TOPAZ HISTORY PHOTOS
 // Drop images into /public/images/gallery/ and add entries below.
 // ─────────────────────────────────────────────────────────────────────────────
 const historyPhotos = [
@@ -32,15 +32,6 @@ const historyPhotos = [
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
-// TOPAZ HISTORY VIDEOS (1972–2023)
-// Add youtubeId once videos are ready.
-// ─────────────────────────────────────────────────────────────────────────────
-const historyVideos = [
-  { id: 1, title: 'Topaz Memories', youtubeId: '', thumbnail: '' },
-  { id: 2, title: 'Topaz 2.0', youtubeId: '', thumbnail: '' },
-];
-
-// ─────────────────────────────────────────────────────────────────────────────
 // Types & constants
 // ─────────────────────────────────────────────────────────────────────────────
 type PhotoCategory = 'all' | 'competitions' | 'awards';
@@ -53,7 +44,6 @@ const PHOTO_FILTERS: { label: string; value: PhotoCategory }[] = [
 ];
 
 const PHOTOS_PER_PAGE = 8;
-const VIDEOS_PER_PAGE = 6;
 
 // Fallback placeholder shown when an image file is missing
 const FALLBACK_IMG =
@@ -67,7 +57,6 @@ const Gallery = () => {
   const [activeTab,     setActiveTab]     = useState<'photos' | 'videos'>('photos');
   const [photoFilter,   setPhotoFilter]   = useState<PhotoCategory>('all');
   const [photoLimit,    setPhotoLimit]    = useState(PHOTOS_PER_PAGE);
-  const [videoLimit,    setVideoLimit]    = useState(VIDEOS_PER_PAGE);
   const [lightboxImage, setLightboxImage] = useState<{ src: string; alt: string } | null>(null);
   const [videoModal,    setVideoModal]    = useState<{ title: string; youtubeId: string } | null>(null);
 
@@ -82,9 +71,6 @@ const Gallery = () => {
 
   const visiblePhotos  = filteredPhotos.slice(0, photoLimit);
   const hasMorePhotos  = filteredPhotos.length > photoLimit;
-
-  const visibleVideos  = historyVideos.slice(0, videoLimit);
-  const hasMoreVideos  = historyVideos.length > videoLimit;
 
   const handlePhotoFilterChange = (filter: PhotoCategory) => {
     setPhotoFilter(filter);
@@ -128,9 +114,6 @@ const Gallery = () => {
               }`}
             >
               TOPAZ HISTORY
-              <span className="block text-[10px] font-mono font-normal tracking-widest opacity-80 mt-0.5">
-                1972 – 2023 · The Return
-              </span>
             </button>
 
             <button
@@ -159,9 +142,6 @@ const Gallery = () => {
               <h2 className="font-display text-3xl font-black uppercase tracking-tight text-gray-900 md:text-4xl">
                 TOPAZ HISTORY
               </h2>
-              <p className="mt-2 font-mono text-sm font-bold uppercase tracking-widest text-[#2E75B6]">
-                1972 – 2023 · The Return
-              </p>
             </div>
           ) : (
             <div>
@@ -175,17 +155,19 @@ const Gallery = () => {
           )}
         </div>
 
-        <div className="sticky top-20 z-20 border-b border-gray-200 bg-white">
-          <div className="mx-auto flex max-w-7xl gap-1 px-4 sm:px-6 lg:px-8">
+        <div className="sticky top-20 z-40 border-b-2 border-gray-200 bg-white shadow-sm">
+          <div className="mx-auto flex max-w-7xl gap-2 px-4 sm:px-6 lg:px-8" role="tablist" aria-label="Gallery media">
             {(['photos', 'videos'] as const).map((tab) => (
               <button
                 key={tab}
                 type="button"
+                role="tab"
+                aria-selected={activeTab === tab}
                 onClick={() => setActiveTab(tab)}
-                className={`flex min-h-[44px] min-w-[44px] items-center justify-center px-5 py-3 text-sm font-bold uppercase tracking-wider transition-colors sm:px-6 sm:py-4 ${
+                className={`flex min-h-[48px] min-w-[100px] flex-1 items-center justify-center rounded-t-lg px-5 py-3 text-sm font-bold uppercase tracking-wider transition-colors sm:min-w-[120px] sm:flex-none sm:px-8 sm:py-4 ${
                   activeTab === tab
-                    ? 'border-b-2 border-[#2E75B6] text-[#2E75B6]'
-                    : 'text-gray-500 hover:text-gray-800'
+                    ? 'border-b-[3px] border-[#2E75B6] bg-[#2E75B6]/5 text-[#2E75B6]'
+                    : 'border-b-[3px] border-transparent text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                 }`}
               >
                 {tab === 'photos' ? 'Photos' : 'Videos'}
@@ -265,78 +247,19 @@ const Gallery = () => {
           )}
 
           {galleryEra === 'history' && activeTab === 'videos' && (
-            <>
-              <div className="mb-8 rounded-2xl border border-[#2E75B6]/20 bg-[#2E75B6]/5 p-5 text-center sm:p-6">
-                <p className="text-sm font-bold uppercase tracking-wider text-[#2E75B6]">Coming Soon</p>
-                <p className="mt-2 text-base font-medium text-gray-700">History videos coming soon</p>
-              </div>
-              {visibleVideos.length > 0 ? (
-                <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 sm:gap-12 lg:grid-cols-3">
-                  {visibleVideos.map((video) => (
-                    <button
-                      key={video.id}
-                      type="button"
-                      onClick={() =>
-                        video.youtubeId
-                          ? setVideoModal({ title: video.title, youtubeId: video.youtubeId })
-                          : undefined
-                      }
-                      className={`group overflow-hidden rounded-2xl bg-gray-100 text-left shadow-lg transition-all duration-300 ${
-                        video.youtubeId ? 'cursor-pointer hover:shadow-xl' : 'cursor-default'
-                      }`}
-                    >
-                      <div className="relative aspect-video bg-gray-900">
-                        {video.youtubeId ? (
-                          <>
-                            <img
-                              src={
-                                video.thumbnail ||
-                                `https://img.youtube.com/vi/${video.youtubeId}/maxresdefault.jpg`
-                              }
-                              alt={video.title}
-                              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                              onError={(e) => {
-                                (e.target as HTMLImageElement).src = `https://img.youtube.com/vi/${video.youtubeId}/hqdefault.jpg`;
-                              }}
-                            />
-                            <div className="absolute inset-0 flex items-center justify-center bg-black/30 transition-colors group-hover:bg-black/20">
-                              <span className="flex h-16 w-16 items-center justify-center rounded-full bg-[#2E75B6] text-white">
-                                <Play className="ml-1 h-8 w-8 fill-white" />
-                              </span>
-                            </div>
-                          </>
-                        ) : (
-                          <div className="flex h-full w-full flex-col items-center justify-center p-6 text-white/40">
-                            <Clock className="mb-3 h-10 w-10" />
-                            <span className="text-center text-sm font-medium">Coming Soon</span>
-                          </div>
-                        )}
-                      </div>
-                      <div className="p-4">
-                        <h3 className="font-display text-lg font-bold text-gray-900">{video.title}</h3>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              ) : (
-                <div className="py-20 text-center text-gray-400">
-                  <p className="text-lg font-medium">No videos yet.</p>
-                </div>
-              )}
-
-              {hasMoreVideos && (
-                <div className="mt-12 flex justify-center">
-                  <button
-                    type="button"
-                    onClick={() => setVideoLimit((prev) => prev + VIDEOS_PER_PAGE)}
-                    className="inline-flex items-center gap-2 rounded-xl border-2 border-[#2E75B6] px-8 py-4 font-bold text-[#2E75B6] transition-all duration-200 hover:bg-[#2E75B6] hover:text-white"
-                  >
-                    <ChevronDown className="h-5 w-5" />
-                    Load More Videos ({historyVideos.length - videoLimit} remaining)
-                  </button>
-                </div>
-              )}
-            </>
+            <div
+              className="mx-auto max-w-2xl rounded-2xl border-2 border-[#2E75B6]/25 bg-gradient-to-b from-[#2E75B6]/5 to-white px-8 py-14 text-center shadow-sm sm:px-12 sm:py-16"
+              role="tabpanel"
+            >
+              <Clock className="mx-auto mb-5 h-12 w-12 text-[#2E75B6]" aria-hidden />
+              <p className="text-sm font-bold uppercase tracking-[0.2em] text-[#2E75B6]">Coming Soon</p>
+              <h3 className="mt-4 font-display text-2xl font-black uppercase tracking-tight text-gray-900 md:text-3xl">
+                History videos coming soon
+              </h3>
+              <p className="mt-4 text-base leading-relaxed text-gray-600">
+                Archived TOPAZ performances and memories will be published here when the files are ready. No previews are available yet.
+              </p>
+            </div>
           )}
 
           {galleryEra === 'topaz20' && activeTab === 'photos' && (
@@ -355,16 +278,19 @@ const Gallery = () => {
           )}
 
           {galleryEra === 'topaz20' && activeTab === 'videos' && (
-            <div className="flex flex-col items-center rounded-2xl border border-gray-200 bg-gradient-to-b from-gray-50 to-white px-6 py-16 text-center sm:py-20">
-              <Sparkles className="mb-4 h-12 w-12 text-[#2E75B6]" />
-              <span className="mb-4 inline-block rounded-full border border-[#2E75B6]/30 bg-white px-4 py-1 text-xs font-bold uppercase tracking-wider text-[#2E75B6]">
+            <div
+              className="mx-auto flex max-w-2xl flex-col items-center rounded-2xl border-2 border-[#2E75B6]/25 bg-gradient-to-b from-gray-50 to-white px-8 py-14 text-center shadow-sm sm:px-12 sm:py-16"
+              role="tabpanel"
+            >
+              <Sparkles className="mb-5 h-12 w-12 text-[#2E75B6]" aria-hidden />
+              <span className="mb-4 inline-block rounded-full border border-[#2E75B6]/30 bg-white px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-[#2E75B6]">
                 Coming Soon
               </span>
               <h3 className="font-display text-2xl font-black uppercase tracking-tight text-gray-900 md:text-3xl">
                 TOPAZ 2.0 <span className="text-[#2E75B6] italic">Videos</span>
               </h3>
-              <p className="mt-4 max-w-md text-gray-600">
-                Video highlights for <strong>Topaz Memories</strong> and <strong>Topaz 2.0</strong> will be published here when ready.
+              <p className="mt-4 max-w-lg text-base leading-relaxed text-gray-600">
+                Videos for the new competition era are not available yet. Check back after events for highlights and recaps.
               </p>
             </div>
           )}

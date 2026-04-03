@@ -12,8 +12,8 @@ gsap.registerPlugin(ScrollTrigger);
 const BASE = import.meta.env.BASE_URL;
 
 const ABOUT_IMAGES = {
-  patAndBob: `${BASE}about/pat-and-bob.png`,
-  founders: `${BASE}images/gallery/history/stage-colorful-trio-vegas.jpg`,
+  /** Vintage B&W duo — beside About Us and in story/heritage sections. */
+  vintageDuo: `${BASE}images/gallery/history/topaz-performers-vintage-duo.png`,
   aboutUsFallback: `${BASE}about/about-us.jpg`,
   ricPortrait: `${BASE}about/ric-heath.png`,
   meetTheTeam: `${BASE}about/meet-the-team.jpg`,
@@ -27,15 +27,12 @@ const OUR_STORY_PART_A =
 
 const LEGACY_QUOTE = "Topaz alumni have had the incredible opportunity to perform alongside legends like Cher, Michael Jackson, Madonna, and The Pointer Sisters, captivating audiences around the globe.";
 
-const OUR_STORY_PART_B =
-  "Today, Randy and Ric, the youngest sons, play vital roles in shaping the future of Topaz. While Randy is dedicated to guiding the organization forward, Ric and his wife run a thriving gymnastics school with students competing on the international stage.";
-
 const TRIBUTE_TEXT = "Though we mourn the loss of Bob in 2023, Pat remains passionate about Topaz and is currently enjoying her time in Las Vegas.";
 
 const TEAM_MEMBERS = [
   { role: 'President' },
-  { role: 'Vice President' },
   { role: 'Founder' },
+  { role: 'Vice President' },
 ];
 
 const CLIENT_LOGOS = [
@@ -199,9 +196,9 @@ const About = () => {
         background="black"
         heading="About Us"
         alignment="left"
-        imageSrc={ABOUT_IMAGES.patAndBob}
+        imageSrc={ABOUT_IMAGES.vintageDuo}
         imageFallbackSrc={ABOUT_IMAGES.aboutUsFallback}
-        imageAlt="Pat and Bob Heath dancing"
+        imageAlt="Vintage TOPAZ performers — duo portrait"
         imageObjectFit="contain"
         stackImageFirst
         content={ABOUT_US_CONTENT}
@@ -324,12 +321,12 @@ const About = () => {
               <div className="story-animate order-2 lg:order-1">
                 <div className="relative rounded-[2rem] overflow-hidden shadow-2xl">
                   <img
-                    src={ABOUT_IMAGES.founders}
-                    alt="TOPAZ performers on stage during the competition era"
+                    src={ABOUT_IMAGES.vintageDuo}
+                    alt="Vintage TOPAZ performers — duo portrait"
                     loading="lazy"
                     className="w-full h-auto object-contain"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
                 </div>
               </div>
 
@@ -341,10 +338,7 @@ const About = () => {
                 <h3 className="font-display font-black text-3xl md:text-4xl text-gray-900 mb-6">
                   Continuing the <span className="text-[#2E75B6] italic">Dream</span>
                 </h3>
-                <p className="text-xl leading-relaxed text-gray-600 font-medium mb-6">
-                  {OUR_STORY_PART_B}
-                </p>
-                
+
                 {/* Tribute card */}
                 <div className="bg-gradient-to-r from-gray-50 to-white rounded-2xl p-6 border-l-4 border-[#2E75B6]">
                   <p className="text-gray-600 italic">{TRIBUTE_TEXT}</p>
@@ -371,8 +365,8 @@ const About = () => {
           <div className="relative max-w-5xl mx-auto">
             <div className="overflow-hidden rounded-[2.5rem] border border-gray-200 bg-white shadow-2xl">
               <img
-                src={ABOUT_IMAGES.founders}
-                alt="TOPAZ performers on stage during the competition era"
+                src={ABOUT_IMAGES.vintageDuo}
+                alt="Vintage TOPAZ performers — duo portrait"
                 loading="lazy"
                 className="w-full h-auto object-contain max-h-[min(80vh,800px)] mx-auto block"
               />

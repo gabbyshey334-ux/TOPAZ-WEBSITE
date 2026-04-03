@@ -225,53 +225,53 @@ const Home = () => {
         className="relative py-12 sm:py-16 bg-white"
         aria-label="TOPAZ heritage photographs"
       >
-        <div className="max-w-md sm:max-w-lg md:max-w-xl mx-auto px-6 sm:px-8">
-          {/* Masonry Grid - 2 columns compact like screenshot */}
-          <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
+        <div className="mx-auto max-w-md px-6 sm:max-w-lg sm:px-8 md:max-w-3xl lg:max-w-5xl xl:max-w-6xl">
+          {/* Masonry Grid — object-contain + taller cells on desktop so heads are never cropped */}
+          <div className="grid grid-cols-2 gap-2.5 sm:gap-3 md:gap-4">
             {/* Left Column */}
-            <div className="flex flex-col gap-2.5 sm:gap-3">
+            <div className="flex flex-col gap-2.5 sm:gap-3 md:gap-4">
               {/* Photo 1 - Tall */}
-              <div className="heritage-photo overflow-hidden rounded-xl sm:rounded-2xl bg-gray-100 shadow-md hover:shadow-lg transition-shadow duration-300">
+              <div className="heritage-photo flex min-h-[260px] items-center justify-center overflow-hidden rounded-xl bg-gray-100 shadow-md transition-shadow duration-300 hover:shadow-lg sm:min-h-[300px] sm:rounded-2xl md:min-h-[340px] lg:min-h-[380px] xl:min-h-[420px]">
                 <img
                   src={legacyHistoryPhotos[0].src}
                   alt={legacyHistoryPhotos[0].alt}
                   loading="lazy"
                   decoding="async"
-                  className="h-[290px] w-full object-cover object-top sm:h-[330px]"
+                  className="max-h-full w-full object-contain object-top"
                 />
               </div>
               {/* Photo 3 - Squareish */}
-              <div className="heritage-photo overflow-hidden rounded-xl sm:rounded-2xl bg-gray-100 shadow-md hover:shadow-lg transition-shadow duration-300">
+              <div className="heritage-photo flex min-h-[220px] items-center justify-center overflow-hidden rounded-xl bg-gray-100 shadow-md transition-shadow duration-300 hover:shadow-lg sm:min-h-[260px] sm:rounded-2xl md:min-h-[300px] lg:min-h-[340px] xl:min-h-[380px]">
                 <img
                   src={legacyHistoryPhotos[2].src}
                   alt={legacyHistoryPhotos[2].alt}
                   loading="lazy"
                   decoding="async"
-                  className="h-[230px] w-full object-cover object-top sm:h-[270px]"
+                  className="max-h-full w-full object-contain object-top"
                 />
               </div>
             </div>
 
             {/* Right Column */}
-            <div className="flex flex-col gap-2.5 sm:gap-3 pt-6 sm:pt-8">
+            <div className="flex flex-col gap-2.5 pt-6 sm:gap-3 sm:pt-8 md:gap-4 md:pt-10 lg:pt-12">
               {/* Photo 2 - Squareish */}
-              <div className="heritage-photo overflow-hidden rounded-xl sm:rounded-2xl bg-gray-100 shadow-md hover:shadow-lg transition-shadow duration-300">
+              <div className="heritage-photo flex min-h-[220px] items-center justify-center overflow-hidden rounded-xl bg-gray-100 shadow-md transition-shadow duration-300 hover:shadow-lg sm:min-h-[260px] sm:rounded-2xl md:min-h-[300px] lg:min-h-[340px] xl:min-h-[380px]">
                 <img
                   src={legacyHistoryPhotos[1].src}
                   alt={legacyHistoryPhotos[1].alt}
                   loading="lazy"
                   decoding="async"
-                  className="h-[230px] w-full object-cover object-top sm:h-[270px]"
+                  className="max-h-full w-full object-contain object-top"
                 />
               </div>
               {/* Photo 4 - Tall */}
-              <div className="heritage-photo overflow-hidden rounded-xl sm:rounded-2xl bg-gray-100 shadow-md hover:shadow-lg transition-shadow duration-300">
+              <div className="heritage-photo flex min-h-[260px] items-center justify-center overflow-hidden rounded-xl bg-gray-100 shadow-md transition-shadow duration-300 hover:shadow-lg sm:min-h-[300px] sm:rounded-2xl md:min-h-[340px] lg:min-h-[380px] xl:min-h-[420px]">
                 <img
                   src={legacyHistoryPhotos[3].src}
                   alt={legacyHistoryPhotos[3].alt}
                   loading="lazy"
                   decoding="async"
-                  className="h-[290px] w-full object-cover object-top sm:h-[330px]"
+                  className="max-h-full w-full object-contain object-top"
                 />
               </div>
             </div>

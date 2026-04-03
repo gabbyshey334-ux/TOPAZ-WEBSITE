@@ -1,6 +1,6 @@
 # Gallery images
 
-- **`history/`** — TOPAZ HISTORY (1972–2023) vintage photos used on the Gallery page.
+- **`history/`** — TOPAZ HISTORY vintage photos used on the Gallery page.
 - **`topaz-2-0/`** — Reserved for future TOPAZ 2.0 season media (folder ready; add files when available).
 
 # How to Add Photos
