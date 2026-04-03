@@ -15,12 +15,39 @@ import {
   Heart,
 } from 'lucide-react';
 import HeroSection from '../sections/HeroSection';
+import type { LucideIcon } from 'lucide-react';
 
 // Register GSAP plugin
 gsap.registerPlugin(ScrollTrigger);
 
 const BASE = import.meta.env.BASE_URL;
 const TOPAZ_OFFICIAL_BANNER = `${BASE}images/homepage/topaz-2-0-banner.png`;
+
+/** Exactly two legacy feature cards (deduped by id when rendering). */
+const LEGACY_FEATURE_CARDS: {
+  id: string;
+  icon: LucideIcon;
+  title: string;
+  description: string;
+  gradient: string;
+}[] = [
+  {
+    id: 'prestigious-awards',
+    icon: Award,
+    title: 'PRESTIGIOUS AWARDS',
+    description:
+      'Our unique cumulative scoring system lets dancers earn bronze, silver, and gold medals as they progress through the competition season.',
+    gradient: 'from-[#2E75B6]/20 to-blue-600/20',
+  },
+  {
+    id: 'inclusive-community',
+    icon: Users,
+    title: 'INCLUSIVE COMMUNITY',
+    description:
+      'Welcoming dancers of all ages, backgrounds, and skill levels in a supportive and inspiring environment.',
+    gradient: 'from-purple-500/20 to-pink-500/20',
+  },
+];
 
 const promoCards = [
   {
@@ -352,24 +379,10 @@ const Home = () => {
           </div>
 
           <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            {[
-              {
-                icon: Award,
-                title: 'PRESTIGIOUS AWARDS',
-                description: 'Our unique cumulative scoring system lets dancers earn bronze, silver, and gold medals as they progress through the competition season.',
-                gradient: 'from-[#2E75B6]/20 to-blue-600/20'
-              },
-              {
-                icon: Users,
-                title: 'INCLUSIVE COMMUNITY',
-                description: 'Welcoming dancers of all ages, backgrounds, and skill levels in a supportive and inspiring environment.',
-                gradient: 'from-purple-500/20 to-pink-500/20'
-              }
-            ].map((item, index) => (
-              <div 
-                key={index}
-                className="about-animate group relative"
-              >
+            {LEGACY_FEATURE_CARDS.filter(
+              (card, index, arr) => arr.findIndex((c) => c.id === card.id) === index
+            ).map((item) => (
+              <div key={item.id} className="about-animate group relative">
                 <div className="relative bg-white rounded-[2rem] p-8 lg:p-10 border border-gray-100 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 overflow-hidden">
                   {/* Gradient background on hover */}
                   <div className={`absolute inset-0 bg-gradient-to-br ${item.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
