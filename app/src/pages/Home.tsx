@@ -10,6 +10,9 @@ import {
   Award,
   Users,
   ChevronRight,
+  Sparkles,
+  Trophy,
+  Heart,
 } from 'lucide-react';
 import HeroSection from '../sections/HeroSection';
 
@@ -18,6 +21,39 @@ gsap.registerPlugin(ScrollTrigger);
 
 const BASE = import.meta.env.BASE_URL;
 const TOPAZ_OFFICIAL_BANNER = `${BASE}images/homepage/topaz-2-0-banner.png`;
+
+const promoCards = [
+  {
+    id: 1,
+    title: 'MASTER CLASSES',
+    subtitle: 'COMING SOON',
+    description: 'Learn from industry professionals',
+    bg: 'from-violet-600/90 via-purple-700/90 to-indigo-900/90',
+    accent: '#8B5CF6',
+    image: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=800&h=600&fit=crop',
+    icon: Sparkles,
+  },
+  {
+    id: 2,
+    title: 'SPONSORS',
+    subtitle: 'COMING SOON',
+    description: 'Partner with excellence',
+    bg: 'from-[#2E75B6]/90 via-[#1F4E78]/90 to-[#0F2847]/90',
+    accent: '#2E75B6',
+    image: 'https://images.unsplash.com/photo-1547153760-18fc86324498?w=800&h=600&fit=crop',
+    icon: Trophy,
+  },
+  {
+    id: 3,
+    title: 'PANEL & JUDGES',
+    subtitle: 'COMING SOON',
+    description: 'Expert adjudication panel',
+    bg: 'from-amber-600/90 via-orange-700/90 to-red-900/90',
+    accent: '#F59E0B',
+    image: 'https://images.unsplash.com/photo-1518834107812-67b0b7c58434?w=800&h=600&fit=crop',
+    icon: Heart,
+  },
+] as const;
 
 const legacyHistoryPhotos = [
   {
@@ -44,6 +80,7 @@ const legacyHistoryPhotos = [
 
 const Home = () => {
   const tourRef = useRef<HTMLDivElement>(null);
+  const promoRef = useRef<HTMLDivElement>(null);
   const aboutRef = useRef<HTMLDivElement>(null);
   const testimonialsRef = useRef<HTMLDivElement>(null);
   const heritageRef = useRef<HTMLDivElement>(null);
@@ -66,6 +103,26 @@ const Home = () => {
             scrollTrigger: {
               trigger: heritageRef.current,
               start: 'top 85%',
+            },
+          }
+        );
+      }
+
+      const promoCardsEls = promoRef.current?.querySelectorAll('.promo-card');
+      if (promoCardsEls && promoCardsEls.length > 0) {
+        gsap.fromTo(
+          promoCardsEls,
+          { y: 60, opacity: 0, scale: 0.92 },
+          {
+            y: 0,
+            opacity: 1,
+            scale: 1,
+            duration: 0.9,
+            stagger: 0.15,
+            ease: 'power3.out',
+            scrollTrigger: {
+              trigger: promoRef.current,
+              start: 'top 80%',
             },
           }
         );
@@ -195,6 +252,68 @@ const Home = () => {
                 />
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* What's Coming — Coming Soon feature cards */}
+      <section
+        ref={promoRef}
+        className="relative overflow-hidden bg-gradient-to-b from-gray-50 to-white py-20 lg:py-28"
+      >
+        <div className="absolute inset-0 opacity-30">
+          <div className="absolute left-10 top-20 h-72 w-72 rounded-full bg-[#2E75B6]/20 blur-[100px]" />
+          <div className="absolute bottom-20 right-10 h-96 w-96 rounded-full bg-purple-500/10 blur-[120px]" />
+        </div>
+
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="mb-12 text-center lg:mb-16">
+            <span className="font-mono text-sm font-bold uppercase tracking-[0.2em] text-[#2E75B6]">
+              What&apos;s Coming
+            </span>
+            <h2 className="mt-3 font-display text-3xl font-black tracking-tight text-gray-900 sm:text-4xl lg:text-5xl">
+              Exciting <span className="italic">Features</span> Ahead
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3 lg:gap-8">
+            {promoCards.map((card) => (
+              <div
+                key={card.id}
+                className="promo-card group relative h-[400px] cursor-pointer overflow-hidden rounded-[2rem] md:h-[450px]"
+              >
+                <img
+                  src={card.image}
+                  alt={card.title}
+                  className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                />
+                <div className={`absolute inset-0 bg-gradient-to-br ${card.bg} transition-opacity duration-500`} />
+                <div className="absolute inset-x-6 bottom-6">
+                  <div className="rounded-2xl border border-white/20 bg-white/10 p-6 shadow-2xl backdrop-blur-xl transition-transform duration-500 group-hover:translate-y-[-8px]">
+                    <div
+                      className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl"
+                      style={{ backgroundColor: `${card.accent}30` }}
+                    >
+                      <card.icon
+                        className="h-6 w-6"
+                        style={{ color: card.accent === '#2E75B6' ? 'white' : card.accent }}
+                      />
+                    </div>
+                    <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-white/80">
+                      {card.subtitle}
+                    </p>
+                    <h3 className="mb-2 font-display text-2xl font-black text-white">{card.title}</h3>
+                    <p className="text-sm text-white/70">{card.description}</p>
+                    <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1.5 backdrop-blur-sm">
+                      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white" />
+                      <span className="text-xs font-bold uppercase tracking-wider text-white">
+                        Coming Soon
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
