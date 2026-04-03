@@ -95,7 +95,7 @@ const TeamSection = ({
           ref={rolesRef}
           className="grid grid-cols-3 gap-4 sm:gap-8 lg:gap-16 max-w-4xl mx-auto"
           role="list"
-          aria-label="Team roles, left to right: President, Founder, Vice President"
+          aria-label="Team roles, left to right: Vice President, Founder, President"
         >
           {members.map((member, index) => (
             <div key={index} className="group text-center" role="listitem">

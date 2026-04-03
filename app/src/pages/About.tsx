@@ -2,7 +2,7 @@ import { useRef, useEffect } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Calendar, Star, Award, Heart, Sparkles, Quote } from 'lucide-react';
+import { ArrowRight, Star, Award, Heart, Sparkles, Quote } from 'lucide-react';
 import TextSection from '../components/TextSection';
 import TeamSection from '../components/TeamSection';
 import ClientLogos from '../components/ClientLogos';
@@ -12,8 +12,12 @@ gsap.registerPlugin(ScrollTrigger);
 const BASE = import.meta.env.BASE_URL;
 
 const ABOUT_IMAGES = {
-  /** Vintage B&W duo — beside About Us and in story/heritage sections. */
+  /** Photo 1 — Pat & Bob dancing, striped pants / legs (first: About Us). */
+  patBobStripedPants: `${BASE}images/gallery/history/founders-duo-striped-pants.jpg`,
+  /** Photo 2 — B&W duo, military-style hat + woman (Continuing the Dream). */
   vintageDuo: `${BASE}images/gallery/history/topaz-performers-vintage-duo.png`,
+  /** Photo 3 — Colorful trio green/pink (bottom heritage). */
+  colorfulTrio: `${BASE}images/gallery/history/stage-colorful-trio-vegas.jpg`,
   aboutUsFallback: `${BASE}about/about-us.jpg`,
   ricPortrait: `${BASE}about/ric-heath.png`,
   meetTheTeam: `${BASE}about/meet-the-team.jpg`,
@@ -30,9 +34,9 @@ const LEGACY_QUOTE = "Topaz alumni have had the incredible opportunity to perfor
 const TRIBUTE_TEXT = "Though we mourn the loss of Bob in 2023, Pat remains passionate about Topaz and is currently enjoying her time in Las Vegas.";
 
 const TEAM_MEMBERS = [
-  { role: 'President' },
-  { role: 'Founder' },
   { role: 'Vice President' },
+  { role: 'Founder' },
+  { role: 'President' },
 ];
 
 const CLIENT_LOGOS = [
@@ -43,18 +47,9 @@ const CLIENT_LOGOS = [
   { alt: 'Clients coming soon', name: 'Coming Soon' },
 ];
 
-const MILESTONES = [
-  { year: '1972', title: 'Founded', description: 'Pat & Bob Heath establish TOPAZ' },
-  { year: '1980s', title: 'Expansion', description: 'Competitions across multiple states' },
-  { year: '1990s', title: 'Alumni Success', description: 'Dancers performing with global stars' },
-  { year: '2023', title: 'Evolution', description: 'TOPAZ 2.0 relaunch begins' },
-  { year: '2026', title: 'The Return', description: 'New era of excellence' },
-];
-
 const About = () => {
   const heroRef = useRef<HTMLElement>(null);
   const storyRef = useRef<HTMLDivElement>(null);
-  const timelineRef = useRef<HTMLDivElement>(null);
   const quoteRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -94,26 +89,6 @@ const About = () => {
             scrollTrigger: {
               trigger: storyRef.current,
               start: 'top 75%',
-            },
-          }
-        );
-      }
-
-      // Timeline animation
-      const timelineItems = timelineRef.current?.querySelectorAll('.timeline-item');
-      if (timelineItems) {
-        gsap.fromTo(
-          timelineItems,
-          { x: -30, opacity: 0 },
-          {
-            x: 0,
-            opacity: 1,
-            duration: 0.7,
-            stagger: 0.12,
-            ease: 'power2.out',
-            scrollTrigger: {
-              trigger: timelineRef.current,
-              start: 'top 80%',
             },
           }
         );
@@ -196,60 +171,13 @@ const About = () => {
         background="black"
         heading="About Us"
         alignment="left"
-        imageSrc={ABOUT_IMAGES.vintageDuo}
+        imageSrc={ABOUT_IMAGES.patBobStripedPants}
         imageFallbackSrc={ABOUT_IMAGES.aboutUsFallback}
-        imageAlt="Vintage TOPAZ performers — duo portrait"
+        imageAlt="Pat and Bob Heath dancing — striped dance pants and performance wear"
         imageObjectFit="contain"
         stackImageFirst
         content={ABOUT_US_CONTENT}
       />
-
-      {/* TIMELINE SECTION — Premium Milestones */}
-      <section className="relative py-24 lg:py-32 bg-white overflow-hidden">
-        {/* Decorative line */}
-        <div className="absolute left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-[#2E75B6]/30 to-transparent hidden lg:block" />
-        
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16 lg:mb-20">
-            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#2E75B6]/10 text-[#2E75B6] text-sm font-bold uppercase tracking-wider mb-4">
-              <Calendar className="w-4 h-4" />
-              Our Journey
-            </span>
-            <h2 className="font-display font-black text-4xl md:text-5xl lg:text-6xl text-gray-900 tracking-tight">
-              Milestones of <span className="text-[#2E75B6] italic">Excellence</span>
-            </h2>
-          </div>
-
-          <div ref={timelineRef} className="relative space-y-8 lg:space-y-0">
-            {MILESTONES.map((milestone, index) => (
-              <div 
-                key={milestone.year}
-                className={`timeline-item relative lg:grid lg:grid-cols-2 lg:gap-16 ${
-                  index % 2 === 0 ? '' : 'lg:direction-rtl'
-                }`}
-              >
-                {/* Content */}
-                <div className={`${index % 2 === 0 ? 'lg:pr-16 lg:text-right' : 'lg:pl-16 lg:col-start-2'}`}>
-                  <div className={`bg-white rounded-2xl p-6 lg:p-8 border border-gray-100 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-1 ${
-                    index % 2 === 0 ? '' : 'lg:direction-ltr'
-                  }`}>
-                    <div className={`inline-flex items-center gap-3 mb-4 ${index % 2 === 0 ? 'lg:flex-row-reverse' : ''}`}>
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#2E75B6] to-[#1F4E78] flex items-center justify-center">
-                        <span className="font-display font-black text-white text-sm">{milestone.year}</span>
-                      </div>
-                      <h3 className="font-display font-black text-xl text-gray-900">{milestone.title}</h3>
-                    </div>
-                    <p className="text-gray-600">{milestone.description}</p>
-                  </div>
-                </div>
-
-                {/* Center dot for desktop */}
-                <div className="hidden lg:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-[#2E75B6] border-4 border-white shadow-lg z-10" />
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* OUR STORY SECTION — Premium Narrative Design */}
       <section
@@ -320,12 +248,12 @@ const About = () => {
             <div className="grid lg:grid-cols-2 gap-12 items-center">
               <div className="story-animate order-2 lg:order-1">
                 <div className="relative rounded-[2rem] overflow-hidden shadow-2xl">
-                  <img
-                    src={ABOUT_IMAGES.vintageDuo}
-                    alt="Vintage TOPAZ performers — duo portrait"
-                    loading="lazy"
-                    className="w-full h-auto object-contain"
-                  />
+              <img
+                src={ABOUT_IMAGES.vintageDuo}
+                alt="Vintage black and white duo — man in military-style hat with woman"
+                loading="lazy"
+                className="w-full h-auto object-contain"
+              />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
                 </div>
               </div>
@@ -365,8 +293,8 @@ const About = () => {
           <div className="relative max-w-5xl mx-auto">
             <div className="overflow-hidden rounded-[2.5rem] border border-gray-200 bg-white shadow-2xl">
               <img
-                src={ABOUT_IMAGES.vintageDuo}
-                alt="Vintage TOPAZ performers — duo portrait"
+                src={ABOUT_IMAGES.colorfulTrio}
+                alt="TOPAZ performers in colorful green and pink costumes on stage"
                 loading="lazy"
                 className="w-full h-auto object-contain max-h-[min(80vh,800px)] mx-auto block"
               />
