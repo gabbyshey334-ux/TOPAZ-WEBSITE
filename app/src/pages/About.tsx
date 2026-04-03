@@ -11,11 +11,8 @@ gsap.registerPlugin(ScrollTrigger);
 const BASE = import.meta.env.BASE_URL;
 
 const ABOUT_IMAGES = {
-  /** Photo 1 — Pat & Bob dancing, striped pants / legs (first: About Us). */
-  patBobStripedPants: `${BASE}images/gallery/history/founders-duo-striped-pants.jpg`,
-  /** Photo 2 — B&W duo, military-style hat + woman (Continuing the Dream). */
-  vintageDuo: `${BASE}images/gallery/history/topaz-performers-vintage-duo.png`,
-  /** Photo 3 — Colorful trio green/pink (bottom heritage). */
+  patBobStripedPants: `${BASE}images/gallery/topaz-legacy-photo-img284.jpg`,
+  continuingDreamDuo: `${BASE}images/about/Screenshot_20260401_140745.png`,
   colorfulTrio: `${BASE}images/gallery/history/stage-colorful-trio-vegas.jpg`,
   aboutUsFallback: `${BASE}about/about-us.jpg`,
   ricPortrait: `${BASE}about/ric-heath.png`,
@@ -238,7 +235,7 @@ const About = () => {
               <div className="story-animate order-2 lg:order-1">
                 <div className="relative rounded-[2rem] overflow-hidden shadow-2xl">
               <img
-                src={ABOUT_IMAGES.vintageDuo}
+                src={ABOUT_IMAGES.continuingDreamDuo}
                 alt="Vintage black and white duo — man in military-style hat with woman"
                 loading="lazy"
                 className="w-full h-auto object-contain"
