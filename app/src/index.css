@@ -288,11 +288,44 @@ input:focus, textarea:focus, select:focus {
   box-shadow: 0 0 0 3px rgba(46, 117, 182, 0.15);
 }
 
+/* Shop product cards — 3D Y flip: back visible by default on fine-pointer hover; front on touch / coarse pointer */
+.shop-flip-perspective {
+  perspective: 1000px;
+}
+.shop-flip-inner {
+  transform-style: preserve-3d;
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.shop-flip-face {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+@media (hover: hover) and (pointer: fine) {
+  .shop-flip-inner {
+    transform: rotateY(0deg);
+  }
+  .shop-flip-group:hover .shop-flip-inner {
+    transform: rotateY(180deg);
+  }
+}
+@media (hover: none), (pointer: coarse) {
+  .shop-flip-inner {
+    transform: rotateY(180deg);
+  }
+}
+
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   * {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+  .shop-flip-inner {
+    transform: rotateY(180deg);
+    transition: none;
+  }
+  .shop-flip-group:hover .shop-flip-inner {
+    transform: rotateY(180deg);
   }
 }
