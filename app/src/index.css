@@ -252,17 +252,6 @@
   white-space: nowrap;
 }
 
-/* Timeline line */
-.timeline-line {
-  position: absolute;
-  left: 50%;
-  top: 0;
-  bottom: 0;
-  width: 2px;
-  background: linear-gradient(to bottom, #2E75B6, #1F4E78);
-  transform: translateX(-50%);
-}
-
 /* Medal colors */
 .medal-bronze {
   color: #CD7F32;

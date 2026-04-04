@@ -1,60 +1,67 @@
 import { useState } from 'react';
 import { ShoppingBag } from 'lucide-react';
 
+const BASE = import.meta.env.BASE_URL;
+
 const products = [
   {
     id: 1,
-    name: 'Blue Topaz 2.0 Shirt',
+    name: 'TOPAZ Black T-Shirt',
+    typeLabel: 'T-Shirt' as const,
     category: 't-shirts',
-    image: `${import.meta.env.BASE_URL}images/products/tshirt-blue-1.jpg`,
-    description: 'Blue Topaz 2.0 shirt',
-    price: '$48',
+    image: `${BASE}images/products/tshirt-black-1.jpg`,
+    description: 'TOPAZ black t-shirt',
+    price: '$45',
     sizes: ['S', 'M', 'L', 'XL', 'XXL'],
-    available: false // Coming soon
+    available: false,
   },
   {
     id: 2,
-    name: 'Black Topaz 2.0 T-Shirt',
+    name: 'TOPAZ Blue T-Shirt',
+    typeLabel: 'T-Shirt' as const,
     category: 't-shirts',
-    image: `${import.meta.env.BASE_URL}images/products/tshirt-black-1.jpg`,
-    description: 'Black Topaz 2.0 t-shirt',
-    price: '$45',
+    image: `${BASE}images/products/tshirt-blue-1.jpg`,
+    description: 'TOPAZ blue t-shirt',
+    price: '$48',
     sizes: ['S', 'M', 'L', 'XL', 'XXL'],
-    available: false
+    available: false,
   },
   {
     id: 3,
-    name: 'Black Topaz 3.0 Hoodie New Logo',
-    category: 'sweatshirts',
-    image: `${import.meta.env.BASE_URL}images/products/sweatshirt-black-1.jpg`,
-    description: 'Black Topaz 3.0 hoodie with the new logo',
-    price: '$60',
+    name: 'TOPAZ Blue Original T-Shirt',
+    typeLabel: 'T-Shirt' as const,
+    category: 't-shirts',
+    image: `${BASE}images/products/tshirt-blue-1.jpg`,
+    description: 'TOPAZ blue original t-shirt',
+    price: '$48',
     sizes: ['S', 'M', 'L', 'XL', 'XXL'],
-    available: false
+    available: false,
   },
   {
     id: 4,
-    name: 'Blue Topaz 2.0 Original T-Shirt',
-    category: 't-shirts',
-    image: `${import.meta.env.BASE_URL}images/products/tshirt-black-2.jpg`,
-    description: 'Blue Topaz 2.0 original t-shirt',
-    price: '$48',
+    name: 'TOPAZ Black Hoodie — New Logo',
+    typeLabel: 'Hoodie' as const,
+    category: 'hoodies',
+    image: `${BASE}images/products/sweatshirt-black-1.jpg`,
+    description: 'TOPAZ black hoodie with new logo',
+    price: '$60',
     sizes: ['S', 'M', 'L', 'XL', 'XXL'],
-    available: false
+    available: false,
   },
   {
     id: 5,
-    name: 'Black Topaz 2.0 T-Shirt Worn style',
-    category: 't-shirts',
-    image: `${import.meta.env.BASE_URL}images/products/tshirt-black-2.jpg`,
-    description: 'Black Topaz 2.0 t-shirt in worn style',
+    name: 'TOPAZ Black Hoodie — Worn Style',
+    typeLabel: 'Hoodie' as const,
+    category: 'hoodies',
+    image: `${BASE}images/products/sweatshirt-black-1.jpg`,
+    description: 'TOPAZ black hoodie, worn style',
     price: '$45',
     sizes: ['S', 'M', 'L', 'XL', 'XXL'],
-    available: false
-  }
+    available: false,
+  },
 ];
 
-const ProductCard = ({ product }: { product: typeof products[0] }) => {
+const ProductCard = ({ product }: { product: (typeof products)[number] }) => {
   const [selectedSize, setSelectedSize] = useState('M');
 
   return (
@@ -82,10 +89,11 @@ const ProductCard = ({ product }: { product: typeof products[0] }) => {
 
       {/* Product Info */}
       <div className="p-6">
-        <h3 className="font-bold text-lg text-gray-900 mb-2">
-          {product.name}
-        </h3>
-        
+        <p className="mb-1 text-xs font-bold uppercase tracking-wider text-[#2E75B6]">
+          {product.typeLabel}
+        </p>
+        <h3 className="mb-2 text-lg font-bold text-gray-900">{product.name}</h3>
+
         <p className="mb-4 text-2xl font-black text-[#2E75B6]">{product.price}</p>
 
         {/* Size Selector */}
@@ -224,11 +232,11 @@ const Shop = () => {
             </div>
           </div>
 
-          {/* Sweatshirts */}
+          {/* Hoodies */}
           <div>
             <h3 className="font-bold text-lg text-gray-800 mb-4 flex items-center gap-2">
               <span className="w-2 h-6 bg-[#2E75B6] rounded-full inline-block"></span>
-              Sweatshirts
+              Hoodies
             </h3>
             <div className="overflow-x-auto rounded-xl border border-gray-200 shadow-sm">
               <table className="w-full text-sm">
