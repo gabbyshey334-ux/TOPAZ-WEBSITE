@@ -4,8 +4,26 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Search, ChevronDown, Calendar } from 'lucide-react';
 import CompetitionCard, { type CompetitionCardProps } from '../components/CompetitionCard';
+import { usePublicEvents } from '../hooks/usePublicEvents';
 
 gsap.registerPlugin(ScrollTrigger);
+
+const FALLBACK_UPCOMING: CompetitionCardProps[] = [
+  {
+    id: '1',
+    name: 'The Return of TOPAZ 2.0',
+    subtitle: 'Join us for the return of TOPAZ 2.0',
+    date: 'Saturday, August 22, 2026',
+    time: '8:00 AM – 12:00 PM',
+    location: 'Seaside Convention Center',
+    address: '415 1st Ave, Seaside, OR 97138',
+    registrationDeadline: 'July 30, 2026, 12:00 AM',
+    status: 'open',
+    description:
+      'Event time: 8:00 AM – 12:00 PM. Registration opens April 1, 2026. Deadline: July 30, 2026, 12:00 AM.',
+    image: `${import.meta.env.BASE_URL}images/events/trophy-gold.jpg`,
+  },
+];
 
 const Schedule = () => {
   const heroRef = useRef<HTMLDivElement>(null);
@@ -54,21 +72,8 @@ const Schedule = () => {
     return () => ctx.revert();
   }, []);
 
-  const upcomingCompetitions: CompetitionCardProps[] = [
-    {
-      id: '1',
-      name: 'The Return of TOPAZ 2.0',
-      subtitle: 'Join us for the return of TOPAZ 2.0',
-      date: 'Saturday, August 22, 2026',
-      time: '8:00 AM – 12:00 PM',
-      location: 'Seaside Convention Center',
-      address: '415 1st Ave, Seaside, OR 97138',
-      registrationDeadline: 'July 30, 2026, 12:00 AM',
-      status: 'open',
-      description: 'Event time: 8:00 AM – 12:00 PM. Registration opens April 1, 2026. Deadline: July 30, 2026, 12:00 AM.',
-      image: `${import.meta.env.BASE_URL}images/events/trophy-gold.jpg`,
-    },
-  ];
+  const { cards: dbUpcoming, usedDb } = usePublicEvents();
+  const upcomingCompetitions: CompetitionCardProps[] = usedDb ? dbUpcoming : FALLBACK_UPCOMING;
 
   const pastCompetitions: CompetitionCardProps[] = [];
 

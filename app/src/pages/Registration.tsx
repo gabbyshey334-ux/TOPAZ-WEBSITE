@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { 
+import {
   Download, 
   FileText, 
   Send, 
@@ -12,6 +12,7 @@ import {
   Phone,
   CheckCircle2
 } from 'lucide-react';
+import RegistrationLiveForm from '@/components/registration/RegistrationLiveForm';
 
 const Registration = () => {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
@@ -87,6 +88,20 @@ const Registration = () => {
             <Download className="w-6 h-6 group-hover:-translate-y-1 transition-transform" />
             Download Registration Form
           </a>
+        </div>
+      </section>
+
+      {/* Live online registration */}
+      <section className="py-16 bg-white border-t border-gray-100">
+        <div className="max-w-5xl mx-auto px-6">
+          <h2 className="font-display font-black text-3xl md:text-4xl text-gray-900 text-center mb-4 uppercase tracking-tight">
+            Register <span className="text-[#2E75B6] italic">online</span>
+          </h2>
+          <p className="text-center text-gray-600 max-w-2xl mx-auto mb-10">
+            Complete the official TOPAZ 2.0 entry form below. You will receive a confirmation email when delivery is
+            configured. You may still download the PDF if you prefer to register by mail.
+          </p>
+          <RegistrationLiveForm />
         </div>
       </section>
 

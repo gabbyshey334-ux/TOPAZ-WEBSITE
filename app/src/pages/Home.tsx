@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import HeroSection from '../sections/HeroSection';
 import type { LucideIcon } from 'lucide-react';
+import { usePublicEvents } from '../hooks/usePublicEvents';
 
 // Register GSAP plugin
 gsap.registerPlugin(ScrollTrigger);
@@ -106,6 +107,12 @@ const legacyHistoryPhotos = [
 ] as const;
 
 const Home = () => {
+  const { cards: eventCards, usedDb } = usePublicEvents();
+  const featuredEvent = usedDb && eventCards[0] ? eventCards[0] : null;
+  const tourDateLine = featuredEvent?.date ?? 'August 22, 2026';
+  const tourLocationLine = featuredEvent?.location ?? 'Seaside, OR';
+  const tourAddressLine = featuredEvent?.address ?? 'Seaside Convention Center • 415 1st Ave, Seaside, OR 97138';
+
   const tourRef = useRef<HTMLDivElement>(null);
   const promoRef = useRef<HTMLDivElement>(null);
   const aboutRef = useRef<HTMLDivElement>(null);
@@ -428,13 +435,13 @@ const Home = () => {
               <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-full px-6 py-3 border border-white/20">
                 <Calendar className="w-6 h-6 text-[#2E75B6]" />
                 <span className="font-display font-bold text-xl md:text-2xl uppercase tracking-wide">
-                  August 22, 2026
+                  {tourDateLine}
                 </span>
               </div>
               <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-full px-6 py-3 border border-white/20">
                 <MapPin className="w-6 h-6 text-[#2E75B6]" />
                 <span className="font-display font-bold text-xl md:text-2xl uppercase tracking-wide">
-                  Seaside, OR
+                  {tourLocationLine}
                 </span>
               </div>
             </div>
@@ -449,9 +456,7 @@ const Home = () => {
               </Link>
             </div>
 
-            <p className="text-white/60 text-lg max-w-2xl mx-auto pt-4">
-              Seaside Convention Center • 415 1st Ave, Seaside, OR 97138
-            </p>
+            <p className="text-white/60 text-lg max-w-2xl mx-auto pt-4">{tourAddressLine}</p>
           </div>
         </div>
 
@@ -483,7 +488,7 @@ const Home = () => {
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="text-center mb-12">
             <span className="inline-block px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 font-mono text-white/80 text-sm tracking-[0.2em] uppercase font-bold mb-4">
-              What Studios Say
+              Voices from TOPAZ
             </span>
             <h2 className="font-display font-black text-4xl md:text-5xl lg:text-6xl text-white tracking-tight">
               TESTIMONIALS
@@ -496,8 +501,8 @@ const Home = () => {
               <span className="text-xs font-bold uppercase tracking-wider text-white">Coming Soon</span>
             </div>
             <p className="text-white/90 text-xl leading-relaxed font-light">
-              Studio testimonials will appear here after the competition season. 
-              Check back soon to hear what dance studios are saying about their TOPAZ experience.
+              Testimonials will appear here after the competition season. Check back soon to read comments from our
+              students and participants.
             </p>
             <div className="mt-8 flex justify-center gap-1">
               {[1, 2, 3].map((i) => (

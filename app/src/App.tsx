@@ -1,40 +1,33 @@
 import { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Lenis from 'lenis';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import './App.css';
 
-// Register GSAP plugin
+import PublicLayout from '@/components/layout/PublicLayout';
+import ProtectedAdmin from '@/components/routes/ProtectedAdmin';
+import ProtectedMemberDashboard from '@/components/routes/ProtectedMemberDashboard';
+import ScrollToTop from '@/components/routes/ScrollToTop';
+
+import Home from '@/pages/Home';
+import About from '@/pages/About';
+import Schedule from '@/pages/Schedule';
+import Rules from '@/pages/Rules';
+import Contact from '@/pages/Contact';
+import Gallery from '@/pages/Gallery';
+import Registration from '@/pages/Registration';
+import Shop from '@/pages/Shop';
+import AdminLogin from '@/pages/admin/AdminLogin';
+import AdminEntry from '@/pages/admin/AdminEntry';
+import AdminDashboard from '@/pages/admin/AdminDashboard';
+import MembersLogin from '@/pages/members/MembersLogin';
+import MembersRegister from '@/pages/members/MembersRegister';
+import MembersDashboard from '@/pages/members/MembersDashboard';
+
 gsap.registerPlugin(ScrollTrigger);
 
-// Import components
-import Navbar from './components/Navbar';
-import Footer from './components/Footer';
-
-// Import pages
-import Home from './pages/Home';
-import About from './pages/About';
-import Schedule from './pages/Schedule';
-import Rules from './pages/Rules';
-import Contact from './pages/Contact';
-import Gallery from './pages/Gallery';
-import Registration from './pages/Registration';
-import Shop from './pages/Shop';
-
-// Scroll to top on route change
-function ScrollToTop() {
-  const { pathname } = useLocation();
-
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [pathname]);
-
-  return null;
-}
-
 function App() {
-  // Initialize Lenis smooth scrolling with GSAP sync
   useEffect(() => {
     const lenis = new Lenis({
       duration: 1.2,
@@ -46,7 +39,6 @@ function App() {
       touchMultiplier: 2,
     });
 
-    // Sync Lenis with GSAP ScrollTrigger
     lenis.on('scroll', ScrollTrigger.update);
 
     gsap.ticker.add((time) => {
@@ -64,27 +56,40 @@ function App() {
   return (
     <Router>
       <ScrollToTop />
-      <div className="min-h-screen bg-white">
-        {/* Navigation */}
-        <Navbar />
+      <Routes>
+        <Route element={<PublicLayout />}>
+          <Route path="/" element={<Home />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/schedule" element={<Schedule />} />
+          <Route path="/rules" element={<Rules />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/gallery" element={<Gallery />} />
+          <Route path="/registration" element={<Registration />} />
+          <Route path="/shop" element={<Shop />} />
+          <Route
+            path="/members/dashboard"
+            element={
+              <ProtectedMemberDashboard>
+                <MembersDashboard />
+              </ProtectedMemberDashboard>
+            }
+          />
+        </Route>
 
-        {/* Main content */}
-        <main>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/schedule" element={<Schedule />} />
-            <Route path="/rules" element={<Rules />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/gallery" element={<Gallery />} />
-            <Route path="/registration" element={<Registration />} />
-            <Route path="/shop" element={<Shop />} />
-          </Routes>
-        </main>
+        <Route path="/members/login" element={<MembersLogin />} />
+        <Route path="/members/register" element={<MembersRegister />} />
 
-        {/* Footer */}
-        <Footer />
-      </div>
+        <Route path="/admin/login" element={<AdminLogin />} />
+        <Route
+          path="/admin/dashboard"
+          element={
+            <ProtectedAdmin>
+              <AdminDashboard />
+            </ProtectedAdmin>
+          }
+        />
+        <Route path="/admin" element={<AdminEntry />} />
+      </Routes>
     </Router>
   );
 }

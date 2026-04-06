@@ -1,0 +1,4 @@
+# https://supabase.com/docs/guides/cli/config
+# Allow the registration confirmation function to be invoked with the anon key after public form submit.
+[functions.send-registration-confirmation]
+verify_jwt = false
