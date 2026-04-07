@@ -111,7 +111,7 @@ function EventEditor({
         </div>
       </div>
       <Button onClick={() => onSave(row)} className="bg-[#2E75B6] hover:bg-[#1F4E78]">
-        Save event
+        Save changes
       </Button>
     </div>
   );

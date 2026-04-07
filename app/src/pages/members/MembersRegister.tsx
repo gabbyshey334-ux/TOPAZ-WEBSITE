@@ -1,138 +1,161 @@
 import { useState } from 'react';
-import { Link, Navigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
-import { useAuth } from '@/contexts/AuthContext';
-import { isAdminEmail } from '@/lib/admin';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export default function MembersRegister() {
-  const { user, loading } = useAuth();
   const [fullName, setFullName] = useState('');
-  const [studioName, setStudioName] = useState('');
   const [email, setEmail] = useState('');
+  const [studioName, setStudioName] = useState('');
   const [password, setPassword] = useState('');
-  const [err, setErr] = useState<string | null>(null);
-  const [ok, setOk] = useState(false);
-  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   if (!isSupabaseConfigured) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-        <p className="text-gray-600 text-center">
-          Supabase is not configured. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to your .env file.
-        </p>
+      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center px-6 text-white text-center">
+        <p>Supabase is not configured.</p>
       </div>
     );
-  }
-
-  if (!loading && user && isAdminEmail(user.email)) {
-    return <Navigate to="/admin/dashboard" replace />;
-  }
-
-  if (!loading && user && !isAdminEmail(user.email)) {
-    return <Navigate to="/members/dashboard" replace />;
   }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setErr(null);
-    setBusy(true);
-    const { error } = await supabase.auth.signUp({
+    setError(null);
+    setSubmitting(true);
+    const { error: authErr, data } = await supabase.auth.signUp({
       email: email.trim(),
       password,
       options: {
-        data: {
-          full_name: fullName.trim(),
-          studio_name: studioName.trim() || undefined,
-        },
+        data: { full_name: fullName.trim(), studio_name: studioName.trim() },
       },
     });
-    setBusy(false);
-    if (error) {
-      setErr(error.message);
+    if (authErr) {
+      setError(authErr.message);
+      setSubmitting(false);
       return;
     }
-    setOk(true);
-  }
-
-  if (ok) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-[#0a0a0a] to-gray-900 flex flex-col items-center justify-center px-4 py-24">
-        <div className="w-full max-w-md rounded-2xl border border-white/10 bg-white p-8 shadow-xl text-center">
-          <h1 className="text-xl font-bold text-gray-900 mb-3">Check your email</h1>
-          <p className="text-gray-600 text-sm mb-6">
-            We sent a confirmation link if your project requires email verification. After you confirm, your account
-            stays <strong>pending</strong> until Nick approves you in the admin dashboard.
-          </p>
-          <Button asChild className="bg-[#2E75B6] hover:bg-[#1F4E78]">
-            <Link to="/members/login">Go to login</Link>
-          </Button>
-        </div>
-      </div>
-    );
+    const uid = data.user?.id;
+    if (!uid) {
+      setError('Could not create account. If email confirmation is required, check your inbox and try again after confirming.');
+      setSubmitting(false);
+      return;
+    }
+    const { error: memErr } = await supabase.from('members').insert({
+      id: uid,
+      full_name: fullName.trim(),
+      email: email.trim().toLowerCase(),
+      studio_name: studioName.trim(),
+      is_approved: false,
+    });
+    if (memErr) {
+      setError(memErr.message);
+      setSubmitting(false);
+      return;
+    }
+    setSuccess(true);
+    setSubmitting(false);
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#0a0a0a] to-gray-900 flex flex-col items-center justify-center px-4 py-24">
-      <Link
-        to="/"
-        className="mb-8 font-display font-black text-2xl text-white uppercase tracking-tight"
-      >
-        TOPAZ<span className="text-[#2E75B6]">2.0</span>
-      </Link>
-      <div className="w-full max-w-md rounded-2xl border border-white/10 bg-white p-8 shadow-xl">
-        <h1 className="text-2xl font-bold text-gray-900 text-center mb-2">Create member account</h1>
-        <p className="text-sm text-gray-500 text-center mb-6">
-          Studio teachers and dancers — you will need approval before accessing member resources.
-        </p>
-        <form onSubmit={onSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="reg-name">Full name *</Label>
-            <Input
-              id="reg-name"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="reg-studio">Studio name (optional)</Label>
-            <Input id="reg-studio" value={studioName} onChange={(e) => setStudioName(e.target.value)} />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="reg-email">Email *</Label>
-            <Input
-              id="reg-email"
-              type="email"
-              autoComplete="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="reg-password">Password *</Label>
-            <Input
-              id="reg-password"
-              type="password"
-              autoComplete="new-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              minLength={6}
-            />
-          </div>
-          {err ? <p className="text-sm text-red-600">{err}</p> : null}
-          <Button type="submit" disabled={busy} className="w-full bg-[#2E75B6] hover:bg-[#1F4E78]">
-            {busy ? 'Creating…' : 'Register'}
-          </Button>
-        </form>
-        <p className="mt-6 text-center text-sm text-gray-600">
-          Already approved?{' '}
-          <Link to="/members/login" className="font-semibold text-[#2E75B6] hover:underline">
-            Login
+    <div className="min-h-screen bg-[#0a0a0a] flex flex-col items-center justify-center px-6 py-16">
+      <div className="w-full max-w-md space-y-8">
+        <div className="text-center">
+          <Link to="/" className="font-display font-black text-2xl text-white uppercase">
+            TOPAZ<span className="text-[#2E75B6]">2.0</span>
+          </Link>
+          <h1 className="mt-6 text-xl font-bold text-white tracking-wide">Join member area</h1>
+        </div>
+
+        {success ? (
+          <Alert className="bg-emerald-950/50 border-emerald-800 text-emerald-100">
+            <AlertDescription>
+              Your account is pending approval. You will be notified once approved.
+            </AlertDescription>
+          </Alert>
+        ) : (
+          <form
+            onSubmit={onSubmit}
+            className="rounded-2xl border border-white/10 bg-white/5 p-8 space-y-5 backdrop-blur-sm"
+          >
+            {error ? (
+              <Alert variant="destructive" className="bg-red-950/80 border-red-800 text-red-100">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            ) : null}
+
+            <div className="space-y-2">
+              <Label htmlFor="reg-name" className="text-white/80">
+                Full name
+              </Label>
+              <Input
+                id="reg-name"
+                required
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                className="bg-black/40 border-white/20 text-white"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="reg-email" className="text-white/80">
+                Email
+              </Label>
+              <Input
+                id="reg-email"
+                type="email"
+                autoComplete="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="bg-black/40 border-white/20 text-white"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="reg-studio" className="text-white/80">
+                Studio name
+              </Label>
+              <Input
+                id="reg-studio"
+                required
+                value={studioName}
+                onChange={(e) => setStudioName(e.target.value)}
+                className="bg-black/40 border-white/20 text-white"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="reg-password" className="text-white/80">
+                Password
+              </Label>
+              <Input
+                id="reg-password"
+                type="password"
+                autoComplete="new-password"
+                required
+                minLength={6}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="bg-black/40 border-white/20 text-white"
+              />
+            </div>
+
+            <Button
+              type="submit"
+              disabled={submitting}
+              className="w-full bg-[#2E75B6] hover:bg-[#1F4E78] text-white font-bold"
+            >
+              {submitting ? 'Creating account…' : 'Create account'}
+            </Button>
+          </form>
+        )}
+
+        <p className="text-center text-sm text-white/50">
+          Already have an account?{' '}
+          <Link to="/members/login" className="text-[#7EB8E8] hover:underline">
+            Log in
           </Link>
         </p>
       </div>

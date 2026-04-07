@@ -1,28 +1,58 @@
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
-export interface Database {
+export type RegistrationParticipant = {
+  name: string;
+  age: string;
+  signature_confirmed: boolean;
+};
+
+export type Database = {
   public: {
-    Views: Record<string, never>;
-    Functions: Record<string, never>;
-    Enums: Record<string, never>;
-    CompositeTypes: Record<string, never>;
     Tables: {
+      members: {
+        Row: {
+          id: string;
+          full_name: string;
+          email: string;
+          studio_name: string;
+          is_approved: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id: string;
+          full_name: string;
+          email: string;
+          studio_name: string;
+          is_approved?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          full_name?: string;
+          email?: string;
+          studio_name?: string;
+          is_approved?: boolean;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
       registrations: {
         Row: {
           id: string;
           created_at: string;
+          status: string;
           contestant_name: string;
-          age: number;
+          age: string;
           studio_name: string;
           teacher_name: string;
           routine_name: string;
+          phone: string;
+          email: string;
+          years_of_training: string;
           soloist_address: string | null;
           city: string | null;
           state: string | null;
           zip: string | null;
-          phone: string;
-          email: string;
-          years_of_training: number;
           studio_address: string | null;
           studio_city: string | null;
           studio_state: string | null;
@@ -31,29 +61,28 @@ export interface Database {
           age_division: string;
           ability_level: string;
           group_size: string;
-          payment_method: string;
-          status: string;
-          notes: string | null;
-          participants_json: Json;
           contestant_count: number;
           total_fee: number;
+          payment_method: string;
+          participants: Json | null;
           disclaimer_accepted: boolean;
         };
         Insert: {
           id?: string;
           created_at?: string;
+          status?: string;
           contestant_name: string;
-          age: number;
+          age: string;
           studio_name: string;
           teacher_name: string;
           routine_name: string;
+          phone: string;
+          email: string;
+          years_of_training: string;
           soloist_address?: string | null;
           city?: string | null;
           state?: string | null;
           zip?: string | null;
-          phone: string;
-          email: string;
-          years_of_training: number;
           studio_address?: string | null;
           studio_city?: string | null;
           studio_state?: string | null;
@@ -62,29 +91,28 @@ export interface Database {
           age_division: string;
           ability_level: string;
           group_size: string;
+          contestant_count: number;
+          total_fee: number;
           payment_method: string;
-          status?: string;
-          notes?: string | null;
-          participants_json?: Json;
-          contestant_count?: number;
-          total_fee?: number;
-          disclaimer_accepted?: boolean;
+          participants?: Json | null;
+          disclaimer_accepted: boolean;
         };
         Update: {
           id?: string;
           created_at?: string;
+          status?: string;
           contestant_name?: string;
-          age?: number;
+          age?: string;
           studio_name?: string;
           teacher_name?: string;
           routine_name?: string;
+          phone?: string;
+          email?: string;
+          years_of_training?: string;
           soloist_address?: string | null;
           city?: string | null;
           state?: string | null;
           zip?: string | null;
-          phone?: string;
-          email?: string;
-          years_of_training?: number;
           studio_address?: string | null;
           studio_city?: string | null;
           studio_state?: string | null;
@@ -93,22 +121,21 @@ export interface Database {
           age_division?: string;
           ability_level?: string;
           group_size?: string;
-          payment_method?: string;
-          status?: string;
-          notes?: string | null;
-          participants_json?: Json;
           contestant_count?: number;
           total_fee?: number;
+          payment_method?: string;
+          participants?: Json | null;
           disclaimer_accepted?: boolean;
         };
+        Relationships: [];
       };
       gallery_images: {
         Row: {
           id: string;
           created_at: string;
-          filename: string | null;
+          section: string;
           url: string;
-          section: 'history' | 'topaz2';
+          filename: string;
           caption: string | null;
           is_visible: boolean;
           is_members_only: boolean;
@@ -116,9 +143,9 @@ export interface Database {
         Insert: {
           id?: string;
           created_at?: string;
-          filename?: string | null;
+          section: string;
           url: string;
-          section: 'history' | 'topaz2';
+          filename: string;
           caption?: string | null;
           is_visible?: boolean;
           is_members_only?: boolean;
@@ -126,78 +153,51 @@ export interface Database {
         Update: {
           id?: string;
           created_at?: string;
-          filename?: string | null;
+          section?: string;
           url?: string;
-          section?: 'history' | 'topaz2';
+          filename?: string;
           caption?: string | null;
           is_visible?: boolean;
           is_members_only?: boolean;
         };
+        Relationships: [];
       };
       gallery_videos: {
         Row: {
           id: string;
           created_at: string;
-          title: string;
+          section: string;
           url: string;
-          section: 'history' | 'topaz2';
+          title: string;
           is_visible: boolean;
         };
         Insert: {
           id?: string;
           created_at?: string;
-          title: string;
+          section: string;
           url: string;
-          section: 'history' | 'topaz2';
+          title: string;
           is_visible?: boolean;
         };
         Update: {
           id?: string;
           created_at?: string;
-          title?: string;
+          section?: string;
           url?: string;
-          section?: 'history' | 'topaz2';
+          title?: string;
           is_visible?: boolean;
         };
-      };
-      members: {
-        Row: {
-          id: string;
-          created_at: string;
-          email: string;
-          full_name: string | null;
-          studio_name: string | null;
-          role: string;
-          is_approved: boolean;
-        };
-        Insert: {
-          id: string;
-          created_at?: string;
-          email: string;
-          full_name?: string | null;
-          studio_name?: string | null;
-          role?: string;
-          is_approved?: boolean;
-        };
-        Update: {
-          id?: string;
-          created_at?: string;
-          email?: string;
-          full_name?: string | null;
-          studio_name?: string | null;
-          role?: string;
-          is_approved?: boolean;
-        };
+        Relationships: [];
       };
       events: {
         Row: {
           id: string;
-          created_at: string;
           name: string;
           date: string;
           location: string;
           description: string | null;
           is_active: boolean;
+          created_at?: string;
         };
         Insert: {
           id?: string;
@@ -217,6 +217,7 @@ export interface Database {
           description?: string | null;
           is_active?: boolean;
         };
+        Relationships: [];
       };
       announcements: {
         Row: {
@@ -240,8 +241,20 @@ export interface Database {
           body?: string;
           is_active?: boolean;
         };
+        Relationships: [];
       };
     };
+    Views: {
+      [_ in never]: never;
+    };
+    Functions: {
+      [_ in never]: never;
+    };
+    Enums: {
+      [_ in never]: never;
+    };
+    CompositeTypes: {
+      [_ in never]: never;
+    };
   };
-}
-
+};

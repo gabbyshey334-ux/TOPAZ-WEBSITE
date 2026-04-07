@@ -1,9 +1,9 @@
-import { useState, useEffect, type SyntheticEvent } from 'react';
-import { X, ChevronDown, Sparkles, Images } from 'lucide-react';
+import { useCallback, useEffect, useState, type SyntheticEvent } from 'react';
+import { X, ChevronDown, Clock, Images } from 'lucide-react';
 import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
-import { isSupabaseConfigured, supabase } from '@/lib/supabase';
-import { parseVideoUrl, embedSrc } from '@/lib/videoEmbed';
+import { supabase } from '@/lib/supabase';
 import type { Database } from '@/types/database';
+import { parseVideoUrl } from '@/lib/videoEmbed';
 
 const BASE = import.meta.env.BASE_URL;
 const FALLBACK_HISTORY_IMG = `${BASE}images/gallery/history/founders-duo-striped-pants.jpg`;
@@ -16,6 +16,7 @@ function historyImageOnError(e: SyntheticEvent<HTMLImageElement>) {
 }
 
 type GalleryEra = 'history' | 'topaz20';
+
 type ImgRow = Database['public']['Tables']['gallery_images']['Row'];
 type VidRow = Database['public']['Tables']['gallery_videos']['Row'];
 
@@ -26,70 +27,77 @@ const Gallery = () => {
   const [activeTab, setActiveTab] = useState<'photos' | 'videos'>('photos');
   const [photoLimit, setPhotoLimit] = useState(PHOTOS_PER_PAGE);
   const [lightboxImage, setLightboxImage] = useState<{ src: string; alt: string } | null>(null);
-  const [videoModal, setVideoModal] = useState<{ title: string; embed: string } | null>(null);
-
-  const [photos, setPhotos] = useState<ImgRow[]>([]);
-  const [videos, setVideos] = useState<VidRow[]>([]);
+  const [historyPhotos, setHistoryPhotos] = useState<ImgRow[]>([]);
+  const [topazPhotos, setTopazPhotos] = useState<ImgRow[]>([]);
+  const [historyVideos, setHistoryVideos] = useState<VidRow[]>([]);
+  const [topazVideos, setTopazVideos] = useState<VidRow[]>([]);
   const [photosLoading, setPhotosLoading] = useState(false);
   const [videosLoading, setVideosLoading] = useState(false);
 
-  const section = galleryEra === 'history' ? 'history' : 'topaz2';
+  const loadPhotos = useCallback(async () => {
+    setPhotosLoading(true);
+    const [h, t] = await Promise.all([
+      supabase
+        .from('gallery_images')
+        .select('*')
+        .eq('section', 'history')
+        .eq('is_visible', true)
+        .eq('is_members_only', false)
+        .order('created_at', { ascending: false }),
+      supabase
+        .from('gallery_images')
+        .select('*')
+        .eq('section', 'topaz2')
+        .eq('is_visible', true)
+        .eq('is_members_only', false)
+        .order('created_at', { ascending: false }),
+    ]);
+    setHistoryPhotos((h.data as ImgRow[]) ?? []);
+    setTopazPhotos((t.data as ImgRow[]) ?? []);
+    setPhotosLoading(false);
+  }, []);
+
+  const loadVideos = useCallback(async () => {
+    setVideosLoading(true);
+    const [hv, tv] = await Promise.all([
+      supabase
+        .from('gallery_videos')
+        .select('*')
+        .eq('section', 'history')
+        .eq('is_visible', true)
+        .order('created_at', { ascending: false }),
+      supabase
+        .from('gallery_videos')
+        .select('*')
+        .eq('section', 'topaz2')
+        .eq('is_visible', true)
+        .order('created_at', { ascending: false }),
+    ]);
+    setHistoryVideos((hv.data as VidRow[]) ?? []);
+    setTopazVideos((tv.data as VidRow[]) ?? []);
+    setVideosLoading(false);
+  }, []);
+
+  useEffect(() => {
+    loadPhotos();
+  }, [loadPhotos]);
+
+  useEffect(() => {
+    loadVideos();
+  }, [loadVideos]);
 
   useEffect(() => {
     setActiveTab('photos');
   }, [galleryEra]);
 
   useEffect(() => {
-    if (!isSupabaseConfigured || activeTab !== 'photos') return;
-    let cancelled = false;
-    setPhotosLoading(true);
-    (async () => {
-      const { data } = await supabase
-        .from('gallery_images')
-        .select('*')
-        .eq('section', section)
-        .eq('is_visible', true)
-        .order('created_at', { ascending: false });
-      if (!cancelled) {
-        setPhotos(data ?? []);
-        setPhotosLoading(false);
-        setPhotoLimit(PHOTOS_PER_PAGE);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [section, activeTab]);
+    setPhotoLimit(PHOTOS_PER_PAGE);
+  }, [galleryEra, activeTab]);
 
-  useEffect(() => {
-    if (!isSupabaseConfigured || activeTab !== 'videos') return;
-    let cancelled = false;
-    setVideosLoading(true);
-    (async () => {
-      const { data } = await supabase
-        .from('gallery_videos')
-        .select('*')
-        .eq('section', section)
-        .eq('is_visible', true)
-        .order('created_at', { ascending: false });
-      if (!cancelled) {
-        setVideos(data ?? []);
-        setVideosLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [section, activeTab]);
-
-  const visiblePhotos = photos.slice(0, photoLimit);
-  const hasMorePhotos = photos.length > photoLimit;
-
-  function openVideo(v: VidRow) {
-    const parsed = parseVideoUrl(v.url);
-    if (!parsed) return;
-    setVideoModal({ title: v.title, embed: embedSrc(parsed) });
-  }
+  const photoList = galleryEra === 'history' ? historyPhotos : topazPhotos;
+  const videoList = galleryEra === 'history' ? historyVideos : topazVideos;
+  const visiblePhotos = photoList.slice(0, photoLimit);
+  const hasMorePhotos = photoList.length > photoLimit;
 
   return (
     <div className="min-h-screen bg-white">
@@ -187,91 +195,104 @@ const Gallery = () => {
         </div>
 
         <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-          {!isSupabaseConfigured ? (
-            <p className="text-center text-gray-500 py-16">
-              Gallery requires Supabase configuration (VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY).
-            </p>
-          ) : activeTab === 'photos' ? (
+          {activeTab === 'photos' && (
             <>
               {photosLoading ? (
-                <p className="text-center text-gray-400 py-20">Loading photos…</p>
+                <p className="text-center text-gray-500 py-16">Loading photos…</p>
               ) : visiblePhotos.length > 0 ? (
-                <>
-                  <ResponsiveMasonry columnsCountBreakPoints={{ 350: 1, 750: 2, 900: 3, 1200: 4 }}>
-                    <Masonry gutter="28px">
-                      {visiblePhotos.map((photo) => (
-                        <button
-                          key={photo.id}
-                          type="button"
-                          onClick={() =>
-                            setLightboxImage({
-                              src: photo.url,
-                              alt: photo.caption || photo.filename || 'Gallery image',
-                            })
-                          }
-                          className="group relative mb-2 block min-h-[200px] w-full overflow-hidden rounded-2xl bg-gray-100 p-3 shadow-lg transition-all duration-300 hover:shadow-xl sm:rounded-3xl sm:p-4"
-                        >
-                          <img
-                            src={photo.url}
-                            alt={photo.caption || photo.filename || ''}
-                            className="block min-h-[180px] h-auto max-h-[min(85vh,720px)] w-full object-contain transition-transform duration-500 group-hover:scale-[1.02]"
-                            onError={galleryEra === 'history' ? historyImageOnError : undefined}
-                          />
-                          <div className="pointer-events-none absolute inset-0 rounded-2xl bg-black/0 transition-colors duration-300 group-hover:bg-black/10 sm:rounded-3xl" />
-                        </button>
-                      ))}
-                    </Masonry>
-                  </ResponsiveMasonry>
-                  {hasMorePhotos && (
-                    <div className="mt-12 flex justify-center">
+                <ResponsiveMasonry columnsCountBreakPoints={{ 350: 1, 750: 2, 900: 3, 1200: 4 }}>
+                  <Masonry gutter="28px">
+                    {visiblePhotos.map((photo) => (
                       <button
+                        key={photo.id}
                         type="button"
-                        onClick={() => setPhotoLimit((prev) => prev + PHOTOS_PER_PAGE)}
-                        className="inline-flex items-center gap-2 rounded-xl border-2 border-[#2E75B6] px-8 py-4 font-bold text-[#2E75B6] transition-all duration-200 hover:bg-[#2E75B6] hover:text-white"
+                        onClick={() =>
+                          setLightboxImage({
+                            src: photo.url,
+                            alt: photo.caption ?? photo.filename,
+                          })
+                        }
+                        className="group relative mb-2 block min-h-[200px] w-full overflow-hidden rounded-2xl bg-gray-100 p-3 shadow-lg transition-all duration-300 hover:shadow-xl sm:rounded-3xl sm:p-4"
                       >
-                        <ChevronDown className="h-5 w-5" />
-                        Load More Photos ({photos.length - photoLimit} remaining)
+                        <img
+                          src={photo.url}
+                          alt={photo.caption ?? photo.filename}
+                          className="block min-h-[180px] h-auto max-h-[min(85vh,720px)] w-full object-contain transition-transform duration-500 group-hover:scale-[1.02]"
+                          onError={galleryEra === 'history' ? historyImageOnError : undefined}
+                        />
+                        <div className="pointer-events-none absolute inset-0 rounded-2xl bg-black/0 transition-colors duration-300 group-hover:bg-black/10 sm:rounded-3xl" />
                       </button>
-                    </div>
-                  )}
-                </>
+                    ))}
+                  </Masonry>
+                </ResponsiveMasonry>
               ) : (
                 <div className="py-20 text-center text-gray-400">
                   <Images className="mx-auto mb-4 h-12 w-12 opacity-30" />
                   <p className="text-lg font-medium">No photos in this category yet.</p>
                 </div>
               )}
+
+              {hasMorePhotos && (
+                <div className="mt-12 flex justify-center">
+                  <button
+                    type="button"
+                    onClick={() => setPhotoLimit((prev) => prev + PHOTOS_PER_PAGE)}
+                    className="inline-flex items-center gap-2 rounded-xl border-2 border-[#2E75B6] px-8 py-4 font-bold text-[#2E75B6] transition-all duration-200 hover:bg-[#2E75B6] hover:text-white"
+                  >
+                    <ChevronDown className="h-5 w-5" />
+                    Load More Photos ({photoList.length - photoLimit} remaining)
+                  </button>
+                </div>
+              )}
             </>
-          ) : videosLoading ? (
-            <p className="text-center text-gray-400 py-20">Loading videos…</p>
-          ) : videos.length > 0 ? (
-            <div className="grid gap-6 sm:grid-cols-2">
-              {videos.map((v) => (
-                <button
-                  key={v.id}
-                  type="button"
-                  onClick={() => openVideo(v)}
-                  className="rounded-2xl border-2 border-[#2E75B6]/20 bg-gradient-to-b from-[#2E75B6]/5 to-white p-6 text-left shadow-sm hover:border-[#2E75B6]/50 transition-colors"
+          )}
+
+          {activeTab === 'videos' && (
+            <>
+              {videosLoading ? (
+                <p className="text-center text-gray-500 py-16">Loading videos…</p>
+              ) : videoList.length === 0 ? (
+                <div
+                  className="mx-auto max-w-2xl rounded-2xl border-2 border-[#2E75B6]/25 bg-gradient-to-b from-[#2E75B6]/5 to-white px-8 py-14 text-center shadow-sm sm:px-12 sm:py-16"
+                  role="tabpanel"
                 >
-                  <p className="text-xs font-bold uppercase tracking-wider text-[#2E75B6] mb-2">Play video</p>
-                  <h3 className="font-display text-lg font-black text-gray-900">{v.title}</h3>
-                  <p className="text-xs text-gray-500 mt-2 truncate">{v.url}</p>
-                </button>
-              ))}
-            </div>
-          ) : (
-            <div
-              className="mx-auto max-w-2xl rounded-2xl border-2 border-[#2E75B6]/25 bg-gradient-to-b from-gray-50 to-white px-8 py-14 text-center shadow-sm sm:px-12 sm:py-16"
-              role="tabpanel"
-            >
-              <Sparkles className="mx-auto mb-5 h-12 w-12 text-[#2E75B6]" aria-hidden />
-              <h3 className="font-display text-2xl font-black uppercase tracking-tight text-gray-900 md:text-3xl">
-                No videos yet
-              </h3>
-              <p className="mt-4 text-base leading-relaxed text-gray-600">
-                Videos for this section will appear here once they are added in the admin dashboard.
-              </p>
-            </div>
+                  <Clock className="mx-auto mb-5 h-12 w-12 text-[#2E75B6]" aria-hidden />
+                  <p className="text-sm font-bold uppercase tracking-[0.2em] text-[#2E75B6]">Coming Soon</p>
+                  <h3 className="mt-4 font-display text-2xl font-black uppercase tracking-tight text-gray-900 md:text-3xl">
+                    History videos coming soon
+                  </h3>
+                  <p className="mt-4 text-base leading-relaxed text-gray-600">
+                    {galleryEra === 'topaz20'
+                      ? 'Videos for TOPAZ 2.0 will appear here when they are published.'
+                      : 'Archived TOPAZ performances and memories will be published here when the files are ready.'}
+                  </p>
+                </div>
+              ) : (
+                <div className="grid gap-8 md:grid-cols-2">
+                  {videoList.map((v) => {
+                    const parsed = parseVideoUrl(v.url);
+                    if (!parsed) return null;
+                    return (
+                      <div
+                        key={v.id}
+                        className="rounded-2xl border border-gray-200 overflow-hidden shadow-md bg-black"
+                      >
+                        <div className="aspect-video w-full">
+                          <iframe
+                            title={v.title}
+                            src={parsed.embedSrc}
+                            className="w-full h-full"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                          />
+                        </div>
+                        <p className="p-4 text-white font-bold text-sm">{v.title}</p>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
@@ -298,32 +319,6 @@ const Gallery = () => {
         </div>
       )}
 
-      {videoModal && (
-        <div
-          className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4"
-          onClick={() => setVideoModal(null)}
-        >
-          <button
-            className="absolute top-4 right-4 w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
-            onClick={() => setVideoModal(null)}
-            aria-label="Close"
-          >
-            <X className="w-6 h-6" />
-          </button>
-          <div
-            className="w-full max-w-4xl aspect-video rounded-lg overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <iframe
-              title={videoModal.title}
-              src={`${videoModal.embed}${videoModal.embed.includes('?') ? '&' : '?'}autoplay=1`}
-              className="w-full h-full"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            />
-          </div>
-        </div>
-      )}
     </div>
   );
 };

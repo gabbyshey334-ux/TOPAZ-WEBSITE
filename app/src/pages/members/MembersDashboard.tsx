@@ -1,136 +1,205 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
 import { useAuth } from '@/contexts/AuthContext';
-import { isSupabaseConfigured, supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase';
 import type { Database } from '@/types/database';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useActiveEvent } from '@/hooks/useActiveEvent';
+import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
+import { X } from 'lucide-react';
+import { format } from 'date-fns';
 
+type MemberRow = Database['public']['Tables']['members']['Row'];
 type GalleryRow = Database['public']['Tables']['gallery_images']['Row'];
 type AnnouncementRow = Database['public']['Tables']['announcements']['Row'];
 
 const BASE = import.meta.env.BASE_URL;
-const REG_PDF = `${BASE}pdfs/topaz-registration-form.pdf`;
-const RULES_PDF = `${BASE}pdfs/topaz-rules.pdf`;
 
 export default function MembersDashboard() {
   const { user, signOut } = useAuth();
-  const [name, setName] = useState<string>('');
+  const { event, loading: eventLoading } = useActiveEvent();
+  const [member, setMember] = useState<MemberRow | null>(null);
   const [gallery, setGallery] = useState<GalleryRow[]>([]);
   const [announcements, setAnnouncements] = useState<AnnouncementRow[]>([]);
+  const [lightbox, setLightbox] = useState<GalleryRow | null>(null);
 
-  useEffect(() => {
-    if (!user || !isSupabaseConfigured) return;
-    (async () => {
-      const { data: mem } = await supabase.from('members').select('full_name').eq('id', user.id).maybeSingle();
-      setName(mem?.full_name || user.email || 'Member');
-
-      const { data: imgs } = await supabase
+  const load = useCallback(async () => {
+    if (!user) return;
+    const [{ data: m }, { data: g }, { data: a }] = await Promise.all([
+      supabase.from('members').select('*').eq('id', user.id).maybeSingle(),
+      supabase
         .from('gallery_images')
         .select('*')
-        .eq('is_visible', true)
         .eq('is_members_only', true)
-        .order('created_at', { ascending: false });
-
-      setGallery(imgs ?? []);
-
-      const { data: ann } = await supabase
+        .eq('is_visible', true)
+        .order('created_at', { ascending: false }),
+      supabase
         .from('announcements')
         .select('*')
         .eq('is_active', true)
-        .order('created_at', { ascending: false });
-
-      setAnnouncements(ann ?? []);
-    })();
+        .order('created_at', { ascending: false }),
+    ]);
+    setMember(m != null ? (m as MemberRow) : null);
+    setGallery((g as GalleryRow[]) ?? []);
+    setAnnouncements((a as AnnouncementRow[]) ?? []);
   }, [user]);
 
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  async function handleSignOut() {
+    await signOut();
+    window.location.href = '/';
+  }
+
+  const regPdf = `${BASE}pdfs/topaz-registration-form.pdf`;
+  const rulesPdf = `${BASE}pdfs/topaz-rules.pdf`;
+
   return (
-    <div className="min-h-screen bg-gray-50 pt-24 pb-20">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-10">
+    <div className="min-h-screen bg-[#0a0a0a] text-white">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 space-y-10">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
           <div>
-            <h1 className="font-display text-3xl font-black text-gray-900">Members area</h1>
-            <p className="text-gray-600 mt-1">
-              Welcome back, <span className="font-semibold text-[#2E75B6]">{name}</span>
-            </p>
+            <h1 className="font-display text-3xl font-black tracking-tight">
+              Welcome{member?.full_name ? `, ${member.full_name}` : ''}
+            </h1>
+            {member?.studio_name ? (
+              <p className="text-slate-400 mt-1">{member.studio_name}</p>
+            ) : null}
           </div>
-          <div className="flex gap-2">
-            <Link
-              to="/"
-              className="px-4 py-2 text-sm font-bold uppercase tracking-wider text-gray-600 border border-gray-200 rounded-full hover:bg-white"
-            >
-              Home
-            </Link>
-            <button
-              type="button"
-              onClick={() => signOut()}
-              className="px-4 py-2 text-sm font-bold uppercase tracking-wider bg-[#2E75B6] text-white rounded-full hover:bg-[#1F4E78]"
-            >
-              Sign out
-            </button>
-          </div>
+          <Button
+            variant="outline"
+            className="border-slate-600 text-white shrink-0"
+            onClick={handleSignOut}
+          >
+            Sign out
+          </Button>
         </div>
 
-        <section className="grid md:grid-cols-2 gap-6 mb-12">
-          <a
-            href={REG_PDF}
-            download="TOPAZ-Registration-Form.pdf"
-            className="block rounded-2xl border border-gray-200 bg-white p-6 shadow-sm hover:border-[#2E75B6]/40 transition-colors"
-          >
-            <h2 className="font-bold text-lg text-gray-900 mb-2">Registration form (PDF)</h2>
-            <p className="text-sm text-gray-600">Download the official registration form.</p>
-          </a>
-          <a
-            href={RULES_PDF}
-            download="TOPAZ_Rules_2026.pdf"
-            className="block rounded-2xl border border-gray-200 bg-white p-6 shadow-sm hover:border-[#2E75B6]/40 transition-colors"
-          >
-            <h2 className="font-bold text-lg text-gray-900 mb-2">Competition rules (PDF)</h2>
-            <p className="text-sm text-gray-600">Member copy of the rules document.</p>
-          </a>
+        <section>
+          <h2 className="text-lg font-bold uppercase tracking-wider text-[#2E75B6] mb-4">
+            Competition info
+          </h2>
+          <Card className="bg-slate-900/80 border-slate-700">
+            <CardHeader>
+              <CardTitle className="text-white">
+                {eventLoading ? 'Loading…' : event?.name ?? 'Upcoming competition'}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2 text-slate-300">
+              {event ? (
+                <>
+                  <p>
+                    <span className="text-slate-500">Date: </span>
+                    {event.date ? format(new Date(event.date + 'T12:00:00'), 'MMMM d, yyyy') : '—'}
+                  </p>
+                  <p>
+                    <span className="text-slate-500">Location: </span>
+                    {event.location}
+                  </p>
+                  {event.description ? (
+                    <p className="text-sm leading-relaxed pt-2 whitespace-pre-wrap">{event.description}</p>
+                  ) : null}
+                </>
+              ) : (
+                <p className="text-slate-500">Event details will appear here when available.</p>
+              )}
+              <Button asChild className="mt-4 bg-[#2E75B6] hover:bg-[#1F4E78]">
+                <Link to="/registration">Register now</Link>
+              </Button>
+            </CardContent>
+          </Card>
         </section>
 
-        <section className="mb-12">
-          <h2 className="font-display text-2xl font-black text-gray-900 mb-4">Notice board</h2>
-          <div className="space-y-4">
-            {announcements.length === 0 ? (
-              <p className="text-gray-500 text-sm">No announcements yet. Check back soon.</p>
-            ) : (
-              announcements.map((a) => (
-                <article key={a.id} className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-                  <h3 className="font-bold text-gray-900">{a.title}</h3>
-                  <p className="text-sm text-gray-600 mt-2 whitespace-pre-wrap">{a.body}</p>
-                  <p className="text-xs text-gray-400 mt-3">
-                    {new Date(a.created_at).toLocaleDateString()}
-                  </p>
-                </article>
-              ))
-            )}
+        <section>
+          <h2 className="text-lg font-bold uppercase tracking-wider text-[#2E75B6] mb-4">
+            Documents
+          </h2>
+          <div className="flex flex-wrap gap-3">
+            <Button asChild variant="outline" className="border-slate-600 text-white">
+              <a href={regPdf} download="TOPAZ-Registration-Form.pdf">
+                Registration form (PDF)
+              </a>
+            </Button>
+            <Button asChild variant="outline" className="border-slate-600 text-white">
+              <a href={rulesPdf} download="TOPAZ_Rules_2026.pdf">
+                Rules (PDF)
+              </a>
+            </Button>
           </div>
         </section>
 
         <section>
-          <h2 className="font-display text-2xl font-black text-gray-900 mb-2">Member-only gallery</h2>
-          <p className="text-sm text-gray-600 mb-6">
-            Photos marked members-only by Nick appear here (not on the public gallery page).
-          </p>
+          <h2 className="text-lg font-bold uppercase tracking-wider text-[#2E75B6] mb-4">
+            Members gallery
+          </h2>
           {gallery.length === 0 ? (
-            <p className="text-gray-500 text-sm">No member-only photos yet.</p>
+            <p className="text-slate-500 text-sm">No members-only photos yet.</p>
           ) : (
             <ResponsiveMasonry columnsCountBreakPoints={{ 350: 1, 750: 2, 900: 3 }}>
               <Masonry gutter="16px">
                 {gallery.map((img) => (
-                  <div key={img.id} className="rounded-xl overflow-hidden bg-white border border-gray-200 shadow-sm">
-                    <img src={img.url} alt={img.caption || ''} className="w-full h-auto object-contain" />
-                    {img.caption ? (
-                      <p className="text-xs text-gray-600 p-2">{img.caption}</p>
-                    ) : null}
-                  </div>
+                  <button
+                    key={img.id}
+                    type="button"
+                    onClick={() => setLightbox(img)}
+                    className="block w-full rounded-xl overflow-hidden border border-slate-700 bg-slate-900 focus:outline-none focus:ring-2 focus:ring-[#2E75B6]"
+                  >
+                    <img src={img.url} alt={img.caption ?? img.filename} className="w-full h-auto object-cover" />
+                  </button>
                 ))}
               </Masonry>
             </ResponsiveMasonry>
           )}
         </section>
+
+        <section>
+          <h2 className="text-lg font-bold uppercase tracking-wider text-[#2E75B6] mb-4">
+            Announcements
+          </h2>
+          {announcements.length === 0 ? (
+            <p className="text-slate-500 text-sm">No announcements.</p>
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2">
+              {announcements.map((ann) => (
+                <Card key={ann.id} className="bg-slate-900/80 border-slate-700">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base text-white">{ann.title}</CardTitle>
+                    <p className="text-xs text-slate-500">
+                      {format(new Date(ann.created_at), 'MMM d, yyyy')}
+                    </p>
+                  </CardHeader>
+                  <CardContent className="text-slate-300 text-sm whitespace-pre-wrap">{ann.body}</CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </section>
       </div>
+
+      {lightbox ? (
+        <div
+          className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4"
+          onClick={() => setLightbox(null)}
+        >
+          <button
+            type="button"
+            className="absolute top-4 right-4 w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20"
+            aria-label="Close"
+            onClick={() => setLightbox(null)}
+          >
+            <X className="w-6 h-6" />
+          </button>
+          <img
+            src={lightbox.url}
+            alt={lightbox.caption ?? lightbox.filename}
+            className="max-w-full max-h-[90vh] object-contain rounded-lg"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      ) : null}
     </div>
   );
 }

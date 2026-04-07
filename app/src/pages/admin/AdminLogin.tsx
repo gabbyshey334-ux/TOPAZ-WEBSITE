@@ -1,61 +1,87 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
-import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { isAdminEmail } from '@/lib/admin';
+import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export default function AdminLogin() {
-  const { user, loading } = useAuth();
+  const { user, loading, signIn } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [err, setErr] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (!loading && user && isAdminEmail(user.email)) {
+      navigate('/admin/dashboard', { replace: true });
+    }
+  }, [user, loading, navigate]);
 
   if (!isSupabaseConfigured) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center px-4 text-white text-center">
-        <p>Supabase is not configured. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to your .env file.</p>
+      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center px-6 text-white text-center">
+        <p>Supabase is not configured. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.</p>
       </div>
     );
   }
 
-  if (!loading && user && isAdminEmail(user.email)) {
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center text-white">
+        Loading…
+      </div>
+    );
+  }
+
+  if (user && isAdminEmail(user.email)) {
     return <Navigate to="/admin/dashboard" replace />;
   }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setErr(null);
-    setBusy(true);
-    const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
-    setBusy(false);
-    if (error) {
-      setErr(error.message);
+    setError(null);
+    setSubmitting(true);
+    const { error: err } = await signIn(email.trim(), password);
+    setSubmitting(false);
+    if (err) {
+      setError(err.message || 'Login failed. Check your email and password.');
       return;
     }
-    if (!isAdminEmail(data.user?.email)) {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    const u = session?.user;
+    if (!isAdminEmail(u?.email)) {
       await supabase.auth.signOut();
-      setErr('This account is not authorized for admin access.');
+      setError('This account is not authorized for admin access.');
       return;
     }
     navigate('/admin/dashboard', { replace: true });
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] flex flex-col items-center justify-center px-4">
-      <Link
-        to="/"
-        className="mb-10 font-display font-black text-2xl text-white uppercase tracking-tight"
-      >
-        TOPAZ<span className="text-[#2E75B6]">2.0</span>
-      </Link>
-      <div className="w-full max-w-md rounded-2xl border border-white/10 bg-white/5 p-8 backdrop-blur-sm">
-        <h1 className="text-xl font-bold text-white text-center mb-6">Admin login</h1>
-        <form onSubmit={onSubmit} className="space-y-4">
+    <div className="min-h-screen bg-[#0a0a0a] flex flex-col items-center justify-center px-6 py-16">
+      <div className="w-full max-w-md space-y-8">
+        <div className="text-center">
+          <Link to="/" className="font-display font-black text-2xl text-white uppercase">
+            TOPAZ<span className="text-[#2E75B6]">2.0</span>
+          </Link>
+          <h1 className="mt-6 text-xl font-bold text-white tracking-wide">Admin login</h1>
+          <p className="mt-2 text-sm text-white/50">Authorized staff only</p>
+        </div>
+
+        <form onSubmit={onSubmit} className="rounded-2xl border border-white/10 bg-white/5 p-8 space-y-6 backdrop-blur-sm">
+          {error ? (
+            <Alert variant="destructive" className="bg-red-950/80 border-red-800 text-red-100">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          ) : null}
+
           <div className="space-y-2">
             <Label htmlFor="admin-email" className="text-white/80">
               Email
@@ -64,12 +90,13 @@ export default function AdminLogin() {
               id="admin-email"
               type="email"
               autoComplete="email"
+              required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              required
-              className="bg-white/10 border-white/20 text-white placeholder:text-white/40"
+              className="bg-black/40 border-white/20 text-white"
             />
           </div>
+
           <div className="space-y-2">
             <Label htmlFor="admin-password" className="text-white/80">
               Password
@@ -78,21 +105,27 @@ export default function AdminLogin() {
               id="admin-password"
               type="password"
               autoComplete="current-password"
+              required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              required
-              className="bg-white/10 border-white/20 text-white placeholder:text-white/40"
+              className="bg-black/40 border-white/20 text-white"
             />
           </div>
-          {err ? <p className="text-sm text-red-400">{err}</p> : null}
+
           <Button
             type="submit"
-            disabled={busy}
-            className="w-full bg-[#2E75B6] hover:bg-[#1F4E78] text-white font-bold uppercase tracking-wider"
+            disabled={submitting}
+            className="w-full bg-[#2E75B6] hover:bg-[#1F4E78] text-white font-bold"
           >
-            {busy ? 'Signing in…' : 'Login'}
+            {submitting ? 'Signing in…' : 'Login'}
           </Button>
         </form>
+
+        <p className="text-center text-sm text-white/40">
+          <Link to="/" className="hover:text-white/70">
+            ← Back to site
+          </Link>
+        </p>
       </div>
     </div>
   );

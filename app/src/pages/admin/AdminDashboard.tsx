@@ -1,62 +1,71 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   ClipboardList,
-  Images,
+  ImageIcon,
   Video,
   Users,
-  CalendarDays,
+  Calendar,
   Megaphone,
   LogOut,
 } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import RegistrationsTab from './tabs/RegistrationsTab';
-import GalleryImagesTab from './tabs/GalleryImagesTab';
-import VideosTab from './tabs/VideosTab';
-import MembersTab from './tabs/MembersTab';
-import EventsTab from './tabs/EventsTab';
-import AnnouncementsTab from './tabs/AnnouncementsTab';
+import RegistrationsAdmin from '@/pages/admin/tabs/RegistrationsAdmin';
+import GalleryImagesTab from '@/pages/admin/tabs/GalleryImagesTab';
+import GalleryVideosTab from '@/pages/admin/tabs/GalleryVideosTab';
+import MembersTab from '@/pages/admin/tabs/MembersTab';
+import EventsTab from '@/pages/admin/tabs/EventsTab';
+import AnnouncementsTab from '@/pages/admin/tabs/AnnouncementsTab';
 
-export type AdminSection =
+type TabId =
   | 'registrations'
-  | 'gallery'
-  | 'videos'
+  | 'gallery-photos'
+  | 'gallery-videos'
   | 'members'
   | 'events'
   | 'announcements';
 
-const nav: { id: AdminSection; label: string; icon: typeof ClipboardList }[] = [
+const nav: { id: TabId; label: string; icon: typeof ClipboardList }[] = [
   { id: 'registrations', label: 'Registrations', icon: ClipboardList },
-  { id: 'gallery', label: 'Gallery', icon: Images },
-  { id: 'videos', label: 'Videos', icon: Video },
+  { id: 'gallery-photos', label: 'Gallery Photos', icon: ImageIcon },
+  { id: 'gallery-videos', label: 'Gallery Videos', icon: Video },
   { id: 'members', label: 'Members', icon: Users },
-  { id: 'events', label: 'Events', icon: CalendarDays },
+  { id: 'events', label: 'Events', icon: Calendar },
   { id: 'announcements', label: 'Announcements', icon: Megaphone },
 ];
 
 export default function AdminDashboard() {
-  const [section, setSection] = useState<AdminSection>('registrations');
+  const [tab, setTab] = useState<TabId>('registrations');
   const { signOut } = useAuth();
   const navigate = useNavigate();
 
+  async function handleSignOut() {
+    await signOut();
+    navigate('/admin/login', { replace: true });
+  }
+
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex">
-      <aside className="w-56 shrink-0 border-r border-white/10 bg-black/40 p-4 flex flex-col">
-        <Link to="/" className="font-display font-black text-lg text-white mb-8 px-2">
+    <div className="min-h-screen bg-[#0a0a0a] text-white flex">
+      <aside className="w-64 shrink-0 border-r border-slate-800 flex flex-col py-8 px-4">
+        <Link to="/" className="font-display font-black text-lg uppercase px-3 mb-10">
           TOPAZ<span className="text-[#2E75B6]">2.0</span>
-          <span className="block text-[10px] font-mono text-white/50 uppercase tracking-widest mt-1">Admin</span>
         </Link>
+        <span className="text-[10px] font-mono uppercase tracking-widest text-slate-500 px-3 mb-3">
+          Admin
+        </span>
         <nav className="space-y-1 flex-1">
           {nav.map((item) => (
             <button
               key={item.id}
               type="button"
-              onClick={() => setSection(item.id)}
+              onClick={() => setTab(item.id)}
               className={cn(
-                'w-full flex items-center gap-2 rounded-lg px-3 py-2.5 text-left text-sm font-semibold transition-colors',
-                section === item.id ? 'bg-[#2E75B6] text-white' : 'text-white/70 hover:bg-white/5 hover:text-white'
+                'w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors text-left',
+                tab === item.id
+                  ? 'bg-[#2E75B6] text-white'
+                  : 'text-slate-400 hover:bg-slate-900 hover:text-white'
               )}
             >
               <item.icon className="w-4 h-4 shrink-0" />
@@ -66,24 +75,22 @@ export default function AdminDashboard() {
         </nav>
         <Button
           variant="ghost"
-          className="justify-start text-white/60 hover:text-white hover:bg-white/10 mt-4"
-          onClick={async () => {
-            await signOut();
-            navigate('/admin/login', { replace: true });
-          }}
+          className="justify-start text-slate-400 hover:text-white hover:bg-slate-900"
+          onClick={handleSignOut}
         >
           <LogOut className="w-4 h-4 mr-2" />
           Sign out
         </Button>
       </aside>
+
       <div className="flex-1 overflow-auto">
-        <div className="p-6 lg:p-10 max-w-6xl">
-          {section === 'registrations' ? <RegistrationsTab /> : null}
-          {section === 'gallery' ? <GalleryImagesTab /> : null}
-          {section === 'videos' ? <VideosTab /> : null}
-          {section === 'members' ? <MembersTab /> : null}
-          {section === 'events' ? <EventsTab /> : null}
-          {section === 'announcements' ? <AnnouncementsTab /> : null}
+        <div className="max-w-6xl mx-auto p-8 lg:p-10">
+          {tab === 'registrations' && <RegistrationsAdmin />}
+          {tab === 'gallery-photos' && <GalleryImagesTab />}
+          {tab === 'gallery-videos' && <GalleryVideosTab />}
+          {tab === 'members' && <MembersTab />}
+          {tab === 'events' && <EventsTab />}
+          {tab === 'announcements' && <AnnouncementsTab />}
         </div>
       </div>
     </div>

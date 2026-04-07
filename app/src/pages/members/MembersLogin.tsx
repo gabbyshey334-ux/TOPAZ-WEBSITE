@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
-import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { isAdminEmail } from '@/lib/admin';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,116 +9,130 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export default function MembersLogin() {
-  const { user, loading } = useAuth();
+  const { signIn } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation() as { state?: { pendingApproval?: boolean } };
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [err, setErr] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
-
-  const pendingMsg = location.state?.pendingApproval;
-
-  useEffect(() => {
-    if (loading || !user || isAdminEmail(user.email)) return;
-    (async () => {
-      const { data } = await supabase.from('members').select('is_approved').eq('id', user.id).maybeSingle();
-      if (data?.is_approved) navigate('/members/dashboard', { replace: true });
-    })();
-  }, [loading, user, navigate]);
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   if (!isSupabaseConfigured) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-        <p className="text-gray-600 text-center">
-          Supabase is not configured. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to your .env file.
-        </p>
+      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center px-6 text-white text-center">
+        <p>Supabase is not configured.</p>
       </div>
     );
   }
 
-  if (!loading && user && isAdminEmail(user.email)) {
-    return <Navigate to="/admin/dashboard" replace />;
-  }
-
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setErr(null);
-    setBusy(true);
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email: email.trim(),
-      password,
-    });
-    setBusy(false);
-    if (error) {
-      setErr(error.message);
+    setError(null);
+    setSubmitting(true);
+    const { error: err } = await signIn(email.trim(), password);
+    if (err) {
+      setError(err.message || 'Login failed.');
+      setSubmitting(false);
       return;
     }
-    if (isAdminEmail(data.user?.email)) {
-      navigate('/admin/dashboard', { replace: true });
-      return;
-    }
-    const { data: mem } = await supabase.from('members').select('is_approved').eq('id', data.user!.id).maybeSingle();
-    if (!mem?.is_approved) {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    const u = session?.user;
+    if (isAdminEmail(u?.email)) {
       await supabase.auth.signOut();
-      setErr('Your account is pending approval. Nick will approve studio members from the admin dashboard.');
+      setError('Please use the admin login page for staff accounts.');
+      setSubmitting(false);
+      return;
+    }
+    if (!u?.id) {
+      setError('Session could not be established.');
+      setSubmitting(false);
+      return;
+    }
+    const { data: member } = await supabase.from('members').select('*').eq('id', u.id).maybeSingle();
+    if (!member) {
+      await supabase.auth.signOut();
+      setError('No member profile found. Please register first.');
+      setSubmitting(false);
+      return;
+    }
+    if (!member.is_approved) {
+      await supabase.auth.signOut();
+      setError('Your account is pending approval by the administrator.');
+      setSubmitting(false);
       return;
     }
     navigate('/members/dashboard', { replace: true });
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#0a0a0a] to-gray-900 flex flex-col items-center justify-center px-4 py-24">
-      <Link
-        to="/"
-        className="mb-8 font-display font-black text-2xl text-white uppercase tracking-tight"
-      >
-        TOPAZ<span className="text-[#2E75B6]">2.0</span>
-      </Link>
-      <div className="w-full max-w-md rounded-2xl border border-white/10 bg-white p-8 shadow-xl">
-        <h1 className="text-2xl font-bold text-gray-900 text-center mb-2">Member login</h1>
-        <p className="text-sm text-gray-500 text-center mb-6">
-          For studio teachers and dancers with an approved account.
-        </p>
-        {pendingMsg ? (
-          <Alert className="mb-4 border-amber-200 bg-amber-50">
-            <AlertDescription className="text-amber-900 text-sm">
-              Your account is pending approval. You cannot access member content until Nick approves your registration.
-            </AlertDescription>
-          </Alert>
-        ) : null}
-        <form onSubmit={onSubmit} className="space-y-4">
+    <div className="min-h-screen bg-[#0a0a0a] flex flex-col items-center justify-center px-6 py-16">
+      <div className="w-full max-w-md space-y-8">
+        <div className="text-center">
+          <Link to="/" className="font-display font-black text-2xl text-white uppercase">
+            TOPAZ<span className="text-[#2E75B6]">2.0</span>
+          </Link>
+          <h1 className="mt-6 text-xl font-bold text-white tracking-wide">Member login</h1>
+        </div>
+
+        <form
+          onSubmit={onSubmit}
+          className="rounded-2xl border border-white/10 bg-white/5 p-8 space-y-6 backdrop-blur-sm"
+        >
+          {error ? (
+            <Alert variant="destructive" className="bg-red-950/80 border-red-800 text-red-100">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          ) : null}
+
           <div className="space-y-2">
-            <Label htmlFor="mem-email">Email</Label>
+            <Label htmlFor="mem-email" className="text-white/80">
+              Email
+            </Label>
             <Input
               id="mem-email"
               type="email"
               autoComplete="email"
+              required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              required
+              className="bg-black/40 border-white/20 text-white"
             />
           </div>
+
           <div className="space-y-2">
-            <Label htmlFor="mem-password">Password</Label>
+            <Label htmlFor="mem-password" className="text-white/80">
+              Password
+            </Label>
             <Input
               id="mem-password"
               type="password"
               autoComplete="current-password"
+              required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              required
+              className="bg-black/40 border-white/20 text-white"
             />
           </div>
-          {err ? <p className="text-sm text-red-600">{err}</p> : null}
-          <Button type="submit" disabled={busy} className="w-full bg-[#2E75B6] hover:bg-[#1F4E78]">
-            {busy ? 'Signing in…' : 'Login'}
+
+          <Button
+            type="submit"
+            disabled={submitting}
+            className="w-full bg-[#2E75B6] hover:bg-[#1F4E78] text-white font-bold"
+          >
+            {submitting ? 'Signing in…' : 'Log in'}
           </Button>
         </form>
-        <p className="mt-6 text-center text-sm text-gray-600">
+
+        <p className="text-center text-sm text-white/50">
           Need an account?{' '}
-          <Link to="/members/register" className="font-semibold text-[#2E75B6] hover:underline">
+          <Link to="/members/register" className="text-[#7EB8E8] hover:underline">
             Join
+          </Link>
+        </p>
+        <p className="text-center text-sm text-white/40">
+          <Link to="/" className="hover:text-white/70">
+            ← Back to site
           </Link>
         </p>
       </div>

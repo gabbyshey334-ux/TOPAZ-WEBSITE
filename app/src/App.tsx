@@ -6,8 +6,8 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import './App.css';
 
 import PublicLayout from '@/components/layout/PublicLayout';
-import ProtectedAdmin from '@/components/routes/ProtectedAdmin';
-import ProtectedMemberDashboard from '@/components/routes/ProtectedMemberDashboard';
+import ProtectedAdminRoute from '@/components/routes/ProtectedAdminRoute';
+import ProtectedMemberRoute from '@/components/routes/ProtectedMemberRoute';
 import ScrollToTop from '@/components/routes/ScrollToTop';
 
 import Home from '@/pages/Home';
@@ -69,9 +69,9 @@ function App() {
           <Route
             path="/members/dashboard"
             element={
-              <ProtectedMemberDashboard>
+              <ProtectedMemberRoute>
                 <MembersDashboard />
-              </ProtectedMemberDashboard>
+              </ProtectedMemberRoute>
             }
           />
         </Route>
@@ -80,15 +80,15 @@ function App() {
         <Route path="/members/register" element={<MembersRegister />} />
 
         <Route path="/admin/login" element={<AdminLogin />} />
+        <Route path="/admin" element={<AdminEntry />} />
         <Route
           path="/admin/dashboard"
           element={
-            <ProtectedAdmin>
+            <ProtectedAdminRoute>
               <AdminDashboard />
-            </ProtectedAdmin>
+            </ProtectedAdminRoute>
           }
         />
-        <Route path="/admin" element={<AdminEntry />} />
       </Routes>
     </Router>
   );
