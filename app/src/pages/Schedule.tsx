@@ -1,11 +1,54 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Search, ChevronDown, Calendar } from 'lucide-react';
 import CompetitionCard, { type CompetitionCardProps } from '../components/CompetitionCard';
+import { useActiveEvent, type EventRow } from '@/hooks/useActiveEvent';
+import { formatEventDateSchedule } from '@/lib/formatEventDate';
 
 gsap.registerPlugin(ScrollTrigger);
+
+const BASE = import.meta.env.BASE_URL;
+
+const STATIC_FALLBACK_COMPETITION: CompetitionCardProps = {
+  id: 'fallback-local',
+  name: 'The Return of TOPAZ 2.0',
+  subtitle: 'Join us for the return of TOPAZ 2.0',
+  date: 'Saturday, August 22, 2026',
+  time: '8:00 AM – 12:00 PM',
+  location: 'Seaside Convention Center',
+  address: '415 1st Ave, Seaside, OR 97138',
+  registrationDeadline: 'July 30, 2026, 12:00 AM',
+  status: 'open',
+  description:
+    'Event time: 8:00 AM – 12:00 PM. Registration opens April 1, 2026. Deadline: July 30, 2026, 12:00 AM.',
+  image: `${BASE}images/events/trophy-gold.jpg`,
+};
+
+function extractTimeFromDescription(description: string | null | undefined): string | undefined {
+  if (!description) return undefined;
+  const m = description.match(
+    /\d{1,2}:\d{2}\s*(?:AM|PM)(?:\s*[–-]\s*\d{1,2}:\d{2}\s*(?:AM|PM))?/i
+  );
+  return m?.[0];
+}
+
+function eventRowToCompetitionCard(event: EventRow): CompetitionCardProps {
+  return {
+    id: event.id,
+    name: event.name,
+    date: formatEventDateSchedule(event.date, 'Saturday, August 22, 2026'),
+    time: extractTimeFromDescription(event.description) || undefined,
+    location: event.location,
+    address: undefined,
+    registrationDeadline: 'See the Registration page for current deadlines.',
+    status: event.is_active ? 'open' : 'coming',
+    description: event.description ?? undefined,
+    subtitle: undefined,
+    image: `${BASE}images/events/trophy-gold.jpg`,
+  };
+}
 
 const Schedule = () => {
   const heroRef = useRef<HTMLDivElement>(null);
@@ -13,6 +56,13 @@ const Schedule = () => {
   const [filter, setFilter] = useState<'all' | 'open' | 'upcoming' | 'past'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [showPast, setShowPast] = useState(false);
+  const { event, loading: eventLoading } = useActiveEvent();
+
+  const upcomingCompetitions = useMemo((): CompetitionCardProps[] => {
+    if (eventLoading) return [];
+    if (event) return [eventRowToCompetitionCard(event)];
+    return [STATIC_FALLBACK_COMPETITION];
+  }, [event, eventLoading]);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -52,23 +102,7 @@ const Schedule = () => {
     });
 
     return () => ctx.revert();
-  }, []);
-
-  const upcomingCompetitions: CompetitionCardProps[] = [
-    {
-      id: '1',
-      name: 'The Return of TOPAZ 2.0',
-      subtitle: 'Join us for the return of TOPAZ 2.0',
-      date: 'Saturday, August 22, 2026',
-      time: '8:00 AM – 12:00 PM',
-      location: 'Seaside Convention Center',
-      address: '415 1st Ave, Seaside, OR 97138',
-      registrationDeadline: 'July 30, 2026, 12:00 AM',
-      status: 'open',
-      description: 'Event time: 8:00 AM – 12:00 PM. Registration opens April 1, 2026. Deadline: July 30, 2026, 12:00 AM.',
-      image: `${import.meta.env.BASE_URL}images/events/trophy-gold.jpg`,
-    },
-  ];
+  }, [event?.id, eventLoading, upcomingCompetitions.length]);
 
   const pastCompetitions: CompetitionCardProps[] = [];
 
@@ -99,8 +133,8 @@ const Schedule = () => {
       >
         {/* Background visual */}
         <div className="absolute inset-0 opacity-20">
-          <img 
-            src="https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=1600&h=900&fit=crop" 
+          <img
+            src="https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=1600&h=900&fit=crop"
             className="w-full h-full object-cover"
             alt=""
           />
@@ -158,15 +192,22 @@ const Schedule = () => {
       <section ref={upcomingRef} className="py-20 lg:py-32 bg-gray-50">
         <div className="max-w-7xl mx-auto px-6 lg:px-12">
           <div className="mb-16 text-center lg:text-left">
-            <h2 className="text-4xl lg:text-5xl font-black text-gray-900 mb-4">
-              Upcoming Competitions
-            </h2>
+            <h2 className="text-4xl lg:text-5xl font-black text-gray-900 mb-4">Upcoming Competitions</h2>
             <p className="text-lg lg:text-xl text-gray-600 max-w-2xl">
               Don&apos;t miss your chance to shine on the TOPAZ stage.
             </p>
+            {!eventLoading && event ? (
+              <p className="text-sm text-gray-500 max-w-2xl mt-3">
+                Event details below are managed in the admin dashboard and stay in sync with the homepage.
+              </p>
+            ) : null}
           </div>
 
-          {filteredUpcoming.length > 0 ? (
+          {eventLoading ? (
+            <div className="text-center py-32 bg-gray-50 rounded-3xl border-2 border-dashed border-gray-200">
+              <p className="text-gray-500 font-medium">Loading competition schedule…</p>
+            </div>
+          ) : filteredUpcoming.length > 0 ? (
             <div className="space-y-12 lg:space-y-16">
               {filteredUpcoming.map((competition) => (
                 <div key={competition.id} className="competition-card w-full">
@@ -177,11 +218,13 @@ const Schedule = () => {
           ) : (
             <div className="text-center py-32 bg-gray-50 rounded-3xl border-2 border-dashed border-gray-200">
               <Search className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-500 font-medium">
-                No competitions found matching your criteria.
-              </p>
-              <button 
-                onClick={() => {setFilter('all'); setSearchQuery('');}}
+              <p className="text-gray-500 font-medium">No competitions found matching your criteria.</p>
+              <button
+                type="button"
+                onClick={() => {
+                  setFilter('all');
+                  setSearchQuery('');
+                }}
                 className="mt-4 text-primary font-bold hover:underline"
               >
                 Clear all filters
@@ -195,6 +238,7 @@ const Schedule = () => {
       <section className="py-24 lg:py-32 bg-[#fcfcfc] border-t border-gray-100">
         <div className="w-full px-4 sm:px-6 lg:px-12 max-w-7xl mx-auto">
           <button
+            type="button"
             onClick={() => setShowPast(!showPast)}
             className="group flex items-center justify-between w-full p-8 bg-white border border-gray-100 rounded-3xl shadow-premium hover:shadow-xl transition-all duration-500"
           >
@@ -209,22 +253,27 @@ const Schedule = () => {
                 <p className="text-sm text-gray-500 mt-1">Review results and highlights from previous events</p>
               </div>
             </div>
-            <div className={`w-12 h-12 rounded-full border border-gray-100 flex items-center justify-center transition-all duration-500 ${showPast ? 'bg-primary text-white border-primary rotate-180' : 'text-gray-400'}`}>
+            <div
+              className={`w-12 h-12 rounded-full border border-gray-100 flex items-center justify-center transition-all duration-500 ${showPast ? 'bg-primary text-white border-primary rotate-180' : 'text-gray-400'}`}
+            >
               <ChevronDown className="w-6 h-6" />
             </div>
           </button>
 
-          {showPast && (
+          {showPast ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 mt-12 animate-in fade-in slide-in-from-top-8 duration-700">
               {pastCompetitions.map((competition) => (
-                <div key={competition.id} className="h-full opacity-70 hover:opacity-100 transition-opacity duration-500">
+                <div
+                  key={competition.id}
+                  className="h-full opacity-70 hover:opacity-100 transition-opacity duration-500"
+                >
                   <div className="h-full bg-white rounded-3xl border border-gray-100 shadow-premium">
                     <CompetitionCard {...competition} />
                   </div>
                 </div>
               ))}
             </div>
-          )}
+          ) : null}
         </div>
       </section>
 
@@ -234,14 +283,13 @@ const Schedule = () => {
         <div className="absolute top-0 left-0 w-full h-full">
           <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-white rounded-full blur-[150px] opacity-20" />
         </div>
-        
+
         <div className="w-full px-4 sm:px-6 lg:px-12 max-w-4xl mx-auto text-center relative z-10">
           <h2 className="font-display font-black text-4xl lg:text-6xl text-white mb-8 leading-tight tracking-tighter uppercase">
             Ready to <span className="italic text-secondary">Compete</span>?
           </h2>
           <p className="text-white/80 text-xl mb-12 max-w-2xl mx-auto leading-relaxed">
-            Register early to secure your spot and take advantage of early bird
-            pricing. Join the TOPAZ family today.
+            Register early to secure your spot and take advantage of early bird pricing. Join the TOPAZ family today.
           </p>
           <div className="flex flex-wrap justify-center gap-6">
             <Link
@@ -251,7 +299,8 @@ const Schedule = () => {
               View Competition Rules
             </Link>
             <button
-              onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})}
+              type="button"
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
               className="btn-secondary !bg-transparent !text-white !border-white/30 hover:!bg-white/10 !px-10 !py-4"
             >
               Back to Top

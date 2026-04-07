@@ -17,7 +17,7 @@ import {
 import HeroSection from '../sections/HeroSection';
 import type { LucideIcon } from 'lucide-react';
 import { useActiveEvent } from '@/hooks/useActiveEvent';
-import { format } from 'date-fns';
+import { formatEventDateLabel } from '@/lib/formatEventDate';
 
 // Register GSAP plugin
 gsap.registerPlugin(ScrollTrigger);
@@ -106,16 +106,6 @@ const legacyHistoryPhotos = [
     aspect: 'tall'
   },
 ] as const;
-
-function formatEventDateLabel(dateStr: string | undefined | null, fallback: string): string {
-  if (!dateStr) return fallback;
-  const d = /^\d{4}-\d{2}-\d{2}$/.test(dateStr) ? `${dateStr}T12:00:00` : dateStr;
-  try {
-    return format(new Date(d), 'MMMM d, yyyy');
-  } catch {
-    return fallback;
-  }
-}
 
 const Home = () => {
   const { event } = useActiveEvent();
@@ -509,7 +499,7 @@ const Home = () => {
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="text-center mb-12">
             <span className="inline-block px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 font-mono text-white/80 text-sm tracking-[0.2em] uppercase font-bold mb-4">
-              What Studios Say
+              Community voices
             </span>
             <h2 className="font-display font-black text-4xl md:text-5xl lg:text-6xl text-white tracking-tight">
               TESTIMONIALS
@@ -522,8 +512,8 @@ const Home = () => {
               <span className="text-xs font-bold uppercase tracking-wider text-white">Coming Soon</span>
             </div>
             <p className="text-white/90 text-xl leading-relaxed font-light">
-              Studio testimonials will appear here after the competition season. 
-              Check back soon to hear what dance studios are saying about their TOPAZ experience.
+              Testimonials will appear here after the competition season. Check back soon to read comments from our
+              students and participants.
             </p>
             <div className="mt-8 flex justify-center gap-1">
               {[1, 2, 3].map((i) => (
