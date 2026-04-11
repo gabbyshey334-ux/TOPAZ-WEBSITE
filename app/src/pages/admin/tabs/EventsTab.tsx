@@ -15,7 +15,12 @@ export default function EventsTab() {
 
   const load = useCallback(async () => {
     setLoading(true);
-    const { data } = await supabase.from('events').select('*').order('date', { ascending: true });
+    const { data } = await supabase
+      .from('events')
+      .select('*')
+      .eq('is_active', true)
+      .order('date', { ascending: true })
+      .limit(1);
     setRows(data ?? []);
     setLoading(false);
   }, []);
@@ -111,7 +116,7 @@ function EventEditor({
         </div>
       </div>
       <Button onClick={() => onSave(row)} className="bg-[#2E75B6] hover:bg-[#1F4E78]">
-        Save changes
+        Save event
       </Button>
     </div>
   );

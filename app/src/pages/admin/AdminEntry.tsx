@@ -7,7 +7,7 @@ export default function AdminEntry() {
   const { user, loading } = useAuth();
 
   if (!isSupabaseConfigured) {
-    return <Navigate to="/admin/login" replace />;
+    return <Navigate to="/" replace />;
   }
 
   if (loading) {
@@ -19,7 +19,7 @@ export default function AdminEntry() {
   }
 
   if (!user || !isAdminEmail(user.email)) {
-    return <Navigate to="/admin/login" replace />;
+    return <Navigate to="/" replace />;
   }
 
   return <Navigate to="/admin/dashboard" replace />;

@@ -19,3 +19,11 @@ export const supabase: SupabaseClient<Database> = createClient<Database>(url || 
     detectSessionInUrl: true,
   },
 });
+
+const ADMIN_EMAIL = 'topaz2.0@yahoo.com';
+
+/** Returns true if the email is the site admin account. */
+export function isAdmin(email: string | null | undefined): boolean {
+  if (!email) return false;
+  return email.trim().toLowerCase() === ADMIN_EMAIL.toLowerCase();
+}

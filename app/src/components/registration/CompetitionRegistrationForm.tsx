@@ -254,7 +254,7 @@ export default function CompetitionRegistrationForm() {
       contestant_count: n,
       total_fee: fee,
       payment_method: paymentMethod,
-      participants: needsParticipantTable(groupSize) ? participants : null,
+      participants_json: needsParticipantTable(groupSize) ? participants : null,
       disclaimer_accepted: true,
     };
 
@@ -283,7 +283,7 @@ export default function CompetitionRegistrationForm() {
         const bodyText = encodeURIComponent(
           `This is a copy of your registration summary.\n\nContestant: ${row.contestant_name}\nCategory: ${row.category}\nTotal fee: $${fee.toFixed(2)}\nPayment: ${row.payment_method}\n\nPlease complete payment and mail your entry per the instructions on the form.\n\nTOPAZ 2.0`
         );
-        window.open(`mailto:${encodeURIComponent(row.email)}?subject=${subject}&body=${bodyText}`, '_blank');
+        window.open(`mailto:topaz2.0@yahoo.com?subject=${subject}&body=${bodyText}`, '_blank');
       }
     })();
   }

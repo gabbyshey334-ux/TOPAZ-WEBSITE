@@ -1,4 +1,5 @@
 import { useRef, useLayoutEffect } from 'react';
+import { format, parseISO } from 'date-fns';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Link } from 'react-router-dom';
@@ -17,7 +18,6 @@ import {
 import HeroSection from '../sections/HeroSection';
 import type { LucideIcon } from 'lucide-react';
 import { useActiveEvent } from '@/hooks/useActiveEvent';
-import { formatEventDateLabel } from '@/lib/formatEventDate';
 
 // Register GSAP plugin
 gsap.registerPlugin(ScrollTrigger);
@@ -108,12 +108,17 @@ const legacyHistoryPhotos = [
 ] as const;
 
 const Home = () => {
-  const { event } = useActiveEvent();
-  const eventTitle = event?.name?.trim() || '';
-  const eventDateLabel = formatEventDateLabel(event?.date, 'August 22, 2026');
-  const eventLocationLabel = event?.location?.trim() || 'Seaside, OR';
-  const eventDetailLine =
-    event?.description?.trim() || 'Seaside Convention Center • 415 1st Ave, Seaside, OR 97138';
+  const { event: activeEvent, loading: eventLoading } = useActiveEvent();
+  const tourDateLabel =
+    !eventLoading && activeEvent?.date
+      ? format(parseISO(`${activeEvent.date}T12:00:00`), 'EEEE, MMMM d, yyyy')
+      : 'Saturday, August 22, 2026';
+  const tourLocationLabel =
+    !eventLoading && activeEvent?.location ? activeEvent.location : 'Seaside, OR';
+  const tourVenueLine =
+    !eventLoading && activeEvent?.location
+      ? activeEvent.location
+      : 'Seaside Convention Center • 415 1st Ave, Seaside, OR 97138';
 
   const tourRef = useRef<HTMLDivElement>(null);
   const promoRef = useRef<HTMLDivElement>(null);
@@ -430,27 +435,20 @@ const Home = () => {
             </span>
 
             <h1 className="font-display font-black text-6xl sm:text-7xl md:text-8xl lg:text-[10rem] text-white leading-[0.85] tracking-tighter uppercase">
-              {eventTitle ? (
-                <span className="block max-w-5xl mx-auto text-[0.35em] sm:text-[0.4em] md:text-[0.45em] leading-tight normal-case tracking-tight text-white/95 mb-4">
-                  {eventTitle}
-                </span>
-              ) : null}
-              <span className="block">
-                TOPAZ <span className="text-[#2E75B6] italic">2.0</span>
-              </span>
+              TOPAZ <span className="text-[#2E75B6] italic">2.0</span>
             </h1>
 
             <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-12 text-white">
               <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-full px-6 py-3 border border-white/20">
                 <Calendar className="w-6 h-6 text-[#2E75B6]" />
                 <span className="font-display font-bold text-xl md:text-2xl uppercase tracking-wide">
-                  {eventDateLabel}
+                  {eventLoading ? '…' : tourDateLabel}
                 </span>
               </div>
               <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-full px-6 py-3 border border-white/20">
                 <MapPin className="w-6 h-6 text-[#2E75B6]" />
                 <span className="font-display font-bold text-xl md:text-2xl uppercase tracking-wide">
-                  {eventLocationLabel}
+                  {eventLoading ? '…' : tourLocationLabel}
                 </span>
               </div>
             </div>
@@ -465,8 +463,8 @@ const Home = () => {
               </Link>
             </div>
 
-            <p className="text-white/60 text-lg max-w-2xl mx-auto pt-4 whitespace-pre-line">
-              {eventDetailLine}
+            <p className="text-white/60 text-lg max-w-2xl mx-auto pt-4">
+              {eventLoading ? '…' : tourVenueLine}
             </p>
           </div>
         </div>
@@ -499,7 +497,7 @@ const Home = () => {
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="text-center mb-12">
             <span className="inline-block px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 font-mono text-white/80 text-sm tracking-[0.2em] uppercase font-bold mb-4">
-              Community voices
+              What Studios Say
             </span>
             <h2 className="font-display font-black text-4xl md:text-5xl lg:text-6xl text-white tracking-tight">
               TESTIMONIALS
@@ -512,8 +510,7 @@ const Home = () => {
               <span className="text-xs font-bold uppercase tracking-wider text-white">Coming Soon</span>
             </div>
             <p className="text-white/90 text-xl leading-relaxed font-light">
-              Testimonials will appear here after the competition season. Check back soon to read comments from our
-              students and participants.
+              Testimonials will appear here after the competition season. Check back soon to read comments from our students and participants.
             </p>
             <div className="mt-8 flex justify-center gap-1">
               {[1, 2, 3].map((i) => (

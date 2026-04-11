@@ -25,18 +25,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Download, Eye, Trash2 } from 'lucide-react';
-import type { RegistrationParticipant } from '@/types/database';
 
 type RegRow = Database['public']['Tables']['registrations']['Row'];
-
-function DetailField({ label, value }: { label: string; value: string | number | null | undefined }) {
-  return (
-    <div className="border-b border-slate-800 py-2">
-      <dt className="text-xs uppercase tracking-wider text-slate-500">{label}</dt>
-      <dd className="text-sm text-slate-200 mt-0.5 whitespace-pre-wrap">{value ?? '—'}</dd>
-    </div>
-  );
-}
 
 export default function RegistrationsAdmin() {
   const [rows, setRows] = useState<RegRow[]>([]);
@@ -73,11 +63,12 @@ export default function RegistrationsAdmin() {
 
   const filtered = useMemo(() => {
     return rows.filter((r) => {
-      const q = search.toLowerCase().trim();
+      const q = search.toLowerCase();
       const matchSearch =
         !q ||
         r.contestant_name.toLowerCase().includes(q) ||
-        r.studio_name.toLowerCase().includes(q);
+        r.studio_name.toLowerCase().includes(q) ||
+        r.email.toLowerCase().includes(q);
       const matchStatus = statusFilter === 'all' || r.status === statusFilter;
       const matchCat = categoryFilter === 'all' || r.category === categoryFilter;
       const matchAge = ageFilter === 'all' || r.age_division === ageFilter;
@@ -88,13 +79,11 @@ export default function RegistrationsAdmin() {
   async function setStatus(id: string, status: string) {
     await supabase.from('registrations').update({ status }).eq('id', id);
     load();
-    setDetail((d) => (d && d.id === id ? { ...d, status } : d));
   }
 
   async function remove(id: string) {
     if (!confirm('Delete this registration permanently?')) return;
     await supabase.from('registrations').delete().eq('id', id);
-    setDetail((d) => (d?.id === id ? null : d));
     load();
   }
 
@@ -125,7 +114,7 @@ export default function RegistrationsAdmin() {
     };
     const lines = [
       cols.join(','),
-      ...rows.map((r) => cols.map((c) => esc(r[c])).join(',')),
+      ...filtered.map((r) => cols.map((c) => esc(r[c])).join(',')),
     ];
     const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8' });
     const a = document.createElement('a');
@@ -134,11 +123,6 @@ export default function RegistrationsAdmin() {
     a.click();
     URL.revokeObjectURL(a.href);
   }
-
-  const rawParts = detail?.participants;
-  const participants: RegistrationParticipant[] = Array.isArray(rawParts)
-    ? (rawParts as RegistrationParticipant[])
-    : [];
 
   return (
     <div className="space-y-6">
@@ -159,7 +143,7 @@ export default function RegistrationsAdmin() {
 
       <div className="flex flex-wrap gap-3">
         <Input
-          placeholder="Search contestant name or studio…"
+          placeholder="Search name, studio, email…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="max-w-xs bg-slate-900 border-slate-600 text-white"
@@ -243,43 +227,51 @@ export default function RegistrationsAdmin() {
                   <TableCell className="text-slate-400 text-xs whitespace-nowrap">
                     {new Date(r.created_at).toLocaleDateString()}
                   </TableCell>
-                  <TableCell className="text-slate-300 text-xs capitalize">{r.status}</TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex flex-wrap justify-end gap-1">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="text-slate-300 h-8 px-2"
-                        onClick={() => setDetail(r)}
-                        title="View details"
-                      >
-                        <Eye className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="text-green-400 h-8 px-2"
-                        onClick={() => setStatus(r.id, 'approved')}
-                      >
-                        Approve
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="text-amber-400 h-8 px-2"
-                        onClick={() => setStatus(r.id, 'rejected')}
-                      >
-                        Reject
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="text-red-400 h-8 px-2"
-                        onClick={() => remove(r.id)}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
+                  <TableCell>
+                    <Select value={r.status} onValueChange={(v) => setStatus(r.id, v)}>
+                      <SelectTrigger className="h-8 w-[110px] bg-slate-900 border-slate-600 text-white text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="pending">Pending</SelectItem>
+                        <SelectItem value="approved">Approved</SelectItem>
+                        <SelectItem value="rejected">Rejected</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </TableCell>
+                  <TableCell className="text-right space-x-1 whitespace-nowrap">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="text-slate-300"
+                      onClick={() => setDetail(r)}
+                    >
+                      <Eye className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="text-green-400"
+                      onClick={() => setStatus(r.id, 'approved')}
+                    >
+                      Approve
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="text-red-400"
+                      onClick={() => setStatus(r.id, 'rejected')}
+                    >
+                      Reject
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="text-red-400"
+                      onClick={() => remove(r.id)}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}
@@ -288,82 +280,15 @@ export default function RegistrationsAdmin() {
         )}
       </div>
 
-      <Dialog open={!!detail} onOpenChange={(o) => !o && setDetail(null)}>
+      <Dialog open={!!detail} onOpenChange={() => setDetail(null)}>
         <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto bg-slate-950 border-slate-700 text-white">
           <DialogHeader>
-            <DialogTitle>Registration details</DialogTitle>
+            <DialogTitle>Registration detail</DialogTitle>
           </DialogHeader>
           {detail ? (
-            <div className="space-y-4 text-sm">
-              <dl className="grid gap-0">
-                <DetailField label="Contestant name" value={detail.contestant_name} />
-                <DetailField label="Age (as of competition)" value={detail.age} />
-                <DetailField label="Studio" value={detail.studio_name} />
-                <DetailField label="Teacher" value={detail.teacher_name} />
-                <DetailField label="Routine / names on back" value={detail.routine_name} />
-                <DetailField label="Phone" value={detail.phone} />
-                <DetailField label="Email" value={detail.email} />
-                <DetailField label="Years of training" value={detail.years_of_training} />
-                <DetailField label="Soloist address" value={detail.soloist_address} />
-                <DetailField label="City / State / Zip" value={[detail.city, detail.state, detail.zip].filter(Boolean).join(', ') || null} />
-                <DetailField
-                  label="Studio address"
-                  value={
-                    [detail.studio_address, detail.studio_city, detail.studio_state, detail.studio_zip]
-                      .filter(Boolean)
-                      .join(', ') || null
-                  }
-                />
-                <DetailField label="Category" value={detail.category} />
-                <DetailField label="Age division" value={detail.age_division} />
-                <DetailField label="Ability level" value={detail.ability_level} />
-                <DetailField label="Group size" value={detail.group_size} />
-                <DetailField label="Contestant count" value={detail.contestant_count} />
-                <DetailField label="Total fee" value={`$${Number(detail.total_fee).toFixed(2)}`} />
-                <DetailField label="Payment method" value={detail.payment_method} />
-                <DetailField label="Status" value={detail.status} />
-                <DetailField label="Disclaimer accepted" value={detail.disclaimer_accepted ? 'Yes' : 'No'} />
-                <DetailField label="Submitted" value={new Date(detail.created_at).toLocaleString()} />
-              </dl>
-
-              {participants.length > 0 ? (
-                <div>
-                  <h4 className="text-xs uppercase tracking-wider text-slate-500 mb-2">Participants</h4>
-                  <div className="rounded-lg border border-slate-800 overflow-hidden">
-                    <table className="w-full text-xs">
-                      <thead className="bg-slate-900">
-                        <tr>
-                          <th className="text-left p-2 text-slate-400">Name</th>
-                          <th className="text-left p-2 text-slate-400">Age</th>
-                          <th className="text-left p-2 text-slate-400">Signature</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {participants.map((p, i) => (
-                          <tr key={i} className="border-t border-slate-800">
-                            <td className="p-2 text-slate-200">{p.name}</td>
-                            <td className="p-2 text-slate-200">{p.age}</td>
-                            <td className="p-2 text-slate-200">{p.signature_confirmed ? 'Yes' : 'No'}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              ) : null}
-
-              <div className="flex flex-wrap gap-2 pt-2">
-                <Button size="sm" className="bg-emerald-700 hover:bg-emerald-800" onClick={() => setStatus(detail.id, 'approved')}>
-                  Approve
-                </Button>
-                <Button size="sm" variant="outline" className="border-amber-700 text-amber-400" onClick={() => setStatus(detail.id, 'rejected')}>
-                  Reject
-                </Button>
-                <Button size="sm" variant="outline" className="border-red-800 text-red-400" onClick={() => remove(detail.id)}>
-                  Delete
-                </Button>
-              </div>
-            </div>
+            <pre className="text-xs text-slate-300 whitespace-pre-wrap">
+              {JSON.stringify(detail, null, 2)}
+            </pre>
           ) : null}
         </DialogContent>
       </Dialog>

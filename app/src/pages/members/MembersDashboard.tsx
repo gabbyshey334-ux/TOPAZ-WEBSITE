@@ -136,7 +136,7 @@ export default function MembersDashboard() {
             Members gallery
           </h2>
           {gallery.length === 0 ? (
-            <p className="text-slate-500 text-sm">No members-only photos yet.</p>
+            <p className="text-slate-500 text-sm">No exclusive content yet — check back soon.</p>
           ) : (
             <ResponsiveMasonry columnsCountBreakPoints={{ 350: 1, 750: 2, 900: 3 }}>
               <Masonry gutter="16px">
@@ -160,7 +160,7 @@ export default function MembersDashboard() {
             Announcements
           </h2>
           {announcements.length === 0 ? (
-            <p className="text-slate-500 text-sm">No announcements.</p>
+            <p className="text-slate-500 text-sm">No announcements yet.</p>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
               {announcements.map((ann) => (

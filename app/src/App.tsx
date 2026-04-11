@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Lenis from 'lenis';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -18,11 +18,8 @@ import Contact from '@/pages/Contact';
 import Gallery from '@/pages/Gallery';
 import Registration from '@/pages/Registration';
 import Shop from '@/pages/Shop';
-import AdminLogin from '@/pages/admin/AdminLogin';
 import AdminEntry from '@/pages/admin/AdminEntry';
 import AdminDashboard from '@/pages/admin/AdminDashboard';
-import MembersLogin from '@/pages/members/MembersLogin';
-import MembersRegister from '@/pages/members/MembersRegister';
 import MembersDashboard from '@/pages/members/MembersDashboard';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -76,10 +73,10 @@ function App() {
           />
         </Route>
 
-        <Route path="/members/login" element={<MembersLogin />} />
-        <Route path="/members/register" element={<MembersRegister />} />
+        <Route path="/members/login" element={<Navigate to="/" replace />} />
+        <Route path="/members/register" element={<Navigate to="/" replace />} />
 
-        <Route path="/admin/login" element={<AdminLogin />} />
+        <Route path="/admin/login" element={<Navigate to="/" replace />} />
         <Route path="/admin" element={<AdminEntry />} />
         <Route
           path="/admin/dashboard"

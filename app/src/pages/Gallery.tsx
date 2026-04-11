@@ -1,12 +1,19 @@
-import { useCallback, useEffect, useState, type SyntheticEvent } from 'react';
-import { X, ChevronDown, Clock, Images } from 'lucide-react';
+import { useState, useEffect, type SyntheticEvent } from 'react';
+import { X, ChevronDown, Clock, Sparkles, Images } from 'lucide-react';
 import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
 import { supabase } from '@/lib/supabase';
-import type { Database } from '@/types/database';
 import { parseVideoUrl } from '@/lib/videoEmbed';
+import type { Database } from '@/types/database';
 
 const BASE = import.meta.env.BASE_URL;
+/** Local fallback if a history file 404s (avoids blank cells when external CDNs are blocked). */
 const FALLBACK_HISTORY_IMG = `${BASE}images/gallery/history/founders-duo-striped-pants.jpg`;
+
+type GalleryEra = 'history' | 'topaz20';
+type GalleryImageRow = Database['public']['Tables']['gallery_images']['Row'];
+type GalleryVideoRow = Database['public']['Tables']['gallery_videos']['Row'];
+
+const PHOTOS_PER_PAGE = 8;
 
 function historyImageOnError(e: SyntheticEvent<HTMLImageElement>) {
   const el = e.currentTarget;
@@ -15,92 +22,77 @@ function historyImageOnError(e: SyntheticEvent<HTMLImageElement>) {
   el.src = FALLBACK_HISTORY_IMG;
 }
 
-type GalleryEra = 'history' | 'topaz20';
-
-type ImgRow = Database['public']['Tables']['gallery_images']['Row'];
-type VidRow = Database['public']['Tables']['gallery_videos']['Row'];
-
-const PHOTOS_PER_PAGE = 8;
-
 const Gallery = () => {
   const [galleryEra, setGalleryEra] = useState<GalleryEra>('history');
   const [activeTab, setActiveTab] = useState<'photos' | 'videos'>('photos');
   const [photoLimit, setPhotoLimit] = useState(PHOTOS_PER_PAGE);
   const [lightboxImage, setLightboxImage] = useState<{ src: string; alt: string } | null>(null);
-  const [historyPhotos, setHistoryPhotos] = useState<ImgRow[]>([]);
-  const [topazPhotos, setTopazPhotos] = useState<ImgRow[]>([]);
-  const [historyVideos, setHistoryVideos] = useState<VidRow[]>([]);
-  const [topazVideos, setTopazVideos] = useState<VidRow[]>([]);
-  const [photosLoading, setPhotosLoading] = useState(false);
-  const [videosLoading, setVideosLoading] = useState(false);
 
-  const loadPhotos = useCallback(async () => {
-    setPhotosLoading(true);
-    const [h, t] = await Promise.all([
-      supabase
-        .from('gallery_images')
-        .select('*')
-        .eq('section', 'history')
-        .eq('is_visible', true)
-        .eq('is_members_only', false)
-        .order('created_at', { ascending: false }),
-      supabase
-        .from('gallery_images')
-        .select('*')
-        .eq('section', 'topaz2')
-        .eq('is_visible', true)
-        .eq('is_members_only', false)
-        .order('created_at', { ascending: false }),
-    ]);
-    setHistoryPhotos((h.data as ImgRow[]) ?? []);
-    setTopazPhotos((t.data as ImgRow[]) ?? []);
-    setPhotosLoading(false);
-  }, []);
-
-  const loadVideos = useCallback(async () => {
-    setVideosLoading(true);
-    const [hv, tv] = await Promise.all([
-      supabase
-        .from('gallery_videos')
-        .select('*')
-        .eq('section', 'history')
-        .eq('is_visible', true)
-        .order('created_at', { ascending: false }),
-      supabase
-        .from('gallery_videos')
-        .select('*')
-        .eq('section', 'topaz2')
-        .eq('is_visible', true)
-        .order('created_at', { ascending: false }),
-    ]);
-    setHistoryVideos((hv.data as VidRow[]) ?? []);
-    setTopazVideos((tv.data as VidRow[]) ?? []);
-    setVideosLoading(false);
-  }, []);
-
-  useEffect(() => {
-    loadPhotos();
-  }, [loadPhotos]);
-
-  useEffect(() => {
-    loadVideos();
-  }, [loadVideos]);
+  const [historyImages, setHistoryImages] = useState<GalleryImageRow[]>([]);
+  const [topaz2Images, setTopaz2Images] = useState<GalleryImageRow[]>([]);
+  const [historyVideos, setHistoryVideos] = useState<GalleryVideoRow[]>([]);
+  const [topaz2Videos, setTopaz2Videos] = useState<GalleryVideoRow[]>([]);
+  const [mediaLoading, setMediaLoading] = useState(true);
 
   useEffect(() => {
     setActiveTab('photos');
+    setPhotoLimit(PHOTOS_PER_PAGE);
   }, [galleryEra]);
 
   useEffect(() => {
-    setPhotoLimit(PHOTOS_PER_PAGE);
-  }, [galleryEra, activeTab]);
+    let cancelled = false;
+    async function load() {
+      setMediaLoading(true);
+      const [h, t, vh, vt] = await Promise.all([
+        supabase
+          .from('gallery_images')
+          .select('*')
+          .eq('section', 'history')
+          .eq('is_visible', true)
+          .eq('is_members_only', false)
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('gallery_images')
+          .select('*')
+          .eq('section', 'topaz2')
+          .eq('is_visible', true)
+          .eq('is_members_only', false)
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('gallery_videos')
+          .select('*')
+          .eq('section', 'history')
+          .eq('is_visible', true)
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('gallery_videos')
+          .select('*')
+          .eq('section', 'topaz2')
+          .eq('is_visible', true)
+          .order('created_at', { ascending: false }),
+      ]);
+      if (cancelled) return;
+      setHistoryImages((h.data as GalleryImageRow[]) ?? []);
+      setTopaz2Images((t.data as GalleryImageRow[]) ?? []);
+      setHistoryVideos((vh.data as GalleryVideoRow[]) ?? []);
+      setTopaz2Videos((vt.data as GalleryVideoRow[]) ?? []);
+      setMediaLoading(false);
+    }
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
-  const photoList = galleryEra === 'history' ? historyPhotos : topazPhotos;
-  const videoList = galleryEra === 'history' ? historyVideos : topazVideos;
-  const visiblePhotos = photoList.slice(0, photoLimit);
-  const hasMorePhotos = photoList.length > photoLimit;
+  const currentPhotoRows = galleryEra === 'history' ? historyImages : topaz2Images;
+  const visiblePhotos = currentPhotoRows.slice(0, photoLimit);
+  const hasMorePhotos = currentPhotoRows.length > photoLimit;
+
+  const currentVideos = galleryEra === 'history' ? historyVideos : topaz2Videos;
 
   return (
     <div className="min-h-screen bg-white">
+      {/* ── Hero ──────────────────────────────────────────────────────────── */}
       <section className="relative bg-[#0a0a0a] min-h-screen overflow-hidden flex items-center">
         <div className="absolute inset-0 opacity-20">
           <img
@@ -120,6 +112,7 @@ const Gallery = () => {
         </div>
       </section>
 
+      {/* ── Era selector ──────────────────────────────────────────────────── */}
       <div className="bg-[#0a0a0a] border-b border-white/10 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="flex flex-col sm:flex-row gap-2 sm:gap-0">
@@ -153,6 +146,7 @@ const Gallery = () => {
         </div>
       </div>
 
+      {/* Section heading + shared Photos / Videos tabs (history & TOPAZ 2.0) */}
       <div className="border-t border-gray-100 bg-white">
         <div className="mx-auto max-w-7xl border-b border-gray-100 px-4 py-8 sm:px-6 lg:px-8">
           {galleryEra === 'history' ? (
@@ -195,10 +189,10 @@ const Gallery = () => {
         </div>
 
         <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-          {activeTab === 'photos' && (
+          {galleryEra === 'history' && activeTab === 'photos' && (
             <>
-              {photosLoading ? (
-                <p className="text-center text-gray-500 py-16">Loading photos…</p>
+              {mediaLoading ? (
+                <p className="py-20 text-center text-gray-400">Loading…</p>
               ) : visiblePhotos.length > 0 ? (
                 <ResponsiveMasonry columnsCountBreakPoints={{ 350: 1, 750: 2, 900: 3, 1200: 4 }}>
                   <Masonry gutter="28px">
@@ -209,16 +203,16 @@ const Gallery = () => {
                         onClick={() =>
                           setLightboxImage({
                             src: photo.url,
-                            alt: photo.caption ?? photo.filename,
+                            alt: photo.caption || photo.filename,
                           })
                         }
                         className="group relative mb-2 block min-h-[200px] w-full overflow-hidden rounded-2xl bg-gray-100 p-3 shadow-lg transition-all duration-300 hover:shadow-xl sm:rounded-3xl sm:p-4"
                       >
                         <img
                           src={photo.url}
-                          alt={photo.caption ?? photo.filename}
+                          alt={photo.caption || photo.filename}
                           className="block min-h-[180px] h-auto max-h-[min(85vh,720px)] w-full object-contain transition-transform duration-500 group-hover:scale-[1.02]"
-                          onError={galleryEra === 'history' ? historyImageOnError : undefined}
+                          onError={historyImageOnError}
                         />
                         <div className="pointer-events-none absolute inset-0 rounded-2xl bg-black/0 transition-colors duration-300 group-hover:bg-black/10 sm:rounded-3xl" />
                       </button>
@@ -232,7 +226,7 @@ const Gallery = () => {
                 </div>
               )}
 
-              {hasMorePhotos && (
+              {!mediaLoading && hasMorePhotos && (
                 <div className="mt-12 flex justify-center">
                   <button
                     type="button"
@@ -240,18 +234,42 @@ const Gallery = () => {
                     className="inline-flex items-center gap-2 rounded-xl border-2 border-[#2E75B6] px-8 py-4 font-bold text-[#2E75B6] transition-all duration-200 hover:bg-[#2E75B6] hover:text-white"
                   >
                     <ChevronDown className="h-5 w-5" />
-                    Load More Photos ({photoList.length - photoLimit} remaining)
+                    Load More Photos ({currentPhotoRows.length - photoLimit} remaining)
                   </button>
                 </div>
               )}
             </>
           )}
 
-          {activeTab === 'videos' && (
+          {galleryEra === 'history' && activeTab === 'videos' && (
             <>
-              {videosLoading ? (
-                <p className="text-center text-gray-500 py-16">Loading videos…</p>
-              ) : videoList.length === 0 ? (
+              {mediaLoading ? (
+                <p className="py-20 text-center text-gray-400">Loading…</p>
+              ) : currentVideos.length > 0 ? (
+                <div className="grid gap-10 md:grid-cols-2">
+                  {currentVideos.map((v) => {
+                    const parsed = parseVideoUrl(v.url);
+                    return (
+                      <div key={v.id} className="space-y-3">
+                        <p className="font-bold text-gray-900">{v.title}</p>
+                        <div className="aspect-video w-full overflow-hidden rounded-2xl bg-black">
+                          {parsed ? (
+                            <iframe
+                              title={v.title}
+                              src={parsed.embedSrc}
+                              className="h-full w-full"
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                              allowFullScreen
+                            />
+                          ) : (
+                            <div className="flex h-full items-center justify-center text-sm text-white/70">Invalid video URL</div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
                 <div
                   className="mx-auto max-w-2xl rounded-2xl border-2 border-[#2E75B6]/25 bg-gradient-to-b from-[#2E75B6]/5 to-white px-8 py-14 text-center shadow-sm sm:px-12 sm:py-16"
                   role="tabpanel"
@@ -261,35 +279,114 @@ const Gallery = () => {
                   <h3 className="mt-4 font-display text-2xl font-black uppercase tracking-tight text-gray-900 md:text-3xl">
                     History videos coming soon
                   </h3>
-                  <p className="mt-4 text-base leading-relaxed text-gray-600">
-                    {galleryEra === 'topaz20'
-                      ? 'Videos for TOPAZ 2.0 will appear here when they are published.'
-                      : 'Archived TOPAZ performances and memories will be published here when the files are ready.'}
+                  <p className="mt-4 text-base leading-relaxed text-gray-600">History videos coming soon.</p>
+                </div>
+              )}
+            </>
+          )}
+
+          {galleryEra === 'topaz20' && activeTab === 'photos' && (
+            <>
+              {mediaLoading ? (
+                <p className="py-20 text-center text-gray-400">Loading…</p>
+              ) : topaz2Images.length > 0 ? (
+                <ResponsiveMasonry columnsCountBreakPoints={{ 350: 1, 750: 2, 900: 3, 1200: 4 }}>
+                  <Masonry gutter="28px">
+                    {visiblePhotos.map((photo) => (
+                      <button
+                        key={photo.id}
+                        type="button"
+                        onClick={() =>
+                          setLightboxImage({
+                            src: photo.url,
+                            alt: photo.caption || photo.filename,
+                          })
+                        }
+                        className="group relative mb-2 block min-h-[200px] w-full overflow-hidden rounded-2xl bg-gray-100 p-3 shadow-lg transition-all duration-300 hover:shadow-xl sm:rounded-3xl sm:p-4"
+                      >
+                        <img
+                          src={photo.url}
+                          alt={photo.caption || photo.filename}
+                          className="block min-h-[180px] h-auto max-h-[min(85vh,720px)] w-full object-contain transition-transform duration-500 group-hover:scale-[1.02]"
+                          onError={historyImageOnError}
+                        />
+                        <div className="pointer-events-none absolute inset-0 rounded-2xl bg-black/0 transition-colors duration-300 group-hover:bg-black/10 sm:rounded-3xl" />
+                      </button>
+                    ))}
+                  </Masonry>
+                </ResponsiveMasonry>
+              ) : (
+                <div className="flex flex-col items-center rounded-2xl border border-gray-200 bg-gradient-to-b from-gray-50 to-white px-6 py-16 text-center sm:py-20">
+                  <Sparkles className="mb-4 h-12 w-12 text-[#2E75B6]" />
+                  <span className="mb-4 inline-block rounded-full border border-[#2E75B6]/30 bg-white px-4 py-1 text-xs font-bold uppercase tracking-wider text-[#2E75B6]">
+                    Coming Soon
+                  </span>
+                  <h3 className="font-display text-2xl font-black uppercase tracking-tight text-gray-900 md:text-3xl">
+                    TOPAZ 2.0 <span className="text-[#2E75B6] italic">Photos</span>
+                  </h3>
+                  <p className="mt-4 max-w-md text-gray-600">
+                    Season photos will appear here after events. Check back for highlights from the new competition era.
                   </p>
                 </div>
-              ) : (
-                <div className="grid gap-8 md:grid-cols-2">
-                  {videoList.map((v) => {
+              )}
+              {!mediaLoading && galleryEra === 'topaz20' && topaz2Images.length > photoLimit && (
+                <div className="mt-12 flex justify-center">
+                  <button
+                    type="button"
+                    onClick={() => setPhotoLimit((prev) => prev + PHOTOS_PER_PAGE)}
+                    className="inline-flex items-center gap-2 rounded-xl border-2 border-[#2E75B6] px-8 py-4 font-bold text-[#2E75B6] transition-all duration-200 hover:bg-[#2E75B6] hover:text-white"
+                  >
+                    <ChevronDown className="h-5 w-5" />
+                    Load More Photos ({topaz2Images.length - photoLimit} remaining)
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+
+          {galleryEra === 'topaz20' && activeTab === 'videos' && (
+            <>
+              {mediaLoading ? (
+                <p className="py-20 text-center text-gray-400">Loading…</p>
+              ) : topaz2Videos.length > 0 ? (
+                <div className="grid gap-10 md:grid-cols-2">
+                  {topaz2Videos.map((v) => {
                     const parsed = parseVideoUrl(v.url);
-                    if (!parsed) return null;
                     return (
-                      <div
-                        key={v.id}
-                        className="rounded-2xl border border-gray-200 overflow-hidden shadow-md bg-black"
-                      >
-                        <div className="aspect-video w-full">
-                          <iframe
-                            title={v.title}
-                            src={parsed.embedSrc}
-                            className="w-full h-full"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowFullScreen
-                          />
+                      <div key={v.id} className="space-y-3">
+                        <p className="font-bold text-gray-900">{v.title}</p>
+                        <div className="aspect-video w-full overflow-hidden rounded-2xl bg-black">
+                          {parsed ? (
+                            <iframe
+                              title={v.title}
+                              src={parsed.embedSrc}
+                              className="h-full w-full"
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                              allowFullScreen
+                            />
+                          ) : (
+                            <div className="flex h-full items-center justify-center text-sm text-white/70">Invalid video URL</div>
+                          )}
                         </div>
-                        <p className="p-4 text-white font-bold text-sm">{v.title}</p>
                       </div>
                     );
                   })}
+                </div>
+              ) : (
+                <div
+                  className="mx-auto flex max-w-2xl flex-col items-center rounded-2xl border-2 border-[#2E75B6]/25 bg-gradient-to-b from-gray-50 to-white px-8 py-14 text-center shadow-sm sm:px-12 sm:py-16"
+                  role="tabpanel"
+                >
+                  <Sparkles className="mb-5 h-12 w-12 text-[#2E75B6]" aria-hidden />
+                  <span className="mb-4 inline-block rounded-full border border-[#2E75B6]/30 bg-white px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-[#2E75B6]">
+                    Coming Soon
+                  </span>
+                  <h3 className="font-display text-2xl font-black uppercase tracking-tight text-gray-900 md:text-3xl">
+                    TOPAZ 2.0 <span className="text-[#2E75B6] italic">Videos</span>
+                  </h3>
+                  <p className="mt-4 max-w-lg text-base leading-relaxed text-gray-600">
+                    Videos for the new competition era are not available yet. Check back after events for highlights and recaps.
+                  </p>
                 </div>
               )}
             </>
@@ -297,6 +394,7 @@ const Gallery = () => {
         </div>
       </div>
 
+      {/* ── Photo Lightbox ────────────────────────────────────────────────── */}
       {lightboxImage && (
         <div
           className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4"
@@ -314,11 +412,10 @@ const Gallery = () => {
             alt={lightboxImage.alt}
             className="max-w-full max-h-[90vh] min-h-[120px] object-contain rounded-lg"
             onClick={(e) => e.stopPropagation()}
-            onError={galleryEra === 'history' ? historyImageOnError : undefined}
+            onError={historyImageOnError}
           />
         </div>
       )}
-
     </div>
   );
 };

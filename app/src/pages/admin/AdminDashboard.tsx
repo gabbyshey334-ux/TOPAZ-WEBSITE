@@ -43,7 +43,7 @@ export default function AdminDashboard() {
 
   async function handleSignOut() {
     await signOut();
-    navigate('/admin/login', { replace: true });
+    navigate('/', { replace: true });
   }
 
   return (

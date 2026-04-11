@@ -8,7 +8,7 @@ export default function ProtectedAdminRoute({ children }: { children: React.Reac
   const location = useLocation();
 
   if (!isSupabaseConfigured) {
-    return <Navigate to="/admin/login" replace state={{ from: location }} />;
+    return <Navigate to="/" replace state={{ from: location }} />;
   }
 
   if (loading) {
@@ -20,7 +20,7 @@ export default function ProtectedAdminRoute({ children }: { children: React.Reac
   }
 
   if (!user || !isAdminEmail(user.email)) {
-    return <Navigate to="/admin/login" replace state={{ from: location }} />;
+    return <Navigate to="/" replace state={{ from: location }} />;
   }
 
   return <>{children}</>;
