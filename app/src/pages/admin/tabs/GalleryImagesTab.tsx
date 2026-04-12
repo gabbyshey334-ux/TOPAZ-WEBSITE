@@ -113,10 +113,10 @@ function GallerySection({ section, label }: { section: string; label: string }) 
               className="rounded-xl border border-slate-700 bg-slate-900/50 overflow-hidden flex flex-col"
             >
               <div className="aspect-video bg-black flex items-center justify-center">
-                <img src={r.url} alt={r.caption ?? r.filename} className="max-h-full max-w-full object-contain" />
+                <img src={r.url} alt={r.caption ?? r.filename ?? ''} className="max-h-full max-w-full object-contain" />
               </div>
               <div className="p-4 space-y-3 flex-1 flex flex-col">
-                <p className="text-xs text-slate-500 truncate" title={r.filename}>
+                <p className="text-xs text-slate-500 truncate" title={r.filename ?? undefined}>
                   {r.filename}
                 </p>
                 <p className="text-sm text-slate-300 line-clamp-2">{r.caption || '—'}</p>

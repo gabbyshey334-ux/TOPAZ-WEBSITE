@@ -147,7 +147,7 @@ export default function MembersDashboard() {
                     onClick={() => setLightbox(img)}
                     className="block w-full rounded-xl overflow-hidden border border-slate-700 bg-slate-900 focus:outline-none focus:ring-2 focus:ring-[#2E75B6]"
                   >
-                    <img src={img.url} alt={img.caption ?? img.filename} className="w-full h-auto object-cover" />
+                    <img src={img.url} alt={img.caption ?? img.filename ?? ''} className="w-full h-auto object-cover" />
                   </button>
                 ))}
               </Masonry>
@@ -194,7 +194,7 @@ export default function MembersDashboard() {
           </button>
           <img
             src={lightbox.url}
-            alt={lightbox.caption ?? lightbox.filename}
+            alt={lightbox.caption ?? lightbox.filename ?? ''}
             className="max-w-full max-h-[90vh] object-contain rounded-lg"
             onClick={(e) => e.stopPropagation()}
           />

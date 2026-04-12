@@ -8,7 +8,6 @@ import {
   Facebook,
   Instagram,
   Twitter,
-  Youtube,
   Send,
   ChevronDown,
 } from 'lucide-react';
@@ -150,11 +149,6 @@ const Contact = () => {
       icon: TikTokIcon,
       href: 'https://www.tiktok.com/@dancetopaz2.0',
       label: 'TikTok',
-    },
-    {
-      icon: Youtube,
-      href: '#',
-      label: 'YouTube',
     },
   ];
 

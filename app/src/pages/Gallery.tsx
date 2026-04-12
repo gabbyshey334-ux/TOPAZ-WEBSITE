@@ -1,12 +1,11 @@
-import { useState, useEffect, type SyntheticEvent } from 'react';
-import { X, ChevronDown, Clock, Sparkles, Images } from 'lucide-react';
+import { useState, useEffect, useCallback, type SyntheticEvent } from 'react';
+import { X, ChevronDown, Clock, Sparkles, Images, Lock, Eye, EyeOff, Loader2 } from 'lucide-react';
 import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
 import { supabase } from '@/lib/supabase';
 import { parseVideoUrl } from '@/lib/videoEmbed';
 import type { Database } from '@/types/database';
 
 const BASE = import.meta.env.BASE_URL;
-/** Local fallback if a history file 404s (avoids blank cells when external CDNs are blocked). */
 const FALLBACK_HISTORY_IMG = `${BASE}images/gallery/history/founders-duo-striped-pants.jpg`;
 
 type GalleryEra = 'history' | 'topaz20';
@@ -14,6 +13,7 @@ type GalleryImageRow = Database['public']['Tables']['gallery_images']['Row'];
 type GalleryVideoRow = Database['public']['Tables']['gallery_videos']['Row'];
 
 const PHOTOS_PER_PAGE = 8;
+const SESSION_KEY = 'topaz_gallery_unlocked';
 
 function historyImageOnError(e: SyntheticEvent<HTMLImageElement>) {
   const el = e.currentTarget;
@@ -22,6 +22,252 @@ function historyImageOnError(e: SyntheticEvent<HTMLImageElement>) {
   el.src = FALLBACK_HISTORY_IMG;
 }
 
+// ── Password Modal ─────────────────────────────────────────────────────────────
+function GalleryPasswordModal({
+  onClose,
+  onUnlocked,
+}: {
+  onClose: () => void;
+  onUnlocked: () => void;
+}) {
+  const [password, setPassword] = useState('');
+  const [showPw, setShowPw] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleUnlock = useCallback(async () => {
+    if (!password.trim()) return;
+    setLoading(true);
+    setError('');
+
+    try {
+      const { data, error: fnErr } = await supabase.functions.invoke('verify-gallery-password', {
+        body: { password: password.trim() },
+      });
+
+      if (fnErr) throw fnErr;
+
+      if (data?.valid === true) {
+        sessionStorage.setItem(SESSION_KEY, 'true');
+        onUnlocked();
+      } else if (data?.configured === false) {
+        // No password configured — shouldn't normally show the modal in this case
+        sessionStorage.setItem(SESSION_KEY, 'true');
+        onUnlocked();
+      } else {
+        setError('Incorrect password. Please check with TOPAZ 2.0 for the correct access code.');
+      }
+    } catch {
+      setError('Something went wrong. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  }, [password, onUnlocked]);
+
+  return (
+    <div
+      className="fixed inset-0 z-[150] bg-black/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-4"
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+    >
+      <div className="w-full sm:max-w-md bg-white rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden">
+        {/* Header */}
+        <div className="bg-[#0a0a0a] px-6 py-8 text-center relative">
+          <button
+            type="button"
+            onClick={onClose}
+            className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+            aria-label="Close"
+          >
+            <X className="w-4 h-4" />
+          </button>
+          <div className="w-14 h-14 bg-[#2E75B6]/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <Lock className="w-7 h-7 text-[#7EB8E8]" />
+          </div>
+          <h2 className="font-display font-black text-2xl text-white tracking-tight uppercase">
+            TOPAZ<span className="text-[#2E75B6]">2.0</span>
+          </h2>
+          <p className="text-white/60 text-sm mt-2 leading-relaxed">
+            Protected Gallery
+          </p>
+        </div>
+
+        {/* Body */}
+        <div className="px-6 py-7 space-y-5">
+          <p className="text-gray-700 text-sm leading-relaxed text-center">
+            Enter the event password to view exclusive competition photos and videos.
+          </p>
+
+          <div className="relative">
+            <input
+              id="gallery-password"
+              type={showPw ? 'text' : 'password'}
+              value={password}
+              onChange={(e) => { setPassword(e.target.value); setError(''); }}
+              onKeyDown={(e) => e.key === 'Enter' && handleUnlock()}
+              placeholder="Event password…"
+              className={`w-full border-2 rounded-xl px-4 py-3 pr-12 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-0 transition-colors ${
+                error ? 'border-red-400 focus:border-red-400' : 'border-gray-200 focus:border-[#2E75B6]'
+              }`}
+              autoFocus
+            />
+            <button
+              type="button"
+              onClick={() => setShowPw(!showPw)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+              aria-label={showPw ? 'Hide password' : 'Show password'}
+            >
+              {showPw ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+            </button>
+          </div>
+
+          {error && (
+            <p className="text-red-600 text-sm text-center leading-relaxed bg-red-50 border border-red-200 rounded-xl px-4 py-3">
+              {error}
+            </p>
+          )}
+
+          <button
+            type="button"
+            onClick={handleUnlock}
+            disabled={loading || !password.trim()}
+            className="w-full bg-[#2E75B6] hover:bg-[#1F4E78] disabled:bg-gray-300 text-white font-bold py-3.5 rounded-xl transition-colors flex items-center justify-center gap-2 text-base"
+          >
+            {loading ? (
+              <><Loader2 className="w-5 h-5 animate-spin" /> Checking…</>
+            ) : (
+              <><Lock className="w-5 h-5" /> Unlock Gallery</>
+            )}
+          </button>
+
+          <p className="text-center text-xs text-gray-400 leading-relaxed">
+            Need the password?{' '}
+            <a href="mailto:topaz2.0@yahoo.com" className="text-[#2E75B6] hover:underline">
+              Contact TOPAZ 2.0
+            </a>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Protected photo item ───────────────────────────────────────────────────────
+function GalleryPhotoItem({
+  photo,
+  isUnlocked,
+  passwordConfigured,
+  onOpenLightbox,
+  onRequestUnlock,
+}: {
+  photo: GalleryImageRow;
+  isUnlocked: boolean;
+  passwordConfigured: boolean;
+  onOpenLightbox: () => void;
+  onRequestUnlock: () => void;
+}) {
+  const needsLock = photo.is_protected && !isUnlocked && passwordConfigured;
+
+  return (
+    <button
+      type="button"
+      onClick={needsLock ? onRequestUnlock : onOpenLightbox}
+      className="group relative mb-2 block min-h-[200px] w-full overflow-hidden rounded-2xl bg-gray-100 p-3 shadow-lg transition-all duration-300 hover:shadow-xl sm:rounded-3xl sm:p-4"
+    >
+      <img
+        src={photo.url}
+        alt={needsLock ? '' : (photo.caption || photo.filename || undefined)}
+        className={`block min-h-[180px] h-auto max-h-[min(85vh,720px)] w-full object-contain transition-transform duration-500 group-hover:scale-[1.02] ${
+          needsLock ? 'blur-[14px] scale-105 select-none pointer-events-none' : ''
+        }`}
+        onError={historyImageOnError}
+        aria-hidden={needsLock}
+      />
+      {needsLock && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 z-10">
+          <div className="bg-black/50 backdrop-blur-sm rounded-2xl px-5 py-4 flex flex-col items-center gap-2">
+            <Lock className="w-8 h-8 text-white drop-shadow" />
+            <span className="text-xs font-bold uppercase tracking-wider text-white drop-shadow">
+              Tap to unlock
+            </span>
+          </div>
+        </div>
+      )}
+      <div className="pointer-events-none absolute inset-0 rounded-2xl bg-black/0 transition-colors duration-300 group-hover:bg-black/10 sm:rounded-3xl" />
+    </button>
+  );
+}
+
+// ── Protected video item ───────────────────────────────────────────────────────
+function GalleryVideoItem({
+  video,
+  isUnlocked,
+  passwordConfigured,
+  onRequestUnlock,
+}: {
+  video: GalleryVideoRow;
+  isUnlocked: boolean;
+  passwordConfigured: boolean;
+  onRequestUnlock: () => void;
+}) {
+  const parsed = parseVideoUrl(video.url);
+  const needsLock = video.is_protected && !isUnlocked && passwordConfigured;
+
+  const thumb =
+    parsed?.kind === 'youtube'
+      ? `https://img.youtube.com/vi/${parsed.id}/mqdefault.jpg`
+      : null;
+
+  if (needsLock) {
+    return (
+      <div className="space-y-3">
+        <p className="font-bold text-gray-900">{video.title}</p>
+        <button
+          type="button"
+          onClick={onRequestUnlock}
+          className="relative aspect-video w-full overflow-hidden rounded-2xl bg-gray-900 flex items-center justify-center group"
+        >
+          {thumb && (
+            <img
+              src={thumb}
+              alt=""
+              aria-hidden
+              className="absolute inset-0 w-full h-full object-cover blur-[14px] scale-110 opacity-60"
+            />
+          )}
+          <div className="relative z-10 flex flex-col items-center gap-2 bg-black/50 backdrop-blur-sm rounded-2xl px-6 py-4">
+            <Lock className="w-8 h-8 text-white" />
+            <span className="text-xs font-bold uppercase tracking-wider text-white">
+              Tap to unlock
+            </span>
+          </div>
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      <p className="font-bold text-gray-900">{video.title}</p>
+      <div className="aspect-video w-full overflow-hidden rounded-2xl bg-black">
+        {parsed ? (
+          <iframe
+            title={video.title}
+            src={parsed.embedSrc}
+            className="h-full w-full"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          />
+        ) : (
+          <div className="flex h-full items-center justify-center text-sm text-white/70">
+            Invalid video URL
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Main Gallery component ─────────────────────────────────────────────────────
 const Gallery = () => {
   const [galleryEra, setGalleryEra] = useState<GalleryEra>('history');
   const [activeTab, setActiveTab] = useState<'photos' | 'videos'>('photos');
@@ -34,10 +280,29 @@ const Gallery = () => {
   const [topaz2Videos, setTopaz2Videos] = useState<GalleryVideoRow[]>([]);
   const [mediaLoading, setMediaLoading] = useState(true);
 
+  // Gallery password / unlock state
+  const [isUnlocked, setIsUnlocked] = useState(() =>
+    sessionStorage.getItem(SESSION_KEY) === 'true'
+  );
+  const [passwordConfigured, setPasswordConfigured] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+
   useEffect(() => {
     setActiveTab('photos');
     setPhotoLimit(PHOTOS_PER_PAGE);
   }, [galleryEra]);
+
+  // Check if a gallery password has been configured (server-side, no hash exposed)
+  useEffect(() => {
+    supabase.functions
+      .invoke('verify-gallery-password', { body: { checkStatus: true } })
+      .then(({ data }) => {
+        setPasswordConfigured(data?.configured === true);
+      })
+      .catch(() => {
+        setPasswordConfigured(false);
+      });
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -79,16 +344,27 @@ const Gallery = () => {
       setMediaLoading(false);
     }
     load();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, []);
 
   const currentPhotoRows = galleryEra === 'history' ? historyImages : topaz2Images;
   const visiblePhotos = currentPhotoRows.slice(0, photoLimit);
   const hasMorePhotos = currentPhotoRows.length > photoLimit;
-
   const currentVideos = galleryEra === 'history' ? historyVideos : topaz2Videos;
+
+  // Any protected content in the current view?
+  const hasProtectedContent =
+    passwordConfigured &&
+    !isUnlocked &&
+    (currentPhotoRows.some((p) => p.is_protected) ||
+      currentVideos.some((v) => v.is_protected));
+
+  const handleUnlocked = () => {
+    setIsUnlocked(true);
+    setShowPasswordModal(false);
+  };
+
+  const requestUnlock = () => setShowPasswordModal(true);
 
   return (
     <div className="min-h-screen bg-white">
@@ -146,23 +422,43 @@ const Gallery = () => {
         </div>
       </div>
 
-      {/* Section heading + shared Photos / Videos tabs (history & TOPAZ 2.0) */}
+      {/* Section heading + shared Photos / Videos tabs */}
       <div className="border-t border-gray-100 bg-white">
         <div className="mx-auto max-w-7xl border-b border-gray-100 px-4 py-8 sm:px-6 lg:px-8">
           {galleryEra === 'history' ? (
-            <div>
+            <div className="flex items-center justify-between flex-wrap gap-4">
               <h2 className="font-display text-3xl font-black uppercase tracking-tight text-gray-900 md:text-4xl">
                 TOPAZ HISTORY
               </h2>
+              {hasProtectedContent && (
+                <button
+                  type="button"
+                  onClick={requestUnlock}
+                  className="flex items-center gap-2 rounded-full border-2 border-[#2E75B6] px-4 py-2 text-sm font-bold text-[#2E75B6] hover:bg-[#2E75B6] hover:text-white transition-all"
+                >
+                  <Lock className="w-4 h-4" /> Unlock Protected Content
+                </button>
+              )}
             </div>
           ) : (
-            <div>
-              <h2 className="font-display text-3xl font-black uppercase tracking-tight text-gray-900 md:text-4xl">
-                TOPAZ 2.0
-              </h2>
-              <p className="mt-2 font-mono text-sm font-bold uppercase tracking-widest text-[#2E75B6]">
-                New competition era
-              </p>
+            <div className="flex items-center justify-between flex-wrap gap-4">
+              <div>
+                <h2 className="font-display text-3xl font-black uppercase tracking-tight text-gray-900 md:text-4xl">
+                  TOPAZ 2.0
+                </h2>
+                <p className="mt-2 font-mono text-sm font-bold uppercase tracking-widest text-[#2E75B6]">
+                  New competition era
+                </p>
+              </div>
+              {hasProtectedContent && (
+                <button
+                  type="button"
+                  onClick={requestUnlock}
+                  className="flex items-center gap-2 rounded-full border-2 border-[#2E75B6] px-4 py-2 text-sm font-bold text-[#2E75B6] hover:bg-[#2E75B6] hover:text-white transition-all"
+                >
+                  <Lock className="w-4 h-4" /> Unlock Protected Content
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -197,25 +493,19 @@ const Gallery = () => {
                 <ResponsiveMasonry columnsCountBreakPoints={{ 350: 1, 750: 2, 900: 3, 1200: 4 }}>
                   <Masonry gutter="28px">
                     {visiblePhotos.map((photo) => (
-                      <button
+                      <GalleryPhotoItem
                         key={photo.id}
-                        type="button"
-                        onClick={() =>
+                        photo={photo}
+                        isUnlocked={isUnlocked}
+                        passwordConfigured={passwordConfigured}
+                        onOpenLightbox={() =>
                           setLightboxImage({
                             src: photo.url,
-                            alt: photo.caption || photo.filename,
+                            alt: photo.caption || photo.filename || '',
                           })
                         }
-                        className="group relative mb-2 block min-h-[200px] w-full overflow-hidden rounded-2xl bg-gray-100 p-3 shadow-lg transition-all duration-300 hover:shadow-xl sm:rounded-3xl sm:p-4"
-                      >
-                        <img
-                          src={photo.url}
-                          alt={photo.caption || photo.filename}
-                          className="block min-h-[180px] h-auto max-h-[min(85vh,720px)] w-full object-contain transition-transform duration-500 group-hover:scale-[1.02]"
-                          onError={historyImageOnError}
-                        />
-                        <div className="pointer-events-none absolute inset-0 rounded-2xl bg-black/0 transition-colors duration-300 group-hover:bg-black/10 sm:rounded-3xl" />
-                      </button>
+                        onRequestUnlock={requestUnlock}
+                      />
                     ))}
                   </Masonry>
                 </ResponsiveMasonry>
@@ -247,27 +537,15 @@ const Gallery = () => {
                 <p className="py-20 text-center text-gray-400">Loading…</p>
               ) : currentVideos.length > 0 ? (
                 <div className="grid gap-10 md:grid-cols-2">
-                  {currentVideos.map((v) => {
-                    const parsed = parseVideoUrl(v.url);
-                    return (
-                      <div key={v.id} className="space-y-3">
-                        <p className="font-bold text-gray-900">{v.title}</p>
-                        <div className="aspect-video w-full overflow-hidden rounded-2xl bg-black">
-                          {parsed ? (
-                            <iframe
-                              title={v.title}
-                              src={parsed.embedSrc}
-                              className="h-full w-full"
-                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                              allowFullScreen
-                            />
-                          ) : (
-                            <div className="flex h-full items-center justify-center text-sm text-white/70">Invalid video URL</div>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
+                  {currentVideos.map((v) => (
+                    <GalleryVideoItem
+                      key={v.id}
+                      video={v}
+                      isUnlocked={isUnlocked}
+                      passwordConfigured={passwordConfigured}
+                      onRequestUnlock={requestUnlock}
+                    />
+                  ))}
                 </div>
               ) : (
                 <div
@@ -293,25 +571,19 @@ const Gallery = () => {
                 <ResponsiveMasonry columnsCountBreakPoints={{ 350: 1, 750: 2, 900: 3, 1200: 4 }}>
                   <Masonry gutter="28px">
                     {visiblePhotos.map((photo) => (
-                      <button
+                      <GalleryPhotoItem
                         key={photo.id}
-                        type="button"
-                        onClick={() =>
+                        photo={photo}
+                        isUnlocked={isUnlocked}
+                        passwordConfigured={passwordConfigured}
+                        onOpenLightbox={() =>
                           setLightboxImage({
                             src: photo.url,
-                            alt: photo.caption || photo.filename,
+                            alt: photo.caption || photo.filename || '',
                           })
                         }
-                        className="group relative mb-2 block min-h-[200px] w-full overflow-hidden rounded-2xl bg-gray-100 p-3 shadow-lg transition-all duration-300 hover:shadow-xl sm:rounded-3xl sm:p-4"
-                      >
-                        <img
-                          src={photo.url}
-                          alt={photo.caption || photo.filename}
-                          className="block min-h-[180px] h-auto max-h-[min(85vh,720px)] w-full object-contain transition-transform duration-500 group-hover:scale-[1.02]"
-                          onError={historyImageOnError}
-                        />
-                        <div className="pointer-events-none absolute inset-0 rounded-2xl bg-black/0 transition-colors duration-300 group-hover:bg-black/10 sm:rounded-3xl" />
-                      </button>
+                        onRequestUnlock={requestUnlock}
+                      />
                     ))}
                   </Masonry>
                 </ResponsiveMasonry>
@@ -350,27 +622,15 @@ const Gallery = () => {
                 <p className="py-20 text-center text-gray-400">Loading…</p>
               ) : topaz2Videos.length > 0 ? (
                 <div className="grid gap-10 md:grid-cols-2">
-                  {topaz2Videos.map((v) => {
-                    const parsed = parseVideoUrl(v.url);
-                    return (
-                      <div key={v.id} className="space-y-3">
-                        <p className="font-bold text-gray-900">{v.title}</p>
-                        <div className="aspect-video w-full overflow-hidden rounded-2xl bg-black">
-                          {parsed ? (
-                            <iframe
-                              title={v.title}
-                              src={parsed.embedSrc}
-                              className="h-full w-full"
-                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                              allowFullScreen
-                            />
-                          ) : (
-                            <div className="flex h-full items-center justify-center text-sm text-white/70">Invalid video URL</div>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
+                  {topaz2Videos.map((v) => (
+                    <GalleryVideoItem
+                      key={v.id}
+                      video={v}
+                      isUnlocked={isUnlocked}
+                      passwordConfigured={passwordConfigured}
+                      onRequestUnlock={requestUnlock}
+                    />
+                  ))}
                 </div>
               ) : (
                 <div
@@ -415,6 +675,14 @@ const Gallery = () => {
             onError={historyImageOnError}
           />
         </div>
+      )}
+
+      {/* ── Gallery Password Modal ─────────────────────────────────────────── */}
+      {showPasswordModal && (
+        <GalleryPasswordModal
+          onClose={() => setShowPasswordModal(false)}
+          onUnlocked={handleUnlocked}
+        />
       )}
     </div>
   );

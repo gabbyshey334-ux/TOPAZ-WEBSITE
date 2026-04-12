@@ -19,7 +19,7 @@ export default function AdminEntry() {
   }
 
   if (!user || !isAdminEmail(user.email)) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/admin/login" replace />;
   }
 
   return <Navigate to="/admin/dashboard" replace />;

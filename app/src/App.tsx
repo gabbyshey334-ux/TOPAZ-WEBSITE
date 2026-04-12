@@ -18,6 +18,7 @@ import Contact from '@/pages/Contact';
 import Gallery from '@/pages/Gallery';
 import Registration from '@/pages/Registration';
 import Shop from '@/pages/Shop';
+import AdminLogin from '@/pages/admin/AdminLogin';
 import AdminEntry from '@/pages/admin/AdminEntry';
 import AdminDashboard from '@/pages/admin/AdminDashboard';
 import MembersDashboard from '@/pages/members/MembersDashboard';
@@ -76,7 +77,7 @@ function App() {
         <Route path="/members/login" element={<Navigate to="/" replace />} />
         <Route path="/members/register" element={<Navigate to="/" replace />} />
 
-        <Route path="/admin/login" element={<Navigate to="/" replace />} />
+        <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin" element={<AdminEntry />} />
         <Route
           path="/admin/dashboard"

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Facebook, Instagram, Twitter, Youtube, Mail, MapPin, Phone } from 'lucide-react';
+import { Facebook, Instagram, Twitter, Mail, MapPin, Phone } from 'lucide-react';
 import { TikTokIcon } from './icons/TikTokIcon';
 
 const socialLinks = [
@@ -22,11 +22,6 @@ const socialLinks = [
     name: 'TikTok',
     icon: TikTokIcon,
     url: 'https://www.tiktok.com/@dancetopaz2.0',
-  },
-  {
-    name: 'YouTube',
-    icon: Youtube,
-    url: '#',
   },
 ];
 

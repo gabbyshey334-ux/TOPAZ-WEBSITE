@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { User, Mail, Phone, Tag, MessageSquare, Send, Check, Loader2 } from 'lucide-react';
+import { User, Mail, Phone, Tag, MessageSquare, Send, Check, Loader2, AlertCircle } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 
 interface FormData {
   fullName: string;
@@ -28,6 +29,7 @@ const ContactForm = () => {
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -75,19 +77,51 @@ const ContactForm = () => {
     e.preventDefault();
     if (!validateForm()) return;
     setIsSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    setSubmitError(null);
+
+    // Insert into Supabase — column name is 'name', not 'fullName'
+    const { data: inserted, error: insertErr } = await supabase
+      .from('contact_submissions')
+      .insert({
+        name: formData.fullName.trim(),
+        email: formData.email.trim().toLowerCase(),
+        phone: formData.phone.trim() || null,
+        subject: formData.subject || null,
+        message: formData.message.trim(),
+      })
+      .select('id')
+      .single();
+
+    if (insertErr) {
+      setSubmitError('Something went wrong sending your message. Please try again or email us directly at topaz2.0@yahoo.com.');
+      setIsSubmitting(false);
+      return;
+    }
+
+    // Fire notification email — non-blocking; insert already succeeded
+    void (async () => {
+      try {
+        await supabase.functions.invoke('send-contact-notification', {
+          body: {
+            submissionId: inserted?.id,
+            name: formData.fullName.trim(),
+            email: formData.email.trim().toLowerCase(),
+            phone: formData.phone.trim() || null,
+            subject: formData.subject || null,
+            message: formData.message.trim(),
+          },
+        });
+      } catch (err) {
+        console.warn('[ContactForm] send-contact-notification failed (non-fatal):', err);
+      }
+    })();
+
     setIsSubmitting(false);
     setIsSuccess(true);
     setTimeout(() => {
       setIsSuccess(false);
-      setFormData({
-        fullName: '',
-        email: '',
-        phone: '',
-        subject: '',
-        message: '',
-      });
-    }, 3000);
+      setFormData({ fullName: '', email: '', phone: '', subject: '', message: '' });
+    }, 5000);
   };
 
   const subjectOptions = [
@@ -243,6 +277,14 @@ const ContactForm = () => {
           <p className="text-red-500 text-xs font-bold mt-2 ml-1">{errors.message}</p>
         )}
       </div>
+
+      {/* Inline submit error */}
+      {submitError && (
+        <div className="flex items-start gap-3 bg-red-50 border border-red-200 rounded-2xl px-5 py-4">
+          <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+          <p className="text-red-700 text-sm font-medium">{submitError}</p>
+        </div>
+      )}
 
       {/* Submit Button */}
       <button

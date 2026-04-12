@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
-import SignUpModal from './SignUpModal';
+import { Menu, X, ShoppingBag } from 'lucide-react';
+import { useCart } from '@/contexts/CartContext';
 
 const navLinks = [
   { label: 'HOME', to: '/' },
@@ -16,8 +16,8 @@ const navLinks = [
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [showSignUpModal, setShowSignUpModal] = useState(false);
   const location = useLocation();
+  const { count, openCart } = useCart();
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 40);
@@ -74,21 +74,47 @@ const Navbar = () => {
                 REGISTER
               </Link>
               <button
-                onClick={() => setShowSignUpModal(true)}
+                onClick={openCart}
+                className="relative p-2 text-white/80 hover:text-white transition-colors"
+                aria-label={`Shopping cart${count > 0 ? `, ${count} items` : ''}`}
+              >
+                <ShoppingBag className="w-5 h-5" />
+                {count > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-[#2E75B6] rounded-full text-[10px] font-black text-white flex items-center justify-center leading-none">
+                    {count > 9 ? '9+' : count}
+                  </span>
+                )}
+              </button>
+              <Link
+                to="/registration"
                 className="px-5 py-2.5 font-bold text-xs uppercase tracking-[0.15em] bg-[#2E75B6] text-white rounded-full hover:bg-[#1F4E78] transition-all duration-200"
               >
                 JOIN
-              </button>
+              </Link>
             </div>
 
-            {/* Mobile Hamburger - Minimal */}
-            <button
-              onClick={() => setIsMobileMenuOpen(true)}
-              className="lg:hidden p-2 text-white"
-              aria-label="Open menu"
-            >
-              <Menu className="w-6 h-6" />
-            </button>
+            {/* Mobile: Cart + Hamburger */}
+            <div className="lg:hidden flex items-center gap-1">
+              <button
+                onClick={openCart}
+                className="relative p-2 text-white/80 hover:text-white transition-colors"
+                aria-label={`Shopping cart${count > 0 ? `, ${count} items` : ''}`}
+              >
+                <ShoppingBag className="w-5 h-5" />
+                {count > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-[#2E75B6] rounded-full text-[10px] font-black text-white flex items-center justify-center leading-none">
+                    {count > 9 ? '9+' : count}
+                  </span>
+                )}
+              </button>
+              <button
+                onClick={() => setIsMobileMenuOpen(true)}
+                className="p-2 text-white"
+                aria-label="Open menu"
+              >
+                <Menu className="w-6 h-6" />
+              </button>
+            </div>
           </div>
         </div>
       </nav>
@@ -143,19 +169,16 @@ const Navbar = () => {
           >
             REGISTER
           </Link>
-          <button
-            onClick={() => {
-              setIsMobileMenuOpen(false);
-              setShowSignUpModal(true);
-            }}
-            className="w-full py-4 font-bold text-sm uppercase tracking-[0.2em] bg-[#2E75B6] text-white rounded-full hover:bg-[#1F4E78] transition-colors"
+          <Link
+            to="/registration"
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="w-full py-4 text-center font-bold text-sm uppercase tracking-[0.2em] bg-[#2E75B6] text-white rounded-full hover:bg-[#1F4E78] transition-colors"
           >
             JOIN THE DANCE
-          </button>
+          </Link>
         </div>
       </div>
 
-      <SignUpModal isOpen={showSignUpModal} onClose={() => setShowSignUpModal(false)} />
     </>
   );
 };

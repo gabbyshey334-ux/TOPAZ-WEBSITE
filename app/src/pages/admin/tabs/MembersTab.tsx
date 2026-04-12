@@ -35,9 +35,9 @@ export default function MembersTab() {
     if (!q) return rows;
     return rows.filter(
       (r) =>
-        r.full_name.toLowerCase().includes(q) ||
+        (r.full_name ?? '').toLowerCase().includes(q) ||
         r.email.toLowerCase().includes(q) ||
-        r.studio_name.toLowerCase().includes(q)
+        (r.studio_name ?? '').toLowerCase().includes(q)
     );
   }, [rows, search]);
 

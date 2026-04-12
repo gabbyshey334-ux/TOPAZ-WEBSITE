@@ -1,71 +1,69 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { Link } from 'react-router-dom';
+import { cn } from '@/lib/utils';
 import {
+  LayoutDashboard,
   ClipboardList,
   ImageIcon,
-  Video,
-  Users,
   Calendar,
-  Megaphone,
-  LogOut,
+  ShoppingBag,
+  Settings,
+  Users,
+  Bell,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+
+import OverviewTab from '@/pages/admin/tabs/OverviewTab';
 import RegistrationsAdmin from '@/pages/admin/tabs/RegistrationsAdmin';
-import GalleryImagesTab from '@/pages/admin/tabs/GalleryImagesTab';
-import GalleryVideosTab from '@/pages/admin/tabs/GalleryVideosTab';
-import MembersTab from '@/pages/admin/tabs/MembersTab';
+import GalleryTab from '@/pages/admin/tabs/GalleryTab';
 import EventsTab from '@/pages/admin/tabs/EventsTab';
+import MembersTab from '@/pages/admin/tabs/MembersTab';
 import AnnouncementsTab from '@/pages/admin/tabs/AnnouncementsTab';
+import ShopTab from '@/pages/admin/tabs/ShopTab';
+import SettingsTab from '@/pages/admin/tabs/SettingsTab';
 
-type TabId =
-  | 'registrations'
-  | 'gallery-photos'
-  | 'gallery-videos'
-  | 'members'
-  | 'events'
-  | 'announcements';
+type TabId = 'overview' | 'registrations' | 'gallery' | 'events' | 'members' | 'announcements' | 'shop' | 'settings';
 
-const nav: { id: TabId; label: string; icon: typeof ClipboardList }[] = [
-  { id: 'registrations', label: 'Registrations', icon: ClipboardList },
-  { id: 'gallery-photos', label: 'Gallery Photos', icon: ImageIcon },
-  { id: 'gallery-videos', label: 'Gallery Videos', icon: Video },
-  { id: 'members', label: 'Members', icon: Users },
-  { id: 'events', label: 'Events', icon: Calendar },
-  { id: 'announcements', label: 'Announcements', icon: Megaphone },
+const NAV: { id: TabId; label: string; shortLabel: string; icon: typeof LayoutDashboard }[] = [
+  { id: 'overview',       label: 'Overview',       shortLabel: 'Home',   icon: LayoutDashboard },
+  { id: 'registrations',  label: 'Registrations',  shortLabel: 'Regs',   icon: ClipboardList },
+  { id: 'gallery',        label: 'Gallery',        shortLabel: 'Gallery', icon: ImageIcon },
+  { id: 'events',         label: 'Events',         shortLabel: 'Events', icon: Calendar },
+  { id: 'members',        label: 'Members',        shortLabel: 'Members', icon: Users },
+  { id: 'announcements',  label: 'Announcements',  shortLabel: 'News',   icon: Bell },
+  { id: 'shop',           label: 'Shop',           shortLabel: 'Shop',   icon: ShoppingBag },
+  { id: 'settings',       label: 'Settings',       shortLabel: 'More',   icon: Settings },
 ];
 
 export default function AdminDashboard() {
-  const [tab, setTab] = useState<TabId>('registrations');
-  const { signOut } = useAuth();
-  const navigate = useNavigate();
-
-  async function handleSignOut() {
-    await signOut();
-    navigate('/', { replace: true });
-  }
+  const [tab, setTab] = useState<TabId>('overview');
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white flex">
-      <aside className="w-64 shrink-0 border-r border-slate-800 flex flex-col py-8 px-4">
-        <Link to="/" className="font-display font-black text-lg uppercase px-3 mb-10">
+
+      {/* ── Desktop sidebar (lg+) ──────────────────────────────────────── */}
+      <aside className="hidden lg:flex w-56 shrink-0 flex-col border-r border-slate-800 fixed h-full overflow-y-auto py-8 px-4">
+        <Link
+          to="/"
+          className="font-display font-black text-xl uppercase tracking-tight px-3 mb-10 hover:opacity-80 transition-opacity"
+        >
           TOPAZ<span className="text-[#2E75B6]">2.0</span>
         </Link>
-        <span className="text-[10px] font-mono uppercase tracking-widest text-slate-500 px-3 mb-3">
+
+        <p className="text-[10px] font-mono uppercase tracking-widest text-slate-500 px-3 mb-3">
           Admin
-        </span>
-        <nav className="space-y-1 flex-1">
-          {nav.map((item) => (
+        </p>
+
+        <nav className="space-y-0.5 flex-1">
+          {NAV.map((item) => (
             <button
               key={item.id}
               type="button"
               onClick={() => setTab(item.id)}
               className={cn(
-                'w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors text-left',
+                'w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all text-left',
                 tab === item.id
-                  ? 'bg-[#2E75B6] text-white'
-                  : 'text-slate-400 hover:bg-slate-900 hover:text-white'
+                  ? 'bg-[#2E75B6] text-white shadow-sm'
+                  : 'text-slate-400 hover:bg-slate-800/80 hover:text-white'
               )}
             >
               <item.icon className="w-4 h-4 shrink-0" />
@@ -73,26 +71,51 @@ export default function AdminDashboard() {
             </button>
           ))}
         </nav>
-        <Button
-          variant="ghost"
-          className="justify-start text-slate-400 hover:text-white hover:bg-slate-900"
-          onClick={handleSignOut}
-        >
-          <LogOut className="w-4 h-4 mr-2" />
-          Sign out
-        </Button>
+
+        <p className="text-[10px] text-slate-600 px-3 mt-6">TOPAZ 2.0 Admin</p>
       </aside>
 
-      <div className="flex-1 overflow-auto">
-        <div className="max-w-6xl mx-auto p-8 lg:p-10">
-          {tab === 'registrations' && <RegistrationsAdmin />}
-          {tab === 'gallery-photos' && <GalleryImagesTab />}
-          {tab === 'gallery-videos' && <GalleryVideosTab />}
-          {tab === 'members' && <MembersTab />}
-          {tab === 'events' && <EventsTab />}
-          {tab === 'announcements' && <AnnouncementsTab />}
+      {/* ── Main content area ──────────────────────────────────────────── */}
+      <main className="flex-1 lg:ml-56 min-h-screen pb-24 lg:pb-8 overflow-x-hidden">
+        {/* Mobile header */}
+        <div className="lg:hidden sticky top-0 z-30 bg-[#0a0a0a]/95 backdrop-blur border-b border-slate-800 px-4 py-3 flex items-center justify-between">
+          <Link to="/" className="font-display font-black text-lg uppercase tracking-tight">
+            TOPAZ<span className="text-[#2E75B6]">2.0</span>
+          </Link>
+          <p className="text-xs text-slate-400 font-medium uppercase tracking-wide">
+            {NAV.find((n) => n.id === tab)?.label}
+          </p>
         </div>
-      </div>
+
+        <div className="max-w-6xl mx-auto px-4 py-6 lg:px-8 lg:py-10">
+          {tab === 'overview'       && <OverviewTab onNavigate={setTab} />}
+          {tab === 'registrations'  && <RegistrationsAdmin />}
+          {tab === 'gallery'        && <GalleryTab />}
+          {tab === 'events'         && <EventsTab />}
+          {tab === 'members'        && <MembersTab />}
+          {tab === 'announcements'  && <AnnouncementsTab />}
+          {tab === 'shop'           && <ShopTab />}
+          {tab === 'settings'       && <SettingsTab />}
+        </div>
+      </main>
+
+      {/* ── Mobile bottom tab bar (< lg) — 8 items at ~49px each on 390px ── */}
+      <nav className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-[#0a0a0a] border-t border-slate-800 flex">
+        {NAV.map((item) => (
+          <button
+            key={item.id}
+            type="button"
+            onClick={() => setTab(item.id)}
+            className={cn(
+              'flex-1 flex flex-col items-center justify-center gap-0.5 py-2 transition-colors min-w-0',
+              tab === item.id ? 'text-[#2E75B6]' : 'text-slate-500 hover:text-slate-300'
+            )}
+          >
+            <item.icon className="w-4 h-4 shrink-0" />
+            <span className="text-[8px] font-medium leading-none truncate w-full text-center px-0.5">{item.shortLabel}</span>
+          </button>
+        ))}
+      </nav>
     </div>
   );
 }
