@@ -2,13 +2,10 @@ import { useMemo, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import type { RegistrationParticipant } from '@/types/database';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   ChevronLeft,
   ChevronRight,
@@ -19,6 +16,7 @@ import {
   Music,
   Usb,
   AlertTriangle,
+  Info,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -146,26 +144,43 @@ function isMajor(dob: string): boolean {
 function RegistrationClosedBanner({ before }: { before?: boolean }) {
   return (
     <div className="max-w-xl mx-auto text-center py-12 px-6">
-      <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
-        <AlertTriangle className="w-8 h-8 text-red-600" />
+      <div className="w-20 h-20 bg-red-50 rounded-[1.5rem] flex items-center justify-center mx-auto mb-8 shadow-sm">
+        <AlertTriangle className="w-10 h-10 text-red-500" />
       </div>
-      <h2 className="font-display font-black text-2xl text-gray-900 mb-3">
+      <h2 className="font-display font-black text-3xl text-[#0a0a0a] mb-4 uppercase tracking-tight">
         {before ? 'Registration Not Yet Open' : 'Registration Is Now Closed'}
       </h2>
-      <p className="text-gray-600 mb-6 leading-relaxed">
+      <p className="text-gray-500 mb-8 leading-relaxed font-medium text-lg">
         {before
           ? 'Online registration opens April 1, 2026. Please check back then.'
           : 'The registration deadline was July 30, 2026 at 12:00 AM. No late registrations are accepted.'}
       </p>
-      <p className="text-sm text-gray-500">
+      <p className="text-sm font-bold tracking-widest uppercase text-gray-400">
         Questions?{' '}
-        <a href="mailto:topaz2.0@yahoo.com" className="text-[#2E75B6] font-semibold">
+        <a href="mailto:topaz2.0@yahoo.com" className="text-[#2E75B6] hover:text-[#1F4E78] transition-colors">
           topaz2.0@yahoo.com
         </a>
       </p>
     </div>
   );
 }
+
+// ─── Shared UI Components for Premium Feel ─────────────────────────────────────
+const FormInput = (props: React.InputHTMLAttributes<HTMLInputElement>) => (
+  <Input
+    {...props}
+    className={cn(
+      "h-14 rounded-2xl bg-gray-50 border-transparent focus:bg-white focus:border-[#2E75B6] focus:ring-4 focus:ring-[#2E75B6]/10 transition-all px-5 text-base font-medium shadow-sm",
+      props.className
+    )}
+  />
+);
+
+const FormLabel = ({ children, className }: { children: React.ReactNode; className?: string }) => (
+  <Label className={cn("text-xs font-bold uppercase tracking-widest text-gray-400 mb-2 ml-1 block", className)}>
+    {children}
+  </Label>
+);
 
 // ─── Main component ───────────────────────────────────────────────────────────
 export default function CompetitionRegistrationForm() {
@@ -491,526 +506,403 @@ export default function CompetitionRegistrationForm() {
 
   if (success) {
     return (
-      <Card className="max-w-2xl mx-auto border-emerald-200 bg-emerald-50/80 shadow-lg">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-3 text-emerald-900 text-xl">
-            <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0">
-              <CheckCircle2 className="w-6 h-6 text-emerald-600" />
+      <div className="max-w-2xl mx-auto bg-white rounded-[2rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] border border-gray-100 overflow-hidden animate-in zoom-in-95 duration-500">
+        <div className="bg-[#2E75B6] p-12 text-center text-white relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/2" />
+          <div className="relative z-10">
+            <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-6 backdrop-blur-md shadow-lg border border-white/20">
+              <CheckCircle2 className="w-10 h-10 text-white" />
             </div>
-            Registration Received!
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6 text-emerald-900">
-          <p className="text-lg">
-            Thank you, <strong>{success.contestant_name}</strong>! Your registration for{' '}
-            <strong>The Return of TOPAZ 2.0</strong> has been submitted.
-          </p>
+            <h2 className="font-display font-black text-3xl uppercase tracking-tight mb-2">Registration Received!</h2>
+            <p className="text-white/80 font-medium text-lg">Thank you, {success.contestant_name}</p>
+          </div>
+        </div>
 
-          <div className="bg-white rounded-xl border border-emerald-200 p-5 grid sm:grid-cols-2 gap-4 text-sm">
+        <div className="p-8 sm:p-12">
+          <div className="grid sm:grid-cols-2 gap-x-8 gap-y-6 mb-10">
             <div>
-              <span className="text-gray-500 text-xs uppercase tracking-wide">Category</span>
-              <p className="font-bold text-gray-900 mt-1">{success.category}</p>
+              <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1">Category</p>
+              <p className="font-bold text-[#0a0a0a] text-lg">{success.category}</p>
             </div>
             <div>
-              <span className="text-gray-500 text-xs uppercase tracking-wide">Entry Type</span>
-              <p className="font-bold text-gray-900 mt-1">{success.group_size}</p>
+              <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1">Entry Type</p>
+              <p className="font-bold text-[#0a0a0a] text-lg">{success.group_size}</p>
             </div>
             {success.song_title && (
               <div className="sm:col-span-2">
-                <span className="text-gray-500 text-xs uppercase tracking-wide">Song</span>
-                <p className="font-bold text-gray-900 mt-1">
+                <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1">Song</p>
+                <p className="font-bold text-[#0a0a0a] text-lg">
                   {success.song_title}{success.artist_name ? ` — ${success.artist_name}` : ''}
                 </p>
               </div>
             )}
             <div>
-              <span className="text-gray-500 text-xs uppercase tracking-wide">Total Entry Fee</span>
-              <p className="font-black text-2xl text-[#2E75B6] mt-1">${success.total_fee.toFixed(2)}</p>
+              <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1">Total Entry Fee</p>
+              <p className="font-black text-3xl text-[#2E75B6]">${success.total_fee.toFixed(2)}</p>
             </div>
             <div>
-              <span className="text-gray-500 text-xs uppercase tracking-wide">Confirmation Sent To</span>
-              <p className="font-bold text-gray-900 mt-1 break-all">{success.email}</p>
+              <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1">Confirmation Email</p>
+              <p className="font-bold text-[#0a0a0a] text-base truncate">{success.email}</p>
             </div>
           </div>
 
-          <div className="bg-emerald-100 border border-emerald-200 rounded-xl p-4 text-sm">
-            <p className="font-bold text-emerald-900 mb-1">What happens next?</p>
-            <ul className="space-y-2 text-emerald-800">
-              <li>• Check your email for a confirmation summary</li>
-              <li>• Competition date: <strong>August 22, 2026</strong></li>
-              <li>• Location: <strong>Seaside Convention Center, 415 1st Ave, Seaside, OR 97138</strong></li>
-              <li>• Questions? <a href="mailto:topaz2.0@yahoo.com" className="underline font-semibold">topaz2.0@yahoo.com</a> or 971-299-4401</li>
+          <div className="bg-gray-50 border border-gray-100 rounded-2xl p-6 mb-10">
+            <h4 className="font-display font-bold text-lg text-[#0a0a0a] mb-4 flex items-center gap-2">
+              <Info className="w-5 h-5 text-[#2E75B6]" />
+              What happens next?
+            </h4>
+            <ul className="space-y-3 text-gray-600 font-medium">
+              <li className="flex gap-3"><span className="text-[#2E75B6]">•</span> Check your email for a full confirmation summary</li>
+              <li className="flex gap-3"><span className="text-[#2E75B6]">•</span> Competition date: <strong className="text-[#0a0a0a]">August 22, 2026</strong></li>
+              <li className="flex gap-3"><span className="text-[#2E75B6]">•</span> Location: <strong className="text-[#0a0a0a]">Seaside Convention Center, OR</strong></li>
             </ul>
           </div>
 
-          <Button asChild variant="outline" className="border-emerald-700 text-emerald-900">
-            <Link to="/">Back to home</Link>
-          </Button>
-        </CardContent>
-      </Card>
+          <Link
+            to="/"
+            className="flex items-center justify-center w-full py-5 bg-white border-2 border-gray-200 text-[#0a0a0a] font-bold rounded-2xl hover:border-[#0a0a0a] hover:bg-gray-50 transition-all uppercase tracking-widest text-sm"
+          >
+            Back to Home
+          </Link>
+        </div>
+      </div>
     );
   }
 
+  const steps = ['Info', 'Category', 'Division', 'Payment', 'Review'];
+
   return (
-    <div className="max-w-3xl mx-auto space-y-8">
-      {/* Step indicator */}
-      <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
-        {['Info', 'Category', 'Division', 'Payment', 'Review'].map((label, i) => {
-          const n = i + 1;
-          return (
-            <div key={n} className="flex items-center gap-2">
-              <div className="flex flex-col items-center">
-                <span
+    <div className="max-w-4xl mx-auto space-y-12">
+      {/* Premium Step Indicator */}
+      <div className="relative pt-6 pb-12">
+        <div className="absolute top-10 left-[10%] right-[10%] h-1 bg-gray-100 rounded-full" />
+        <div 
+          className="absolute top-10 left-[10%] h-1 bg-[#2E75B6] rounded-full transition-all duration-700 ease-out"
+          style={{ width: `${((step - 1) / (steps.length - 1)) * 80}%` }}
+        />
+        
+        <div className="relative flex justify-between w-full">
+          {steps.map((label, i) => {
+            const n = i + 1;
+            const isActive = step === n;
+            const isCompleted = step > n;
+            return (
+              <div key={n} className="flex flex-col items-center relative z-10 w-1/5">
+                <div 
                   className={cn(
-                    'flex h-8 w-8 items-center justify-center rounded-full font-bold text-xs',
-                    step === n
-                      ? 'bg-[#2E75B6] text-white'
-                      : step > n
-                      ? 'bg-emerald-500 text-white'
-                      : 'bg-gray-200 text-gray-600'
+                    "w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-500 shadow-sm",
+                    isActive 
+                      ? "bg-[#2E75B6] text-white scale-110 shadow-md shadow-[#2E75B6]/30 ring-4 ring-[#2E75B6]/10" 
+                      : isCompleted 
+                        ? "bg-[#0a0a0a] text-white" 
+                        : "bg-white border-2 border-gray-100 text-gray-400"
                   )}
                 >
-                  {step > n ? <CheckCircle2 className="w-4 h-4" /> : n}
+                  {isCompleted ? <CheckCircle2 className="w-5 h-5" /> : n}
+                </div>
+                <span 
+                  className={cn(
+                    "hidden sm:block absolute top-14 text-xs font-bold uppercase tracking-widest whitespace-nowrap transition-colors duration-300",
+                    isActive ? "text-[#2E75B6]" : isCompleted ? "text-[#0a0a0a]" : "text-gray-400"
+                  )}
+                >
+                  {label}
                 </span>
-                <span className="hidden sm:block text-[10px] mt-1 font-medium">{label}</span>
               </div>
-              {n < 5 ? <span className="hidden sm:inline w-8 h-px bg-gray-300 mb-4" /> : null}
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
 
       {error ? (
-        <Alert variant="destructive">
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
+        <div className="flex items-start gap-4 p-6 bg-red-50 border border-red-100 rounded-2xl animate-in fade-in slide-in-from-top-4">
+          <AlertTriangle className="w-6 h-6 text-red-500 shrink-0" />
+          <p className="font-medium text-red-800 leading-relaxed">{error}</p>
+        </div>
       ) : null}
 
-      {/* ── STEP 1 — Personal information ────────────────────────────────── */}
-      {step === 1 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Step 1 — Dancer &amp; Contact Information</CardTitle>
-          </CardHeader>
-          <CardContent className="grid gap-4 sm:grid-cols-2">
-            {/* Contestant name */}
-            <div className="sm:col-span-2">
-              <Label>Dancer's full name *</Label>
-              <Input
-                value={contestantName}
-                onChange={(e) => setContestantName(e.target.value)}
-                placeholder="First and last name"
-                className="mt-1"
-              />
+      {/* Main Form Container */}
+      <div className="bg-white rounded-[2rem] shadow-[0_8px_30px_-10px_rgba(0,0,0,0.05)] border border-gray-100 p-8 sm:p-12 min-h-[400px]">
+        
+        {/* ── STEP 1 — Personal information ────────────────────────────────── */}
+        {step === 1 && (
+          <div className="animate-in fade-in slide-in-from-right-4 duration-500">
+            <div className="mb-10 pb-6 border-b border-gray-100">
+              <h2 className="font-display font-black text-3xl text-[#0a0a0a] uppercase tracking-tight">Dancer & Contact Info</h2>
+              <p className="text-gray-500 font-medium mt-2">Please provide the primary contact and dancer details.</p>
             </div>
+            
+            <div className="grid gap-x-8 gap-y-8 sm:grid-cols-2">
+              <div className="sm:col-span-2">
+                <FormLabel>Dancer's full name *</FormLabel>
+                <FormInput value={contestantName} onChange={(e) => setContestantName(e.target.value)} placeholder="First and last name" />
+              </div>
 
-            {/* Date of birth */}
-            <div>
-              <Label>Date of birth *</Label>
-              <Input
-                type="date"
-                value={dateOfBirth}
-                onChange={(e) => setDateOfBirth(e.target.value)}
-                max={new Date().toISOString().split('T')[0]}
-                className="mt-1"
-              />
-              {dateOfBirth && computedAge && (
-                <p className="text-xs text-gray-500 mt-1.5">
-                  Age on competition day:{' '}
-                  <strong className="text-gray-800">{computedAge}</strong>
-                  {dancerIsMinor && (
-                    <span className="ml-2 text-amber-700 font-semibold">
-                      · Under 18 — parent/guardian required
-                    </span>
-                  )}
-                </p>
-              )}
-            </div>
-
-            {/* Studio name */}
-            <div>
-              <Label>Studio name *</Label>
-              <Input value={studioName} onChange={(e) => setStudioName(e.target.value)} className="mt-1" />
-            </div>
-
-            {/* Teacher name */}
-            <div>
-              <Label>Teacher / instructor name *</Label>
-              <Input value={teacherName} onChange={(e) => setTeacherName(e.target.value)} className="mt-1" />
-            </div>
-
-            {/* Routine name */}
-            <div className="sm:col-span-2">
-              <Label>Name of routine *</Label>
-              <Input
-                value={routineName}
-                onChange={(e) => setRoutineName(e.target.value)}
-                placeholder="E.g. Shadow Dance"
-                className="mt-1"
-              />
-              <p className="text-xs text-gray-500 mt-1">For duo/trio/group entries, list all names on back of form.</p>
-            </div>
-
-            {/* Parent / guardian — shown when minor */}
-            {dancerIsMinor && (
-              <>
-                <div className="sm:col-span-2 p-4 rounded-xl bg-amber-50 border border-amber-200 space-y-4">
-                  <p className="text-sm font-semibold text-amber-900 flex items-center gap-2">
-                    <AlertTriangle className="w-4 h-4" />
-                    This dancer is under 18 — parent or guardian information required
+              <div>
+                <FormLabel>Date of birth *</FormLabel>
+                <FormInput type="date" value={dateOfBirth} onChange={(e) => setDateOfBirth(e.target.value)} max={new Date().toISOString().split('T')[0]} />
+                {dateOfBirth && computedAge && (
+                  <p className="text-xs font-bold text-gray-500 mt-3 px-2">
+                    Age on competition day: <span className="text-[#2E75B6] text-sm ml-1">{computedAge}</span>
+                    {dancerIsMinor && <span className="ml-2 text-red-500 bg-red-50 px-2 py-1 rounded-full uppercase tracking-widest text-[10px]">Under 18 — Parent Req.</span>}
                   </p>
-                  <div>
-                    <Label>Parent or guardian full name *</Label>
-                    <Input
-                      value={parentGuardianName}
-                      onChange={(e) => setParentGuardianName(e.target.value)}
-                      placeholder="Full legal name"
-                      className="mt-1"
-                    />
+                )}
+              </div>
+
+              <div>
+                <FormLabel>Years of training *</FormLabel>
+                <FormInput value={yearsTraining} onChange={(e) => setYearsTraining(e.target.value)} placeholder="E.g. 3" />
+              </div>
+
+              <div>
+                <FormLabel>Studio name *</FormLabel>
+                <FormInput value={studioName} onChange={(e) => setStudioName(e.target.value)} placeholder="Studio Name" />
+              </div>
+
+              <div>
+                <FormLabel>Teacher / instructor name *</FormLabel>
+                <FormInput value={teacherName} onChange={(e) => setTeacherName(e.target.value)} placeholder="Teacher Name" />
+              </div>
+
+              <div className="sm:col-span-2">
+                <FormLabel>Name of routine *</FormLabel>
+                <FormInput value={routineName} onChange={(e) => setRoutineName(e.target.value)} placeholder="E.g. Shadow Dance" />
+                <p className="text-xs font-medium text-gray-400 mt-2 ml-2">For duo/trio/group entries, you will list additional names in Step 4.</p>
+              </div>
+
+              {dancerIsMinor && (
+                <div className="sm:col-span-2 bg-[#fafafa] rounded-2xl p-6 sm:p-8 border border-gray-100">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center">
+                      <AlertTriangle className="w-5 h-5 text-amber-500" />
+                    </div>
+                    <h4 className="font-bold text-[#0a0a0a] text-lg uppercase tracking-tight">Parent/Guardian Info Required</h4>
                   </div>
-                  {/* Signature confirmation for solo minor — group entries handle this per-participant in Step 4 */}
+                  <FormLabel>Parent or guardian full name *</FormLabel>
+                  <FormInput value={parentGuardianName} onChange={(e) => setParentGuardianName(e.target.value)} placeholder="Full legal name" className="mb-6 bg-white" />
+                  
                   {(!groupSize || groupSize.startsWith('Solo')) && (
-                    <label className="flex items-start gap-3 cursor-pointer">
-                      <Checkbox
-                        checked={soloSignatureConfirmed}
-                        onCheckedChange={(v) => setSoloSignatureConfirmed(v === true)}
-                        className="mt-0.5"
-                      />
-                      <span className="text-sm text-amber-900">
-                        I confirm that a parent or teacher signature has been obtained for this minor contestant, and I
-                        agree to the competition rules on their behalf.
+                    <label className="flex items-start gap-4 cursor-pointer group">
+                      <Checkbox checked={soloSignatureConfirmed} onCheckedChange={(v) => setSoloSignatureConfirmed(v === true)} className="mt-1 w-6 h-6 rounded-md data-[state=checked]:bg-[#2E75B6] data-[state=checked]:border-[#2E75B6]" />
+                      <span className="text-sm font-medium text-gray-600 group-hover:text-gray-900 transition-colors leading-relaxed">
+                        I confirm that a parent or teacher signature has been obtained for this minor contestant, and I agree to the competition rules on their behalf.
                       </span>
                     </label>
                   )}
                 </div>
-              </>
-            )}
+              )}
 
-            {/* Phone */}
-            <div>
-              <Label>Phone *</Label>
-              <Input
-                type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="(503) 555-0100"
-                className="mt-1"
-              />
-            </div>
-
-            {/* Email */}
-            <div>
-              <Label>Email address *</Label>
-              <Input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
-                className="mt-1"
-              />
-              <p className="text-xs text-gray-500 mt-1">Confirmation email will be sent here.</p>
-            </div>
-
-            {/* Years of training */}
-            <div className="sm:col-span-2">
-              <Label>Years of training *</Label>
-              <Input
-                value={yearsTraining}
-                onChange={(e) => setYearsTraining(e.target.value)}
-                placeholder="E.g. 3"
-                className="mt-1"
-              />
-            </div>
-
-            {/* Optional address */}
-            <div className="sm:col-span-2 pt-2">
-              <p className="text-sm font-semibold text-gray-700 mb-1">Address (optional)</p>
-              <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg p-3 mb-3">
-                Mailing address is only required for certain competitions. Leave blank if not applicable.
-              </p>
-            </div>
-            <div className="sm:col-span-2">
-              <Label>Street address</Label>
-              <Input value={soloistAddress} onChange={(e) => setSoloistAddress(e.target.value)} className="mt-1" />
-            </div>
-            <div>
-              <Label>City</Label>
-              <Input value={city} onChange={(e) => setCity(e.target.value)} className="mt-1" />
-            </div>
-            <div>
-              <Label>State</Label>
-              <Input value={state} onChange={(e) => setState(e.target.value)} className="mt-1" />
-            </div>
-            <div>
-              <Label>Zip</Label>
-              <Input value={zip} onChange={(e) => setZip(e.target.value)} className="mt-1" />
-            </div>
-            <div className="sm:col-span-2">
-              <Label>Studio street address</Label>
-              <Input value={studioAddress} onChange={(e) => setStudioAddress(e.target.value)} className="mt-1" />
-            </div>
-            <div>
-              <Label>Studio city</Label>
-              <Input value={studioCity} onChange={(e) => setStudioCity(e.target.value)} className="mt-1" />
-            </div>
-            <div>
-              <Label>Studio state</Label>
-              <Input value={studioState} onChange={(e) => setStudioState(e.target.value)} className="mt-1" />
-            </div>
-            <div>
-              <Label>Studio zip</Label>
-              <Input value={studioZip} onChange={(e) => setStudioZip(e.target.value)} className="mt-1" />
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* ── STEP 2 — Category selection ──────────────────────────────────── */}
-      {step === 2 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Step 2 — Category Selection</CardTitle>
-            <p className="text-sm text-gray-600 font-normal">Select 1 category per entry form.</p>
-          </CardHeader>
-          <CardContent>
-            <RadioGroup value={category} onValueChange={setCategory} className="space-y-8">
               <div>
-                <h4 className="font-bold text-sm uppercase tracking-wide text-[#2E75B6] mb-3">Performing Arts</h4>
-                <div className="space-y-2">
-                  {PERFORMING.map((c) => (
-                    <label
-                      key={c}
-                      className="flex items-center gap-3 rounded-lg border p-3 cursor-pointer hover:bg-gray-50 has-[:checked]:border-[#2E75B6] has-[:checked]:bg-blue-50"
-                    >
-                      <RadioGroupItem value={c} id={`cat-${c}`} />
-                      <span className="text-sm">{c}</span>
-                    </label>
-                  ))}
-                </div>
+                <FormLabel>Phone *</FormLabel>
+                <FormInput type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="(555) 000-0000" />
               </div>
+
               <div>
-                <h4 className="font-bold text-sm uppercase tracking-wide text-[#2E75B6] mb-3">Variety Arts</h4>
-                <div className="space-y-2">
-                  {VARIETY.map((c) => (
-                    <label
-                      key={c}
-                      className="flex items-start gap-3 rounded-lg border p-3 cursor-pointer hover:bg-gray-50 has-[:checked]:border-[#2E75B6] has-[:checked]:bg-blue-50"
-                    >
-                      <RadioGroupItem value={c} id={`cat-${c.slice(0, 20)}`} className="mt-1" />
-                      <span className="text-sm leading-snug">{c}</span>
-                    </label>
-                  ))}
-                </div>
+                <FormLabel>Email address *</FormLabel>
+                <FormInput type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" />
               </div>
+
+              <div className="sm:col-span-2 mt-8 mb-4">
+                <h4 className="font-display font-black text-xl text-[#0a0a0a] uppercase tracking-tight">Mailing Address <span className="text-gray-400 text-base font-medium normal-case ml-2">(Optional)</span></h4>
+              </div>
+
+              <div className="sm:col-span-2">
+                <FormLabel>Street address</FormLabel>
+                <FormInput value={soloistAddress} onChange={(e) => setSoloistAddress(e.target.value)} />
+              </div>
+              <div><FormLabel>City</FormLabel><FormInput value={city} onChange={(e) => setCity(e.target.value)} /></div>
+              <div><FormLabel>State</FormLabel><FormInput value={state} onChange={(e) => setState(e.target.value)} /></div>
+              <div><FormLabel>Zip</FormLabel><FormInput value={zip} onChange={(e) => setZip(e.target.value)} /></div>
+              <div className="sm:col-span-2">
+                <FormLabel>Studio street address</FormLabel>
+                <FormInput value={studioAddress} onChange={(e) => setStudioAddress(e.target.value)} />
+              </div>
+              <div><FormLabel>Studio city</FormLabel><FormInput value={studioCity} onChange={(e) => setStudioCity(e.target.value)} /></div>
+              <div><FormLabel>Studio state</FormLabel><FormInput value={studioState} onChange={(e) => setStudioState(e.target.value)} /></div>
+              <div><FormLabel>Studio zip</FormLabel><FormInput value={studioZip} onChange={(e) => setStudioZip(e.target.value)} /></div>
+            </div>
+          </div>
+        )}
+
+        {/* ── STEP 2 — Category selection ──────────────────────────────────── */}
+        {step === 2 && (
+          <div className="animate-in fade-in slide-in-from-right-4 duration-500">
+            <div className="mb-10 pb-6 border-b border-gray-100">
+              <h2 className="font-display font-black text-3xl text-[#0a0a0a] uppercase tracking-tight">Category Selection</h2>
+              <p className="text-gray-500 font-medium mt-2">Select one performance category per entry form.</p>
+            </div>
+            
+            <RadioGroup value={category} onValueChange={setCategory} className="space-y-12">
               <div>
-                <h4 className="font-bold text-sm uppercase tracking-wide text-[#2E75B6] mb-3">
-                  Special Categories
-                  <span className="ml-2 text-xs font-normal text-gray-500 normal-case">(not eligible for high-scoring awards)</span>
+                <h4 className="font-bold text-sm uppercase tracking-widest text-gray-400 mb-6 flex items-center gap-4">
+                  Performing Arts
+                  <div className="flex-1 h-px bg-gray-100" />
                 </h4>
-                <div className="space-y-2">
+                <div className="grid sm:grid-cols-2 gap-4">
+                  {PERFORMING.map((c) => (
+                    <label key={c} className="flex items-center gap-4 rounded-2xl border-2 border-gray-100 p-5 cursor-pointer transition-all duration-300 hover:border-gray-200 hover:bg-gray-50 has-[:checked]:border-[#2E75B6] has-[:checked]:bg-[#2E75B6]/5 has-[:checked]:shadow-md">
+                      <RadioGroupItem value={c} id={`cat-${c}`} className="w-5 h-5" />
+                      <span className="font-bold text-[#0a0a0a]">{c}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <h4 className="font-bold text-sm uppercase tracking-widest text-gray-400 mb-6 flex items-center gap-4">
+                  Variety Arts
+                  <div className="flex-1 h-px bg-gray-100" />
+                </h4>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  {VARIETY.map((c) => (
+                    <label key={c} className="flex items-start gap-4 rounded-2xl border-2 border-gray-100 p-5 cursor-pointer transition-all duration-300 hover:border-gray-200 hover:bg-gray-50 has-[:checked]:border-[#2E75B6] has-[:checked]:bg-[#2E75B6]/5 has-[:checked]:shadow-md">
+                      <RadioGroupItem value={c} id={`cat-${c.slice(0, 20)}`} className="w-5 h-5 mt-0.5" />
+                      <span className="font-bold text-[#0a0a0a] leading-tight">{c}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <h4 className="font-bold text-sm uppercase tracking-widest text-gray-400 mb-6 flex items-center gap-4">
+                  Special Categories
+                  <div className="flex-1 h-px bg-gray-100" />
+                </h4>
+                <div className="grid sm:grid-cols-2 gap-4">
                   {SPECIAL.map((c) => (
-                    <label
-                      key={c}
-                      className="flex items-center gap-3 rounded-lg border p-3 cursor-pointer hover:bg-gray-50 has-[:checked]:border-[#2E75B6] has-[:checked]:bg-blue-50"
-                    >
-                      <RadioGroupItem value={c} id={`cat-${c}`} />
-                      <span className="text-sm">{c}</span>
+                    <label key={c} className="flex items-center gap-4 rounded-2xl border-2 border-gray-100 p-5 cursor-pointer transition-all duration-300 hover:border-gray-200 hover:bg-gray-50 has-[:checked]:border-[#2E75B6] has-[:checked]:bg-[#2E75B6]/5 has-[:checked]:shadow-md">
+                      <RadioGroupItem value={c} id={`cat-${c}`} className="w-5 h-5" />
+                      <span className="font-bold text-[#0a0a0a]">{c}</span>
                     </label>
                   ))}
                 </div>
               </div>
             </RadioGroup>
-          </CardContent>
-        </Card>
-      )}
+          </div>
+        )}
 
-      {/* ── STEP 3 — Division, level, group size + music ─────────────────── */}
-      {step === 3 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Step 3 — Division, Level &amp; Music</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-8">
-            {/* Age division */}
-            <div>
-              <p className="font-bold mb-1">Age division *</p>
-              <p className="text-sm text-gray-500 mb-3">Duo, trio, and group ages are averaged.</p>
-              <RadioGroup value={ageDivision} onValueChange={setAgeDivision} className="space-y-2">
-                {AGE_DIVISIONS.map((d) => (
-                  <label
-                    key={d}
-                    className="flex items-center gap-3 rounded-lg border p-3 cursor-pointer hover:bg-gray-50 has-[:checked]:border-[#2E75B6] has-[:checked]:bg-blue-50"
-                  >
-                    <RadioGroupItem value={d} />
-                    <span className="text-sm">{d}</span>
-                  </label>
-                ))}
-              </RadioGroup>
+        {/* ── STEP 3 — Division, level, group size + music ─────────────────── */}
+        {step === 3 && (
+          <div className="animate-in fade-in slide-in-from-right-4 duration-500">
+            <div className="mb-10 pb-6 border-b border-gray-100">
+              <h2 className="font-display font-black text-3xl text-[#0a0a0a] uppercase tracking-tight">Division & Music</h2>
+              <p className="text-gray-500 font-medium mt-2">Set your division details and upload performance audio.</p>
             </div>
 
-            {/* Ability level */}
-            <div>
-              <p className="font-bold mb-3">Ability level *</p>
-              <RadioGroup value={abilityLevel} onValueChange={setAbilityLevel} className="space-y-2">
-                {ABILITY_LEVELS.map((d) => (
-                  <label
-                    key={d}
-                    className="flex items-start gap-3 rounded-lg border p-3 cursor-pointer hover:bg-gray-50 has-[:checked]:border-[#2E75B6] has-[:checked]:bg-blue-50"
-                  >
-                    <RadioGroupItem value={d} className="mt-1" />
-                    <span className="text-sm leading-snug">{d}</span>
-                  </label>
-                ))}
-              </RadioGroup>
-            </div>
-
-            {/* Group size */}
-            <div>
-              <p className="font-bold mb-3">Entry type &amp; time limits *</p>
-              <RadioGroup
-                value={groupSize}
-                onValueChange={(v) => {
-                  setGroupSize(v);
-                  syncParticipantsToGroupSize(v);
-                  // Re-check solo signature if switching away from solo
-                  if (!v.startsWith('Solo')) setSoloSignatureConfirmed(false);
-                }}
-                className="space-y-2"
-              >
-                {GROUP_SIZES.map((d) => (
-                  <label
-                    key={d}
-                    className="flex items-start gap-3 rounded-lg border p-3 cursor-pointer hover:bg-gray-50 has-[:checked]:border-[#2E75B6] has-[:checked]:bg-blue-50"
-                  >
-                    <RadioGroupItem value={d} className="mt-1" />
-                    <span className="text-sm leading-snug">{d}</span>
-                  </label>
-                ))}
-              </RadioGroup>
-            </div>
-
-            {/* Divider */}
-            <div className="border-t border-gray-100 pt-6">
-              <h4 className="font-bold text-[#1F4E78] mb-4">Performance Music</h4>
-
-              {/* Song title */}
-              <div className="grid sm:grid-cols-2 gap-4 mb-6">
+            <div className="space-y-12">
+              <div className="grid sm:grid-cols-2 gap-10">
+                {/* Age division */}
                 <div>
-                  <Label>Song title *</Label>
-                  <Input
-                    value={songTitle}
-                    onChange={(e) => setSongTitle(e.target.value)}
-                    placeholder="E.g. Bohemian Rhapsody"
-                    className="mt-1"
-                  />
+                  <FormLabel>Age division *</FormLabel>
+                  <p className="text-xs text-gray-400 mb-4 font-medium">Duo, trio, and group ages are averaged.</p>
+                  <RadioGroup value={ageDivision} onValueChange={setAgeDivision} className="space-y-3">
+                    {AGE_DIVISIONS.map((d) => (
+                      <label key={d} className="flex items-center gap-4 rounded-2xl border-2 border-gray-100 p-4 cursor-pointer transition-all hover:bg-gray-50 has-[:checked]:border-[#2E75B6] has-[:checked]:bg-[#2E75B6]/5">
+                        <RadioGroupItem value={d} className="w-5 h-5" />
+                        <span className="font-bold text-gray-800 text-sm">{d}</span>
+                      </label>
+                    ))}
+                  </RadioGroup>
                 </div>
+
+                {/* Ability level */}
                 <div>
-                  <Label>Artist / composer *</Label>
-                  <Input
-                    value={artistName}
-                    onChange={(e) => setArtistName(e.target.value)}
-                    placeholder="E.g. Queen"
-                    className="mt-1"
-                  />
+                  <FormLabel>Ability level *</FormLabel>
+                  <p className="text-xs text-gray-400 mb-4 font-medium">&nbsp;</p>
+                  <RadioGroup value={abilityLevel} onValueChange={setAbilityLevel} className="space-y-3">
+                    {ABILITY_LEVELS.map((d) => (
+                      <label key={d} className="flex items-start gap-4 rounded-2xl border-2 border-gray-100 p-4 cursor-pointer transition-all hover:bg-gray-50 has-[:checked]:border-[#2E75B6] has-[:checked]:bg-[#2E75B6]/5">
+                        <RadioGroupItem value={d} className="w-5 h-5 mt-0.5 shrink-0" />
+                        <span className="font-bold text-gray-800 text-sm leading-tight">{d}</span>
+                      </label>
+                    ))}
+                  </RadioGroup>
                 </div>
               </div>
 
-              {/* Music delivery */}
+              {/* Group size */}
               <div>
-                <Label className="mb-3 block">How will you deliver your music? *</Label>
-                <div className="grid sm:grid-cols-2 gap-3">
-                  {/* USB option */}
-                  <label
-                    className={cn(
-                      'flex items-start gap-3 rounded-xl border-2 p-4 cursor-pointer transition-all',
-                      musicDeliveryMethod === 'usb'
-                        ? 'border-[#2E75B6] bg-blue-50'
-                        : 'border-gray-200 hover:border-gray-300'
-                    )}
-                  >
-                    <input
-                      type="radio"
-                      name="music-delivery"
-                      value="usb"
-                      checked={musicDeliveryMethod === 'usb'}
-                      onChange={() => {
-                        setMusicDeliveryMethod('usb');
-                        setMusicFile(null);
-                      }}
-                      className="mt-1"
-                    />
+                <FormLabel>Entry type & time limits *</FormLabel>
+                <RadioGroup
+                  value={groupSize}
+                  onValueChange={(v) => {
+                    setGroupSize(v);
+                    syncParticipantsToGroupSize(v);
+                    if (!v.startsWith('Solo')) setSoloSignatureConfirmed(false);
+                  }}
+                  className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4"
+                >
+                  {GROUP_SIZES.map((d) => (
+                    <label key={d} className="flex items-start gap-4 rounded-2xl border-2 border-gray-100 p-4 cursor-pointer transition-all hover:bg-gray-50 has-[:checked]:border-[#2E75B6] has-[:checked]:bg-[#2E75B6]/5">
+                      <RadioGroupItem value={d} className="w-5 h-5 mt-0.5 shrink-0" />
+                      <span className="font-bold text-gray-800 text-sm leading-tight">{d}</span>
+                    </label>
+                  ))}
+                </RadioGroup>
+              </div>
+
+              <div className="pt-10 border-t border-gray-100">
+                <h3 className="font-display font-black text-2xl text-[#0a0a0a] uppercase tracking-tight mb-8">Performance Music</h3>
+                
+                <div className="grid sm:grid-cols-2 gap-8 mb-10">
+                  <div>
+                    <FormLabel>Song title *</FormLabel>
+                    <FormInput value={songTitle} onChange={(e) => setSongTitle(e.target.value)} placeholder="E.g. Bohemian Rhapsody" />
+                  </div>
+                  <div>
+                    <FormLabel>Artist / composer *</FormLabel>
+                    <FormInput value={artistName} onChange={(e) => setArtistName(e.target.value)} placeholder="E.g. Queen" />
+                  </div>
+                </div>
+
+                <FormLabel>How will you deliver your music? *</FormLabel>
+                <div className="grid sm:grid-cols-2 gap-6 mt-4">
+                  <label className={cn("flex flex-col items-center justify-center gap-4 rounded-[2rem] border-2 p-8 text-center cursor-pointer transition-all duration-300", musicDeliveryMethod === 'usb' ? 'border-[#0a0a0a] bg-[#fafafa] shadow-md' : 'border-gray-100 hover:border-gray-300 hover:bg-gray-50')}>
+                    <input type="radio" name="music-delivery" value="usb" checked={musicDeliveryMethod === 'usb'} onChange={() => { setMusicDeliveryMethod('usb'); setMusicFile(null); }} className="sr-only" />
+                    <div className={cn("w-16 h-16 rounded-2xl flex items-center justify-center transition-colors", musicDeliveryMethod === 'usb' ? 'bg-[#0a0a0a] text-white' : 'bg-gray-100 text-gray-500')}>
+                      <Usb className="w-8 h-8" />
+                    </div>
                     <div>
-                      <div className="flex items-center gap-2 font-semibold text-gray-900">
-                        <Usb className="w-4 h-4" />
-                        Bring USB on competition day
-                      </div>
-                      <p className="text-xs text-gray-500 mt-1">
-                        Turn in USB to front desk at least 1 hour before your performance. Each entry needs a separate
-                        USB. TOPAZ is not responsible for lost/damaged USBs.
-                      </p>
+                      <h4 className="font-bold text-lg text-gray-900">Bring USB</h4>
+                      <p className="text-sm font-medium text-gray-500 mt-2 max-w-[200px] mx-auto">Turn in USB 1 hour before performance.</p>
                     </div>
                   </label>
 
-                  {/* Upload option */}
-                  <label
-                    className={cn(
-                      'flex items-start gap-3 rounded-xl border-2 p-4 cursor-pointer transition-all',
-                      musicDeliveryMethod === 'upload'
-                        ? 'border-[#2E75B6] bg-blue-50'
-                        : 'border-gray-200 hover:border-gray-300'
-                    )}
-                  >
-                    <input
-                      type="radio"
-                      name="music-delivery"
-                      value="upload"
-                      checked={musicDeliveryMethod === 'upload'}
-                      onChange={() => setMusicDeliveryMethod('upload')}
-                      className="mt-1"
-                    />
+                  <label className={cn("flex flex-col items-center justify-center gap-4 rounded-[2rem] border-2 p-8 text-center cursor-pointer transition-all duration-300", musicDeliveryMethod === 'upload' ? 'border-[#2E75B6] bg-[#2E75B6]/5 shadow-md' : 'border-gray-100 hover:border-gray-300 hover:bg-gray-50')}>
+                    <input type="radio" name="music-delivery" value="upload" checked={musicDeliveryMethod === 'upload'} onChange={() => setMusicDeliveryMethod('upload')} className="sr-only" />
+                    <div className={cn("w-16 h-16 rounded-2xl flex items-center justify-center transition-colors", musicDeliveryMethod === 'upload' ? 'bg-[#2E75B6] text-white' : 'bg-gray-100 text-gray-500')}>
+                      <Upload className="w-8 h-8" />
+                    </div>
                     <div>
-                      <div className="flex items-center gap-2 font-semibold text-gray-900">
-                        <Upload className="w-4 h-4" />
-                        Upload file digitally
-                      </div>
-                      <p className="text-xs text-gray-500 mt-1">
-                        Upload your music file now (MP3, WAV, M4A — max 50 MB). File will be securely stored.
-                      </p>
+                      <h4 className="font-bold text-lg text-gray-900">Digital Upload</h4>
+                      <p className="text-sm font-medium text-gray-500 mt-2 max-w-[200px] mx-auto">Upload MP3/WAV securely right now.</p>
                     </div>
                   </label>
                 </div>
 
-                {/* File picker — shown only when upload selected */}
                 {musicDeliveryMethod === 'upload' && (
-                  <div className="mt-4">
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="audio/mpeg,audio/mp3,audio/wav,audio/x-wav,audio/mp4,audio/aac,audio/x-m4a,audio/m4a,audio/ogg,.mp3,.wav,.m4a,.aac,.ogg"
-                      className="sr-only"
-                      onChange={(e) => setMusicFile(e.target.files?.[0] ?? null)}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => fileInputRef.current?.click()}
-                      className="flex items-center gap-3 px-4 py-3 border-2 border-dashed border-[#2E75B6] rounded-xl w-full text-left hover:bg-blue-50 transition-colors"
-                    >
-                      <Music className="w-5 h-5 text-[#2E75B6] flex-shrink-0" />
-                      {musicFile ? (
-                        <div>
-                          <p className="text-sm font-semibold text-gray-900">{musicFile.name}</p>
-                          <p className="text-xs text-gray-500">{(musicFile.size / 1024 / 1024).toFixed(2)} MB</p>
-                        </div>
-                      ) : (
-                        <span className="text-sm text-[#2E75B6] font-medium">Click to select music file…</span>
-                      )}
+                  <div className="mt-6 animate-in fade-in slide-in-from-top-4">
+                    <input ref={fileInputRef} type="file" accept="audio/mpeg,audio/mp3,audio/wav,audio/x-wav,audio/mp4,audio/aac,audio/x-m4a,audio/m4a,audio/ogg,.mp3,.wav,.m4a,.aac,.ogg" className="sr-only" onChange={(e) => setMusicFile(e.target.files?.[0] ?? null)} />
+                    <button type="button" onClick={() => fileInputRef.current?.click()} className="flex items-center gap-6 px-8 py-6 border-2 border-dashed border-[#2E75B6]/50 rounded-[2rem] w-full text-left hover:bg-[#2E75B6]/5 transition-all group">
+                      <div className="w-14 h-14 bg-white shadow-sm rounded-full flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                        <Music className="w-6 h-6 text-[#2E75B6]" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        {musicFile ? (
+                          <>
+                            <p className="text-lg font-bold text-gray-900 truncate">{musicFile.name}</p>
+                            <p className="text-sm font-medium text-gray-500">{(musicFile.size / 1024 / 1024).toFixed(2)} MB</p>
+                          </>
+                        ) : (
+                          <>
+                            <p className="text-lg font-bold text-[#2E75B6]">Select music file to upload</p>
+                            <p className="text-sm font-medium text-gray-500">Max size 50 MB</p>
+                          </>
+                        )}
+                      </div>
                     </button>
                     {musicFile && (
-                      <button
-                        type="button"
-                        onClick={() => setMusicFile(null)}
-                        className="mt-2 text-xs text-red-600 hover:underline"
-                      >
+                      <button type="button" onClick={() => setMusicFile(null)} className="mt-4 text-sm font-bold text-red-500 hover:text-red-700 uppercase tracking-widest ml-4 transition-colors">
                         Remove file
                       </button>
                     )}
@@ -1018,342 +910,190 @@ export default function CompetitionRegistrationForm() {
                 )}
               </div>
             </div>
-          </CardContent>
-        </Card>
-      )}
+          </div>
+        )}
 
-      {/* ── STEP 4 — Entry fees, payment &amp; participants ───────────────── */}
-      {step === 4 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Step 4 — Entry Fees &amp; Payment</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Fee display */}
-            <div className="rounded-xl bg-blue-50 border border-blue-200 p-5">
-              <p className="font-bold text-[#1F4E78] text-sm uppercase tracking-wide">Entry fee calculation</p>
-              <p className="text-sm text-gray-700 mt-2">{feeBreakdown || 'Select entry type in step 3.'}</p>
-              <p className="text-3xl font-black text-[#2E75B6] mt-2">${totalFee.toFixed(2)}</p>
-              <p className="text-xs text-gray-500 mt-2">
-                Solo $100 · Duo $80/person · Trio $70/person · Group/Production $60/person
-              </p>
+        {/* ── STEP 4 — Entry fees, payment & participants ───────────────── */}
+        {step === 4 && (
+          <div className="animate-in fade-in slide-in-from-right-4 duration-500">
+            <div className="mb-10 pb-6 border-b border-gray-100">
+              <h2 className="font-display font-black text-3xl text-[#0a0a0a] uppercase tracking-tight">Fees & Participants</h2>
+              <p className="text-gray-500 font-medium mt-2">Review your total and list all performers.</p>
             </div>
 
-            {/* Payment method */}
-            <div>
-              <h4 className="font-bold mb-3">Payment method *</h4>
-              <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="space-y-2">
-                {PAYMENT_METHODS.map((p) => (
-                  <label
-                    key={p}
-                    className="flex items-center gap-3 rounded-lg border p-3 cursor-pointer hover:bg-gray-50 has-[:checked]:border-[#2E75B6] has-[:checked]:bg-blue-50"
-                  >
-                    <RadioGroupItem value={p} />
-                    <span className="text-sm">{p}</span>
-                  </label>
-                ))}
-              </RadioGroup>
-            </div>
-
-            {/* Mailing info */}
-            <div className="text-sm text-gray-700 bg-gray-50 border rounded-xl p-4">
-              Make checks payable to <strong>Topaz Productions</strong>. Mail all entries to{' '}
-              <strong>TOPAZ 2.0, PO BOX 131, BANKS OR 97106</strong>. All entries must be postmarked by the closing
-              date.
-            </div>
-
-            {/* Participants (Duo/Trio/Group/Production) */}
-            {needsParticipantTable(groupSize) && (
-              <div>
-                <h4 className="font-bold mb-1">Participants</h4>
-                <p className="text-sm text-gray-500 mb-4">
-                  Add each contestant's name, age, and signature confirmation.
-                </p>
-                <div className="space-y-4">
-                  {participants.map((p, i) => (
-                    <div key={i} className="border rounded-xl p-4 space-y-3 bg-white shadow-sm">
-                      <div className="flex justify-between items-center">
-                        <span className="text-xs font-bold text-gray-500 uppercase tracking-wide">
-                          Participant {i + 1}
-                        </span>
-                        {participants.length > minParticipants(groupSize) ? (
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                            onClick={() => setParticipants((prev) => prev.filter((_, j) => j !== i))}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        ) : null}
-                      </div>
-                      <div className="grid sm:grid-cols-2 gap-3">
-                        <div>
-                          <Label>Full name *</Label>
-                          <Input
-                            value={p.name}
-                            onChange={(e) =>
-                              setParticipants((prev) =>
-                                prev.map((x, j) => (j === i ? { ...x, name: e.target.value } : x))
-                              )
-                            }
-                            className="mt-1"
-                          />
-                        </div>
-                        <div>
-                          <Label>Age *</Label>
-                          <Input
-                            value={p.age}
-                            onChange={(e) =>
-                              setParticipants((prev) =>
-                                prev.map((x, j) => (j === i ? { ...x, age: e.target.value } : x))
-                              )
-                            }
-                            placeholder="Age as of Aug 22, 2026"
-                            className="mt-1"
-                          />
-                        </div>
-                      </div>
-                      <label className="flex items-start gap-2 cursor-pointer">
-                        <Checkbox
-                          checked={p.signature_confirmed}
-                          onCheckedChange={(v) =>
-                            setParticipants((prev) =>
-                              prev.map((x, j) => (j === i ? { ...x, signature_confirmed: v === true } : x))
-                            )
-                          }
-                          className="mt-0.5"
-                        />
-                        <span className="text-sm text-gray-700">
-                          Parent or teacher signature confirmed for this participant
-                        </span>
-                      </label>
-                    </div>
-                  ))}
+            <div className="grid lg:grid-cols-2 gap-12">
+              <div className="space-y-10">
+                {/* Fee display */}
+                <div className="rounded-[2rem] bg-[#0a0a0a] p-8 text-white relative overflow-hidden shadow-2xl">
+                  <div className="absolute top-0 right-0 w-48 h-48 bg-[#2E75B6]/20 rounded-full blur-[60px] pointer-events-none" />
+                  <p className="font-bold text-[#2E75B6] text-xs uppercase tracking-widest mb-4 relative z-10">Entry fee calculation</p>
+                  <p className="text-4xl font-black text-white relative z-10 mb-2">${totalFee.toFixed(2)}</p>
+                  <p className="text-sm text-gray-400 font-medium relative z-10">{feeBreakdown || 'Select entry type in step 3.'}</p>
                 </div>
-                {(() => {
-                  const cap = maxParticipants(groupSize);
-                  if (cap != null && participants.length >= cap) return null;
-                  return (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="mt-4"
-                      onClick={() => setParticipants((prev) => [...prev, emptyParticipant()])}
-                    >
-                      <Plus className="w-4 h-4 mr-2" />
-                      Add participant
-                    </Button>
-                  );
-                })()}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
 
-      {/* ── STEP 5 — Review &amp; submit ──────────────────────────────────── */}
-      {step === 5 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Step 5 — Review &amp; Submit</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6 text-sm">
-            {/* Summary grid */}
-            <div className="grid sm:grid-cols-2 gap-3 border rounded-xl p-4 bg-gray-50">
-              <div>
-                <span className="text-gray-500 text-xs uppercase tracking-wide">Dancer</span>
-                <p className="font-bold text-gray-900 mt-0.5">{contestantName}</p>
-              </div>
-              <div>
-                <span className="text-gray-500 text-xs uppercase tracking-wide">Date of Birth</span>
-                <p className="font-bold text-gray-900 mt-0.5">
-                  {dateOfBirth} <span className="font-normal text-gray-500">(age {computedAge})</span>
-                </p>
-              </div>
-              {parentGuardianName && (
+                {/* Payment method */}
                 <div>
-                  <span className="text-gray-500 text-xs uppercase tracking-wide">Parent / Guardian</span>
-                  <p className="font-bold text-gray-900 mt-0.5">{parentGuardianName}</p>
+                  <FormLabel>Payment method *</FormLabel>
+                  <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="grid grid-cols-2 gap-4 mt-4">
+                    {PAYMENT_METHODS.map((p) => (
+                      <label key={p} className="flex items-center gap-3 rounded-2xl border-2 border-gray-100 p-4 cursor-pointer transition-all hover:border-gray-200 hover:bg-gray-50 has-[:checked]:border-[#2E75B6] has-[:checked]:bg-[#2E75B6]/5">
+                        <RadioGroupItem value={p} className="w-5 h-5" />
+                        <span className="font-bold text-gray-800">{p}</span>
+                      </label>
+                    ))}
+                  </RadioGroup>
                 </div>
-              )}
-              <div>
-                <span className="text-gray-500 text-xs uppercase tracking-wide">Studio</span>
-                <p className="font-bold text-gray-900 mt-0.5">{studioName}</p>
-              </div>
-              <div>
-                <span className="text-gray-500 text-xs uppercase tracking-wide">Teacher</span>
-                <p className="font-bold text-gray-900 mt-0.5">{teacherName}</p>
-              </div>
-              <div className="sm:col-span-2">
-                <span className="text-gray-500 text-xs uppercase tracking-wide">Routine</span>
-                <p className="font-bold text-gray-900 mt-0.5">{routineName}</p>
-              </div>
-              <div>
-                <span className="text-gray-500 text-xs uppercase tracking-wide">Phone</span>
-                <p className="font-bold text-gray-900 mt-0.5">{phone}</p>
-              </div>
-              <div>
-                <span className="text-gray-500 text-xs uppercase tracking-wide">Email</span>
-                <p className="font-bold text-gray-900 mt-0.5 break-all">{email}</p>
-              </div>
-              <div className="sm:col-span-2">
-                <span className="text-gray-500 text-xs uppercase tracking-wide">Category</span>
-                <p className="font-bold text-gray-900 mt-0.5">{category}</p>
-              </div>
-              <div>
-                <span className="text-gray-500 text-xs uppercase tracking-wide">Age Division</span>
-                <p className="font-bold text-gray-900 mt-0.5">{ageDivision}</p>
-              </div>
-              <div>
-                <span className="text-gray-500 text-xs uppercase tracking-wide">Ability Level</span>
-                <p className="font-bold text-gray-900 mt-0.5">{abilityLevel}</p>
-              </div>
-              <div className="sm:col-span-2">
-                <span className="text-gray-500 text-xs uppercase tracking-wide">Entry Type</span>
-                <p className="font-bold text-gray-900 mt-0.5">{groupSize}</p>
-              </div>
-              {songTitle && (
-                <div className="sm:col-span-2">
-                  <span className="text-gray-500 text-xs uppercase tracking-wide">Song</span>
-                  <p className="font-bold text-gray-900 mt-0.5">
-                    {songTitle}{artistName ? ` — ${artistName}` : ''}
+
+                <div className="bg-[#fafafa] rounded-2xl p-6 border border-gray-100 flex items-start gap-4">
+                  <Info className="w-6 h-6 text-[#2E75B6] shrink-0" />
+                  <p className="text-sm font-medium text-gray-600 leading-relaxed">
+                    Make checks payable to <strong className="text-gray-900">Topaz Productions</strong>. 
+                    Mail entries to <strong className="text-gray-900">PO BOX 131, BANKS OR 97106</strong>.
                   </p>
                 </div>
+              </div>
+
+              {/* Participants */}
+              {needsParticipantTable(groupSize) && (
+                <div className="bg-gray-50 rounded-[2rem] p-8 border border-gray-100">
+                  <h4 className="font-display font-black text-2xl text-[#0a0a0a] uppercase tracking-tight mb-2">Performers</h4>
+                  <p className="text-sm font-medium text-gray-500 mb-8">List each contestant's name, age, and signature confirmation.</p>
+                  
+                  <div className="space-y-6">
+                    {participants.map((p, i) => (
+                      <div key={i} className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 relative">
+                        <div className="absolute -top-3 -left-3 w-8 h-8 bg-[#0a0a0a] text-white rounded-full flex items-center justify-center font-black text-sm border-4 border-gray-50 shadow-sm z-10">
+                          {i + 1}
+                        </div>
+                        {participants.length > minParticipants(groupSize) && (
+                          <button type="button" className="absolute top-4 right-4 text-gray-400 hover:text-red-500 transition-colors" onClick={() => setParticipants((prev) => prev.filter((_, j) => j !== i))}>
+                            <Trash2 className="w-5 h-5" />
+                          </button>
+                        )}
+                        <div className="grid sm:grid-cols-3 gap-4 pt-2">
+                          <div className="sm:col-span-2">
+                            <FormLabel className="text-[10px]">Full name *</FormLabel>
+                            <FormInput className="h-12 bg-gray-50/50" value={p.name} onChange={(e) => setParticipants(prev => prev.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)))} />
+                          </div>
+                          <div>
+                            <FormLabel className="text-[10px]">Age *</FormLabel>
+                            <FormInput className="h-12 bg-gray-50/50" value={p.age} onChange={(e) => setParticipants(prev => prev.map((x, j) => (j === i ? { ...x, age: e.target.value } : x)))} />
+                          </div>
+                        </div>
+                        <label className="flex items-start gap-3 mt-5 cursor-pointer group">
+                          <Checkbox checked={p.signature_confirmed} onCheckedChange={(v) => setParticipants(prev => prev.map((x, j) => (j === i ? { ...x, signature_confirmed: v === true } : x)))} className="mt-0.5 w-5 h-5 rounded data-[state=checked]:bg-[#2E75B6]" />
+                          <span className="text-xs font-medium text-gray-600 group-hover:text-gray-900 leading-snug">Parent or teacher signature confirmed for this participant</span>
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {(() => {
+                    const cap = maxParticipants(groupSize);
+                    if (cap != null && participants.length >= cap) return null;
+                    return (
+                      <button type="button" onClick={() => setParticipants(prev => [...prev, emptyParticipant()])} className="w-full mt-6 py-4 flex items-center justify-center gap-2 border-2 border-dashed border-gray-200 rounded-2xl text-gray-500 font-bold uppercase tracking-widest text-sm hover:border-[#2E75B6] hover:text-[#2E75B6] transition-colors bg-white">
+                        <Plus className="w-5 h-5" /> Add performer
+                      </button>
+                    );
+                  })()}
+                </div>
               )}
-              <div>
-                <span className="text-gray-500 text-xs uppercase tracking-wide">Music Delivery</span>
-                <p className="font-bold text-gray-900 mt-0.5 capitalize">
-                  {musicDeliveryMethod === 'upload'
-                    ? `Digital upload${musicFile ? ` (${musicFile.name})` : ''}`
-                    : 'USB on competition day'}
-                </p>
-              </div>
-              <div>
-                <span className="text-gray-500 text-xs uppercase tracking-wide">Entry Fee</span>
-                <p className="font-black text-[#2E75B6] text-xl mt-0.5">${totalFee.toFixed(2)}</p>
-              </div>
-              <div>
-                <span className="text-gray-500 text-xs uppercase tracking-wide">Payment</span>
-                <p className="font-bold text-gray-900 mt-0.5">{paymentMethod}</p>
-              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── STEP 5 — Review & submit ──────────────────────────────────── */}
+        {step === 5 && (
+          <div className="animate-in fade-in slide-in-from-right-4 duration-500">
+            <div className="mb-10 pb-6 border-b border-gray-100">
+              <h2 className="font-display font-black text-3xl text-[#0a0a0a] uppercase tracking-tight">Final Review</h2>
+              <p className="text-gray-500 font-medium mt-2">Verify your information before submitting.</p>
             </div>
 
-            {/* Participants list */}
-            {needsParticipantTable(groupSize) && participants.length > 0 ? (
-              <div>
-                <h4 className="font-bold mb-2">Participants ({participants.length})</h4>
-                <ul className="space-y-1 text-sm">
-                  {participants.map((p, i) => (
-                    <li key={i} className="flex items-center gap-2">
-                      <span className="w-6 h-6 rounded-full bg-[#2E75B6] text-white text-xs flex items-center justify-center flex-shrink-0">
-                        {i + 1}
-                      </span>
-                      <span>
-                        <strong>{p.name}</strong>, age {p.age}
-                        {p.signature_confirmed ? (
-                          <span className="ml-2 text-emerald-600 text-xs">✓ signature confirmed</span>
-                        ) : null}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
+            <div className="bg-[#fafafa] rounded-[2rem] p-8 sm:p-12 border border-gray-100 mb-10">
+              <div className="grid sm:grid-cols-2 gap-y-8 gap-x-12">
+                <div><span className="text-gray-400 text-xs font-bold uppercase tracking-widest">Dancer</span><p className="font-black text-xl text-[#0a0a0a] mt-1">{contestantName}</p></div>
+                <div><span className="text-gray-400 text-xs font-bold uppercase tracking-widest">Age</span><p className="font-black text-xl text-[#0a0a0a] mt-1">{computedAge}</p></div>
+                <div><span className="text-gray-400 text-xs font-bold uppercase tracking-widest">Studio</span><p className="font-bold text-lg text-gray-800 mt-1">{studioName}</p></div>
+                <div><span className="text-gray-400 text-xs font-bold uppercase tracking-widest">Teacher</span><p className="font-bold text-lg text-gray-800 mt-1">{teacherName}</p></div>
+                
+                <div className="sm:col-span-2 h-px bg-gray-200 my-2" />
+                
+                <div><span className="text-gray-400 text-xs font-bold uppercase tracking-widest">Category</span><p className="font-bold text-lg text-gray-800 mt-1">{category}</p></div>
+                <div><span className="text-gray-400 text-xs font-bold uppercase tracking-widest">Division</span><p className="font-bold text-lg text-gray-800 mt-1">{ageDivision}</p></div>
+                <div><span className="text-gray-400 text-xs font-bold uppercase tracking-widest">Ability</span><p className="font-bold text-lg text-gray-800 mt-1">{abilityLevel}</p></div>
+                <div><span className="text-gray-400 text-xs font-bold uppercase tracking-widest">Entry Type</span><p className="font-bold text-lg text-gray-800 mt-1">{groupSize}</p></div>
+                
+                <div className="sm:col-span-2 h-px bg-gray-200 my-2" />
+                
+                <div><span className="text-gray-400 text-xs font-bold uppercase tracking-widest">Song</span><p className="font-bold text-lg text-gray-800 mt-1">{songTitle} {artistName && <span className="text-gray-500 font-medium">— {artistName}</span>}</p></div>
+                <div><span className="text-gray-400 text-xs font-bold uppercase tracking-widest">Delivery</span><p className="font-bold text-lg text-gray-800 mt-1 capitalize">{musicDeliveryMethod === 'upload' ? 'Digital Upload' : 'USB'}</p></div>
+                
+                <div className="sm:col-span-2 h-px bg-gray-200 my-2" />
+                
+                <div><span className="text-gray-400 text-xs font-bold uppercase tracking-widest">Payment Method</span><p className="font-bold text-lg text-gray-800 mt-1">{paymentMethod}</p></div>
+                <div><span className="text-gray-400 text-xs font-bold uppercase tracking-widest">Total Fee</span><p className="font-black text-3xl text-[#2E75B6] mt-1">${totalFee.toFixed(2)}</p></div>
               </div>
-            ) : null}
 
-            {/* Disclaimer */}
-            <div className="border border-amber-200 bg-amber-50 rounded-xl p-5">
-              <p className="font-bold text-amber-900 mb-3 text-base">Disclaimer &amp; Liability Waiver</p>
-              <div className="text-gray-800 text-sm leading-relaxed space-y-3">
-                <p>
-                  TOPAZ, its owners, workers, or anyone associated with its organization will not be held responsible
-                  for the lost or damage of any property, whether the result of accident or other causes, and in
-                  addition assumes no responsibility for any loss, damage, or injury sustained by any contestant,
-                  parent, teacher, or spectator during the time of the competition.
-                </p>
-                <p>
-                  By submitting this registration, you consent to photo and video recording of the performance by TOPAZ
-                  2.0 LLC and authorize its use for promotional purposes.
-                </p>
-                <p>
-                  You confirm that all information provided is accurate and that you have read and agree to all
-                  competition rules as outlined in the official registration materials.
-                </p>
-              </div>
+              {needsParticipantTable(groupSize) && participants.length > 0 && (
+                <div className="mt-12 pt-8 border-t border-gray-200">
+                  <h4 className="font-bold text-gray-900 mb-4 uppercase tracking-widest text-xs">Performers</h4>
+                  <div className="flex flex-wrap gap-3">
+                    {participants.map((p, i) => (
+                      <div key={i} className="bg-white px-4 py-2 rounded-full border border-gray-200 text-sm font-bold text-gray-800 shadow-sm flex items-center gap-2">
+                        <span className="text-[#2E75B6]">{i+1}.</span> {p.name} <span className="text-gray-400 font-medium font-mono text-xs ml-1">({p.age})</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
-            {/* Music reminder */}
-            {musicDeliveryMethod === 'usb' && (
-              <div className="border border-blue-200 bg-blue-50 rounded-xl p-4">
-                <p className="font-semibold text-[#1F4E78] mb-1">Music USB Reminder</p>
-                <p className="text-sm text-gray-700 leading-relaxed">
-                  Each competition number requires a separate USB. Turn in your music USB to the front desk at least{' '}
-                  <strong>one hour</strong> before your competition time. TOPAZ 2.0 is not responsible for damaged or
-                  lost USBs.
-                </p>
-              </div>
-            )}
+            <div className="bg-white border-2 border-gray-100 rounded-[2rem] p-8 shadow-sm">
+              <label className="flex items-start gap-5 cursor-pointer group">
+                <Checkbox checked={disclaimerAccepted} onCheckedChange={(v) => setDisclaimerAccepted(v === true)} className="mt-1 w-6 h-6 rounded-md data-[state=checked]:bg-[#0a0a0a] data-[state=checked]:border-[#0a0a0a]" />
+                <div className="text-sm font-medium text-gray-600 group-hover:text-gray-900 transition-colors space-y-3 leading-relaxed">
+                  <p className="font-bold text-[#0a0a0a] text-lg mb-4">Disclaimer & Liability Waiver</p>
+                  <p>TOPAZ, its owners, workers, or anyone associated with its organization will not be held responsible for the lost or damage of any property, whether the result of accident or other causes, and in addition assumes no responsibility for any loss, damage, or injury sustained by any contestant, parent, teacher, or spectator during the time of the competition.</p>
+                  <p>By submitting this registration, you consent to photo and video recording of the performance by TOPAZ 2.0 LLC and authorize its use for promotional purposes.</p>
+                  <p>You confirm that all information provided is accurate and that you have read and agree to all competition rules.</p>
+                </div>
+              </label>
+            </div>
 
-            {/* Agreement checkbox */}
-            <label className="flex items-start gap-3 cursor-pointer p-4 rounded-xl border-2 border-gray-200 hover:border-[#2E75B6] transition-colors has-[:checked]:border-[#2E75B6] has-[:checked]:bg-blue-50">
-              <Checkbox
-                checked={disclaimerAccepted}
-                onCheckedChange={(v) => setDisclaimerAccepted(v === true)}
-                className="mt-0.5"
-              />
-              <span className="text-sm font-medium text-gray-800">
-                I have read and agree to the disclaimer and liability waiver above. I understand all competition rules
-                and confirm that the information I have provided is accurate.
-              </span>
-            </label>
-
-            {/* Upload progress indicator */}
             {submitting && uploadProgress > 0 && uploadProgress < 100 && (
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-xs text-gray-500">
-                  <span>{uploadProgress < 50 ? 'Uploading music file…' : 'Saving registration…'}</span>
+              <div className="mt-8 bg-gray-50 rounded-full p-2 border border-gray-100 relative overflow-hidden">
+                <div className="absolute inset-0 bg-[#2E75B6]/10" style={{ width: `${uploadProgress}%` }} />
+                <div className="relative z-10 flex justify-between items-center px-4 text-xs font-bold uppercase tracking-widest text-[#2E75B6]">
+                  <span>{uploadProgress < 50 ? 'Uploading media...' : 'Securing entry...'}</span>
                   <span>{uploadProgress}%</span>
                 </div>
-                <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-[#2E75B6] rounded-full transition-all duration-300"
-                    style={{ width: `${uploadProgress}%` }}
-                  />
-                </div>
               </div>
             )}
-          </CardContent>
-        </Card>
-      )}
+          </div>
+        )}
+
+      </div>
 
       {/* ── Navigation buttons ────────────────────────────────────────────── */}
-      <div className="flex justify-between">
-        <Button type="button" variant="outline" onClick={back} disabled={step === 1 || submitting}>
-          <ChevronLeft className="w-4 h-4 mr-1" />
-          Back
-        </Button>
+      <div className="flex flex-col-reverse sm:flex-row justify-between items-center gap-6 pt-6">
+        <button type="button" onClick={back} disabled={step === 1 || submitting} className="flex items-center gap-2 font-bold text-gray-500 uppercase tracking-widest text-sm hover:text-[#0a0a0a] transition-colors disabled:opacity-30">
+          <ChevronLeft className="w-5 h-5" /> Back
+        </button>
+        
         {step < 5 ? (
-          <Button type="button" className="bg-[#2E75B6] hover:bg-[#1F4E78]" onClick={next}>
-            Next
-            <ChevronRight className="w-4 h-4 ml-1" />
-          </Button>
+          <button type="button" onClick={next} className="w-full sm:w-auto flex items-center justify-center gap-2 px-10 py-4 bg-[#0a0a0a] text-white font-bold rounded-full hover:bg-[#2E75B6] transition-all duration-300 uppercase tracking-widest text-sm shadow-xl hover:shadow-[#2E75B6]/30 hover:-translate-y-1">
+            Next Step <ChevronRight className="w-5 h-5" />
+          </button>
         ) : (
-          <Button
-            type="button"
-            className="bg-[#2E75B6] hover:bg-[#1F4E78] min-w-[180px]"
-            disabled={submitting || !disclaimerAccepted}
-            onClick={submit}
-          >
+          <button type="button" onClick={submit} disabled={submitting || !disclaimerAccepted} className="w-full sm:w-auto flex items-center justify-center gap-3 px-12 py-5 bg-[#2E75B6] text-white font-black rounded-full hover:bg-[#1F4E78] transition-all duration-300 uppercase tracking-widest text-sm shadow-xl hover:shadow-[#2E75B6]/30 hover:-translate-y-1 disabled:opacity-50 disabled:transform-none disabled:shadow-none">
             {submitting ? (
-              <span className="flex items-center gap-2">
-                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                Submitting…
-              </span>
+              <><span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Processing...</>
             ) : (
-              'Submit Registration'
+              'Complete Registration'
             )}
-          </Button>
+          </button>
         )}
       </div>
     </div>
