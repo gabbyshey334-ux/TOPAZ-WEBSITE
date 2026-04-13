@@ -49,9 +49,9 @@ const ORDER_STATUSES = ['pending', 'paid', 'fulfilled', 'cancelled'] as const;
 
 function statusColor(status: string) {
   switch (status) {
-    case 'pending': return 'bg-amber-500/20 text-amber-300 border-amber-500/30';
-    case 'paid': return 'bg-blue-500/20 text-blue-300 border-blue-500/30';
-    case 'fulfilled': return 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30';
+    case 'pending': return 'bg-slate-500/20 text-slate-300 border-slate-500/30';
+    case 'paid': return 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30';
+    case 'fulfilled': return 'bg-blue-500/20 text-blue-300 border-blue-500/30';
     case 'cancelled': return 'bg-red-500/20 text-red-300 border-red-500/30';
     default: return 'bg-slate-500/20 text-slate-300 border-slate-500/30';
   }
@@ -819,15 +819,6 @@ function OrdersSection() {
         >
           <Download className="w-4 h-4 mr-2" /> Export CSV
         </Button>
-      </div>
-
-      {/* Payment banner */}
-      <div className="mb-5 flex items-start gap-3 bg-amber-500/10 border border-amber-500/20 rounded-xl px-4 py-3">
-        <ShoppingBag className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-        <p className="text-xs text-amber-300 leading-relaxed">
-          <strong>Payment collection coming soon</strong> — orders are currently tracked manually.
-          Contact each customer to arrange payment and fulfillment.
-        </p>
       </div>
 
       {loading ? (

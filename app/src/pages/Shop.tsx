@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ShoppingBag, ImageOff, CheckCircle2 } from 'lucide-react';
+import { ShoppingBag, ImageOff, CheckCircle2, XCircle } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useCart } from '@/contexts/CartContext';
 import type { Database } from '@/types/database';
@@ -161,7 +161,8 @@ function ProductCard({ product }: { product: Product }) {
 const Shop = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const { count, openCart } = useCart();
+  const [paymentBanner, setPaymentBanner] = useState<'success' | 'cancelled' | null>(null);
+  const { count, openCart, clearCart } = useCart();
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -176,6 +177,22 @@ const Shop = () => {
       setLoading(false);
     };
     fetchProducts();
+  }, []);
+
+  // Detect return from Stripe Checkout
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const payment = params.get('payment');
+    if (payment === 'success') {
+      setPaymentBanner('success');
+      clearCart();
+      // Remove query params from URL so a refresh doesn't re-trigger the banner
+      window.history.replaceState({}, '', window.location.pathname);
+    } else if (payment === 'cancelled') {
+      setPaymentBanner('cancelled');
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const availableCount = products.filter((p) => p.is_available).length;
@@ -220,12 +237,41 @@ const Shop = () => {
         </div>
       </section>
 
-      {/* Payment note banner when items are in cart */}
-      {count > 0 && (
-        <div className="bg-amber-50 border-b border-amber-200 px-6 py-3 text-center">
-          <p className="text-sm text-amber-800">
-            <strong>Note:</strong> After placing your order, Nick will contact you to arrange payment and pickup/delivery.
-          </p>
+      {/* Stripe return banners */}
+      {paymentBanner === 'success' && (
+        <div className="bg-emerald-50 border-b border-emerald-200 px-6 py-4">
+          <div className="mx-auto max-w-7xl flex items-center gap-3">
+            <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+            <p className="text-sm font-semibold text-emerald-800">
+              Payment successful! 🎉 Thank you for your order. You'll receive a confirmation email shortly.
+            </p>
+            <button
+              type="button"
+              onClick={() => setPaymentBanner(null)}
+              className="ml-auto text-emerald-500 hover:text-emerald-700 transition-colors"
+              aria-label="Dismiss"
+            >
+              <XCircle className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
+      {paymentBanner === 'cancelled' && (
+        <div className="bg-amber-50 border-b border-amber-200 px-6 py-4">
+          <div className="mx-auto max-w-7xl flex items-center gap-3">
+            <ShoppingBag className="w-5 h-5 text-amber-600 shrink-0" />
+            <p className="text-sm font-semibold text-amber-800">
+              Your payment was cancelled. Your cart has been saved — you can complete your purchase anytime.
+            </p>
+            <button
+              type="button"
+              onClick={() => setPaymentBanner(null)}
+              className="ml-auto text-amber-500 hover:text-amber-700 transition-colors"
+              aria-label="Dismiss"
+            >
+              <XCircle className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       )}
 

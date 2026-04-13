@@ -1050,6 +1050,13 @@ export default function CompetitionRegistrationForm() {
               )}
             </div>
 
+            <div className="flex items-start gap-4 p-6 bg-amber-50 border border-amber-200 rounded-2xl mb-6">
+              <AlertTriangle className="w-6 h-6 text-amber-500 shrink-0 mt-0.5" />
+              <p className="text-sm font-medium text-amber-900 leading-relaxed">
+                <strong className="font-bold">Please note:</strong> TOPAZ 2.0 reserves the right to cancel a competition up to two weeks after the entry close date. In the event of cancellation due to insufficient entries, all registered participants will receive a full refund.
+              </p>
+            </div>
+
             <div className="bg-white border-2 border-gray-100 rounded-[2rem] p-8 shadow-sm">
               <label className="flex items-start gap-5 cursor-pointer group">
                 <Checkbox checked={disclaimerAccepted} onCheckedChange={(v) => setDisclaimerAccepted(v === true)} className="mt-1 w-6 h-6 rounded-md data-[state=checked]:bg-[#0a0a0a] data-[state=checked]:border-[#0a0a0a]" />

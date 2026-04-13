@@ -761,6 +761,18 @@ const Rules = () => {
         </div>
       </section>
 
+      {/* Cancellation Disclaimer */}
+      <section className="py-12 bg-amber-50 border-y border-amber-200">
+        <div className="w-full px-4 sm:px-6 lg:px-12 max-w-7xl mx-auto">
+          <div className="flex items-start gap-5 max-w-4xl mx-auto">
+            <AlertTriangle className="w-7 h-7 text-amber-500 shrink-0 mt-0.5" />
+            <p className="text-amber-900 font-medium leading-relaxed text-[15px]">
+              <strong className="font-bold">Please note:</strong> TOPAZ 2.0 reserves the right to cancel a competition up to two weeks after the entry close date. In the event of cancellation due to insufficient entries, all registered participants will receive a full refund.
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* Final CTA */}
       <section id="download" className="py-24 lg:py-32 bg-[#2E75B6] relative overflow-hidden">
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1547153760-18fc86324498?w=1600&h=900&fit=crop')] opacity-10 bg-cover bg-center mix-blend-overlay" />

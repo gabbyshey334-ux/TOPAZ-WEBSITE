@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, Minus, Plus, ShoppingBag, Trash2, Loader2, ArrowLeft, CheckCircle2 } from 'lucide-react';
+import { X, Minus, Plus, ShoppingBag, Trash2, Loader2, ArrowLeft, CheckCircle2, CreditCard } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,13 +17,13 @@ type CheckoutForm = {
 };
 
 export default function CartDrawer() {
-  const { items, removeItem, updateQuantity, clearCart, total, count, isOpen, closeCart } = useCart();
+  const { items, removeItem, updateQuantity, total, count, isOpen, closeCart } = useCart();
   const [step, setStep] = useState<CheckoutStep>('cart');
   const [form, setForm] = useState<CheckoutForm>({ name: '', email: '', notes: '' });
   const [errors, setErrors] = useState<Partial<CheckoutForm>>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
-  const [orderId, setOrderId] = useState('');
+  const [orderId] = useState('');
 
   const handleClose = () => {
     if (step === 'success') {
@@ -42,57 +42,44 @@ export default function CartDrawer() {
     return Object.keys(errs).length === 0;
   };
 
-  const handlePlaceOrder = async () => {
+  const handlePayWithCard = async () => {
     if (!validate()) return;
     setSubmitting(true);
     setSubmitError('');
+
     try {
-      const orderItems = items.map((i) => ({
-        product_id: i.productId,
-        product_name: i.productName,
+      const cartItems = items.map((i) => ({
+        productId: i.productId,
+        name: i.productName,
         size: i.size,
         quantity: i.quantity,
-        unit_price: i.unitPrice,
+        unitPrice: i.unitPrice,
       }));
 
-      const { data, error } = await supabase
-        .from('orders')
-        .insert({
-          customer_name: form.name.trim(),
-          customer_email: form.email.trim().toLowerCase(),
-          items: orderItems,
-          total_amount: total,
-          notes: form.notes.trim() || null,
-        })
-        .select('id')
-        .single();
+      const { data, error } = await supabase.functions.invoke('create-checkout-session', {
+        body: {
+          items: cartItems,
+          customerEmail: form.email.trim().toLowerCase(),
+          customerName: form.name.trim(),
+          notes: form.notes.trim() || undefined,
+        },
+      });
 
-      if (error) throw error;
+      if (error) throw new Error(error.message ?? 'Failed to create checkout session');
+      if (!data?.url) throw new Error('No checkout URL returned');
 
-      setOrderId(data.id);
-
-      // Send notification to Nick (best-effort, don't block on failure)
-      supabase.functions
-        .invoke('send-order-notification', {
-          body: {
-            order_id: data.id,
-            customer_name: form.name.trim(),
-            customer_email: form.email.trim().toLowerCase(),
-            items: orderItems,
-            total_amount: total,
-            notes: form.notes.trim() || undefined,
-          },
-        })
-        .catch((err) => console.warn('Order notification failed (non-critical):', err));
-
-      clearCart();
-      setStep('success');
+      // Redirect to Stripe Hosted Checkout — cart is preserved in localStorage
+      // so it survives the redirect if the customer cancels.
+      window.location.href = data.url;
     } catch (err) {
-      console.error(err);
-      setSubmitError('Something went wrong placing your order. Please try again.');
-    } finally {
+      console.error('[CartDrawer] Stripe checkout error:', err);
+      setSubmitError(
+        'Payment setup failed. Please try again or contact us at topaz2.0@yahoo.com'
+      );
       setSubmitting(false);
     }
+    // Note: setSubmitting(false) is NOT called on success because the page
+    // is redirecting — keeping the spinner shows until the navigation happens.
   };
 
   return (
@@ -116,7 +103,7 @@ export default function CartDrawer() {
                 </span>
               )}
               {step === 'checkout' && 'Checkout'}
-              {step === 'success' && 'Order Placed!'}
+              {step === 'success' && 'Order Confirmed!'}
             </SheetTitle>
             <button
               type="button"
@@ -259,9 +246,12 @@ export default function CartDrawer() {
                 </div>
               </div>
 
-              {/* Payment note */}
-              <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 mb-6 text-sm text-amber-800">
-                <strong>Note:</strong> After placing your order, Nick will contact you to arrange payment and pickup or delivery.
+              {/* Stripe payment info */}
+              <div className="flex items-start gap-3 bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 mb-6">
+                <CreditCard className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+                <p className="text-sm text-blue-800">
+                  You'll be securely redirected to Stripe to complete payment. Your card details never touch this site.
+                </p>
               </div>
 
               <div className="space-y-4">
@@ -292,6 +282,7 @@ export default function CartDrawer() {
                     className={`border-gray-300 ${errors.email ? 'border-red-400' : ''}`}
                   />
                   {errors.email && <p className="text-xs text-red-500">{errors.email}</p>}
+                  <p className="text-xs text-gray-400">Your order confirmation will be sent here.</p>
                 </div>
 
                 <div className="space-y-1.5">
@@ -318,38 +309,39 @@ export default function CartDrawer() {
 
             <div className="px-5 py-4 border-t border-gray-100 flex-shrink-0">
               <Button
-                onClick={handlePlaceOrder}
+                onClick={handlePayWithCard}
                 disabled={submitting}
                 className="w-full bg-[#2E75B6] hover:bg-[#1F4E78] text-white font-bold py-3 text-base"
               >
                 {submitting ? (
-                  <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> Placing Order…</>
+                  <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> Redirecting to payment…</>
                 ) : (
-                  `Place Order · $${total.toFixed(2)}`
+                  <><CreditCard className="w-5 h-5 mr-2" />Pay with Card · ${total.toFixed(2)}</>
                 )}
               </Button>
+              <p className="text-center text-xs text-gray-400 mt-2">Secured by Stripe</p>
             </div>
           </>
         )}
 
-        {/* Success Step */}
+        {/* Success Step — shown as fallback when returning from Stripe via /shop?payment=success */}
         {step === 'success' && (
           <div className="flex-1 flex flex-col items-center justify-center text-center px-8 py-12">
             <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mb-5">
               <CheckCircle2 className="w-10 h-10 text-emerald-600" />
             </div>
-            <h3 className="text-2xl font-black text-gray-900 mb-2">Thank You!</h3>
+            <h3 className="text-2xl font-black text-gray-900 mb-2">Payment Successful!</h3>
             {orderId && (
               <p className="text-xs text-gray-400 font-mono mb-4">
                 Order #{orderId.slice(0, 8).toUpperCase()}
               </p>
             )}
             <p className="text-gray-600 mb-2 leading-relaxed">
-              Your order has been received.
+              Your order has been confirmed and paid.
             </p>
             <p className="text-gray-600 leading-relaxed">
-              Nick will be in touch at{' '}
-              <strong className="text-[#2E75B6]">{form.email}</strong> to arrange payment and pickup/delivery.
+              A confirmation will be sent to{' '}
+              <strong className="text-[#2E75B6]">{form.email}</strong>.
             </p>
             <Button
               onClick={handleClose}
