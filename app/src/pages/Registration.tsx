@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { 
   Download, 
   FileText, 
-  Send, 
   AlertCircle, 
   Calendar, 
   DollarSign, 
@@ -10,30 +11,101 @@ import {
   ChevronDown,
   Mail,
   Phone,
-  CheckCircle2
+  CheckCircle2,
+  Sparkles,
+  ArrowRight,
+  MapPin
 } from 'lucide-react';
 import CompetitionRegistrationForm from '@/components/registration/CompetitionRegistrationForm';
+
+gsap.registerPlugin(ScrollTrigger);
 
 const Registration = () => {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const registrationPdfUrl = `${import.meta.env.BASE_URL}pdfs/topaz-registration-form.pdf`;
+  
+  const heroRef = useRef<HTMLDivElement>(null);
+  const stepsRef = useRef<HTMLDivElement>(null);
+  const infoRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      // Hero Animation
+      const heroElements = heroRef.current?.querySelectorAll('.hero-animate');
+      if (heroElements && heroElements.length > 0) {
+        gsap.fromTo(
+          heroElements,
+          { y: 40, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            duration: 1,
+            stagger: 0.15,
+            ease: 'power3.out',
+          }
+        );
+      }
+
+      // Steps Animation
+      const stepCards = stepsRef.current?.querySelectorAll('.step-card');
+      if (stepCards && stepCards.length > 0) {
+        gsap.fromTo(
+          stepCards,
+          { y: 50, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            duration: 0.8,
+            stagger: 0.2,
+            ease: 'power2.out',
+            scrollTrigger: {
+              trigger: stepsRef.current,
+              start: 'top 80%',
+            },
+          }
+        );
+      }
+
+      // Info Cards Animation
+      const infoCards = infoRef.current?.querySelectorAll('.info-card');
+      if (infoCards && infoCards.length > 0) {
+        gsap.fromTo(
+          infoCards,
+          { x: -30, opacity: 0 },
+          {
+            x: 0,
+            opacity: 1,
+            duration: 0.8,
+            stagger: 0.2,
+            ease: 'power2.out',
+            scrollTrigger: {
+              trigger: infoRef.current,
+              start: 'top 75%',
+            },
+          }
+        );
+      }
+    });
+
+    return () => ctx.revert();
+  }, []);
 
   const faqs = [
     {
       question: 'When does registration open?',
-      answer: 'Registration opens April 1, 2026. All completed forms must be emailed to topaz2.0@yahoo.com before the deadline of July 30, 2026, 12:00 AM.'
+      answer: 'Registration opens April 1, 2026. All completed forms must be submitted before the deadline of July 30, 2026, 12:00 AM.'
     },
     {
       question: 'Can I register on competition day?',
-      answer: 'No. All registrations must be received by email before July 30, 2026, 12:00 AM. NO day-of-event registration is accepted. Plan ahead and submit in time.'
+      answer: 'No. All registrations must be received before July 30, 2026, 12:00 AM. NO day-of-event registration is accepted. Plan ahead and submit in time.'
     },
     {
       question: 'Can I register multiple entries?',
-      answer: 'Yes. Submit a separate registration form for each routine by email to topaz2.0@yahoo.com before the deadline. Fees are per entry or per person as listed in the Entry Fees section and on the official PDF.'
+      answer: 'Yes. Submit a separate registration form for each routine before the deadline. Fees are per entry or per person as listed in the Entry Fees section and on the official PDF.'
     },
     {
       question: 'What payment methods are accepted?',
-      answer: 'We accept cash, check, credit card, and PayPal. Checks should be made payable to Topaz 2.0 LLC. Include payment details with your email submission.'
+      answer: 'We accept cash, check, credit card, and PayPal. Checks should be made payable to Topaz 2.0 LLC.'
     },
     {
       question: 'Can I make changes after submitting?',
@@ -41,120 +113,164 @@ const Registration = () => {
     },
     {
       question: 'What if I miss the deadline?',
-      answer: 'Registrations are not accepted after the deadline. All entries must be received by email at topaz2.0@yahoo.com before July 30, 2026, 12:00 AM. There are no exceptions and no late or day-of-event registration.'
+      answer: 'Registrations are not accepted after the deadline. All entries must be received before July 30, 2026, 12:00 AM. There are no exceptions and no late or day-of-event registration.'
     },
     {
       question: 'Do I need to register for each category separately?',
-      answer: 'Yes, each routine requires a separate registration form. Email all forms to topaz2.0@yahoo.com before the deadline for proper scheduling and judging.'
+      answer: 'Yes, each routine requires a separate registration form for proper scheduling and judging.'
     }
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#fafafa]">
       
       {/* SECTION 1: HERO */}
-      <section className="relative bg-[#0a0a0a] min-h-screen overflow-hidden flex items-center">
-        {/* Background Image */}
-        <div className="absolute inset-0 opacity-20">
-          <img
-            src="https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=1600&h=900&fit=crop"
-            className="w-full h-full object-cover"
-            alt=""
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a] via-transparent to-[#0a0a0a]" />
+      <section ref={heroRef} className="relative bg-[#0a0a0a] min-h-screen flex items-center pt-20 overflow-hidden">
+        {/* Modern Background */}
+        <div className="absolute inset-0">
+          <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1547153760-18fc86324498?q=80&w=2000&auto=format&fit=crop')] bg-cover bg-center opacity-30" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a] via-[#0a0a0a]/80 to-[#0a0a0a]" />
+          {/* Decorative glow */}
+          <div className="absolute top-1/4 -right-1/4 w-1/2 h-1/2 bg-[#2E75B6]/20 rounded-full blur-[120px] pointer-events-none" />
+          <div className="absolute -bottom-1/4 -left-1/4 w-1/2 h-1/2 bg-[#2E75B6]/10 rounded-full blur-[120px] pointer-events-none" />
         </div>
 
-        <div className="relative z-10 max-w-4xl mx-auto px-6 text-center">
-          <p className="font-mono text-primary font-bold tracking-[0.3em] uppercase mb-6">
-            Season 2026
-          </p>
-          <h1 className="font-display font-black text-5xl sm:text-6xl lg:text-[8rem] text-white leading-[0.85] tracking-tighter uppercase mb-8">
-            Competition <span className="text-primary italic">Registration</span>
-          </h1>
-          <div className="w-24 h-1 bg-primary mx-auto rounded-full mb-8" />
-          <p className="text-xl text-white/70 max-w-2xl mx-auto mb-4">
-            Join The Return of TOPAZ 2.0<br/>
-            <span className="text-white/60 text-lg mt-2 block">August 22, 2026 • Seaside Convention Center</span>
-          </p>
-          <p className="text-base text-white/80 max-w-2xl mx-auto mb-10 font-medium">
-            Registration opens April 1, 2026 • Registration closes July 30, 2026, 12:00 AM
-          </p>
-
-          <a
-            href={registrationPdfUrl}
-            download="TOPAZ-Registration-Form.pdf"
-            className="inline-flex items-center gap-3 px-8 py-4 bg-white text-[#1F4E78] font-bold rounded-xl hover:bg-gray-100 hover:scale-105 transition-all shadow-xl text-lg group"
-          >
-            <Download className="w-6 h-6 group-hover:-translate-y-1 transition-transform" />
-            Download Registration Form
-          </a>
-        </div>
-      </section>
-
-      {/* SECTION 2: DOWNLOAD FORM SECTION */}
-      <section className="py-20 -mt-10 relative z-20">
-        <div className="max-w-4xl mx-auto px-6">
+        <div className="relative z-10 w-full max-w-7xl mx-auto px-6 py-20 lg:py-32 flex flex-col items-center text-center">
+          <div className="hero-animate inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-md mb-8">
+            <Sparkles className="w-4 h-4 text-[#2E75B6]" />
+            <span className="text-xs font-bold tracking-widest text-white uppercase">Season 2026</span>
+          </div>
           
-          {/* Featured Download Card */}
-          <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-12 text-center mb-12 border border-gray-100">
-            <div className="w-24 h-24 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-8 shadow-inner">
-              <FileText className="w-12 h-12 text-[#2E75B6]" />
-            </div>
-            
-            <h2 className="font-display font-bold text-3xl text-gray-900 mb-4">
-              Official Registration Form
-            </h2>
-            
-            <p className="text-gray-600 mb-10 text-lg max-w-lg mx-auto leading-relaxed">
-              Download, complete, and email this form to topaz2.0@yahoo.com to secure your spot in the competition.
-            </p>
-            
+          <h1 className="hero-animate font-display font-black text-5xl sm:text-6xl md:text-8xl lg:text-[9rem] text-white leading-[0.85] tracking-tighter uppercase mb-8">
+            Secure Your <br/>
+            <span className="text-[#2E75B6] italic relative inline-block">
+              Spot
+              <div className="absolute -bottom-2 left-0 right-0 h-2 bg-[#2E75B6]/30 -rotate-2" />
+            </span>
+          </h1>
+          
+          <p className="hero-animate text-xl md:text-2xl text-white/70 max-w-2xl font-medium leading-relaxed mb-12">
+            The Return of TOPAZ 2.0 • August 22, 2026
+            <span className="block text-base text-white/50 mt-2 font-normal">Seaside Convention Center</span>
+          </p>
+
+          <div className="hero-animate flex flex-col sm:flex-row items-center justify-center gap-6">
+            <a
+              href="#register"
+              onClick={(e) => {
+                e.preventDefault();
+                document.getElementById('register')?.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="inline-flex items-center justify-center gap-3 px-8 py-4 bg-[#2E75B6] text-white font-bold rounded-full hover:bg-white hover:text-[#0a0a0a] transition-all duration-300 shadow-[0_0_40px_-10px_rgba(46,117,182,0.5)] text-lg w-full sm:w-auto"
+            >
+              Register Now
+              <ArrowRight className="w-5 h-5" />
+            </a>
             <a
               href={registrationPdfUrl}
               download="TOPAZ-Registration-Form.pdf"
-              className="inline-flex items-center gap-3 px-10 py-5 bg-[#2E75B6] text-white font-bold rounded-xl hover:bg-[#1F4E78] transition-all shadow-lg hover:shadow-xl mb-6 transform hover:-translate-y-1"
+              className="inline-flex items-center justify-center gap-3 px-8 py-4 bg-white/5 text-white border border-white/10 font-bold rounded-full hover:bg-white/10 transition-all duration-300 text-lg w-full sm:w-auto backdrop-blur-sm"
             >
-              <Download className="w-6 h-6" />
-              Download Registration Form (PDF)
+              <FileText className="w-5 h-5" />
+              Download PDF
             </a>
-            
-            <div className="flex items-center justify-center gap-4 text-sm text-gray-400 font-medium">
-              <span>PDF - 2.3 MB</span>
-              <span>•</span>
-              <span>Last updated: March 2026</span>
+          </div>
+        </div>
+
+        {/* Scroll indicator */}
+        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-50 animate-bounce">
+          <span className="text-[10px] font-bold tracking-widest text-white uppercase">Scroll</span>
+          <ChevronDown className="w-4 h-4 text-white" />
+        </div>
+      </section>
+
+      {/* SECTION 2: IMPORTANT ALERTS */}
+      <section className="relative z-20 -mt-16 max-w-7xl mx-auto px-6">
+        <div className="grid md:grid-cols-2 gap-6">
+          {/* Deadline Alert */}
+          <div className="bg-white rounded-3xl p-8 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)] border border-gray-100 flex items-start gap-5">
+            <div className="bg-red-50 p-4 rounded-2xl shrink-0">
+              <Calendar className="w-8 h-8 text-red-500" />
+            </div>
+            <div>
+              <h3 className="font-display font-black text-xl text-[#0a0a0a] mb-2 uppercase tracking-tight">Registration Window</h3>
+              <p className="text-gray-500 font-medium leading-relaxed">
+                Opens <strong className="text-[#0a0a0a]">April 1, 2026</strong>.<br/>
+                Closes strictly on <strong className="text-red-500">July 30, 2026 at 12:00 AM</strong>.<br/>
+                No exceptions or day-of registrations.
+              </p>
             </div>
           </div>
+          
+          {/* Notice Alert */}
+          <div className="bg-white rounded-3xl p-8 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)] border border-gray-100 flex items-start gap-5">
+            <div className="bg-amber-50 p-4 rounded-2xl shrink-0">
+              <MapPin className="w-8 h-8 text-amber-500" />
+            </div>
+            <div>
+              <h3 className="font-display font-black text-xl text-[#0a0a0a] mb-2 uppercase tracking-tight">Mailing Address</h3>
+              <p className="text-gray-500 font-medium leading-relaxed">
+                Mailing address is only required for certain competitions. You may leave address fields blank on the form if not applicable.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
 
-          {/* SECTION 3: DISCLAIMER BOX */}
-          <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-6 lg:p-8 mb-8 shadow-sm">
-            <div className="flex items-start gap-5">
-              <div className="bg-amber-100 p-3 rounded-full flex-shrink-0">
-                <AlertCircle className="w-6 h-6 text-amber-600" />
-              </div>
-              <div>
-                <h3 className="font-bold text-lg text-amber-900 mb-2">Important Notice</h3>
-                <p className="text-amber-800 leading-relaxed">
-                  Mailing address is only required for certain competitions. 
-                  Please check specific competition requirements before submitting.
+      {/* SECTION 3: HOW IT WORKS */}
+      <section ref={stepsRef} className="py-32 overflow-hidden relative">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center max-w-3xl mx-auto mb-20">
+            <h2 className="font-display font-black text-4xl md:text-5xl text-[#0a0a0a] mb-6 uppercase tracking-tighter">
+              Registration <span className="text-[#2E75B6]">Process</span>
+            </h2>
+            <p className="text-lg text-gray-500 font-medium">
+              Three simple steps to secure your spot on the stage.
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-8 lg:gap-12 relative">
+            {/* Connecting line for desktop */}
+            <div className="hidden md:block absolute top-12 left-[15%] right-[15%] h-[2px] bg-gradient-to-r from-transparent via-gray-200 to-transparent" />
+
+            {/* Step 1 */}
+            <div className="step-card relative bg-white rounded-[2rem] p-8 lg:p-10 shadow-[0_8px_30px_-10px_rgba(0,0,0,0.05)] border border-gray-100 group hover:-translate-y-2 transition-transform duration-300">
+              <div className="absolute -top-6 -right-6 text-[8rem] font-black text-gray-50 leading-none select-none z-0 group-hover:text-[#2E75B6]/5 transition-colors duration-500">1</div>
+              <div className="relative z-10">
+                <div className="w-20 h-20 bg-gray-50 rounded-2xl flex items-center justify-center mb-8 group-hover:bg-[#2E75B6] group-hover:text-white transition-colors duration-300 text-[#0a0a0a]">
+                  <FileText className="w-10 h-10" />
+                </div>
+                <h3 className="font-display font-black text-2xl text-[#0a0a0a] mb-4 uppercase tracking-tight">Complete Form</h3>
+                <p className="text-gray-500 font-medium leading-relaxed">
+                  Fill out the secure online registration form below, or download the PDF version.
                 </p>
               </div>
             </div>
-          </div>
 
-          {/* DEADLINE WARNING BOX */}
-          <div className="bg-red-50 border-2 border-red-300 rounded-2xl p-6 lg:p-8 mb-16 shadow-sm">
-            <div className="flex items-start gap-5">
-              <div className="bg-red-100 p-3 rounded-full flex-shrink-0">
-                <AlertCircle className="w-6 h-6 text-red-600" />
-              </div>
-              <div>
-                <h3 className="font-bold text-lg text-red-900 mb-2">Registration Window — No Exceptions</h3>
-                <p className="text-red-800 leading-relaxed mb-4">
-                  Registration opens <strong>April 1, 2026</strong>. All registrations must be received by email at <strong>topaz2.0@yahoo.com</strong> before <strong>July 30, 2026, 12:00 AM</strong>.
-                  NO late registration. NO day-of-event registration. Email submissions only. Plan ahead!
+            {/* Step 2 */}
+            <div className="step-card relative bg-white rounded-[2rem] p-8 lg:p-10 shadow-[0_8px_30px_-10px_rgba(0,0,0,0.05)] border border-gray-100 group hover:-translate-y-2 transition-transform duration-300">
+              <div className="absolute -top-6 -right-6 text-[8rem] font-black text-gray-50 leading-none select-none z-0 group-hover:text-[#2E75B6]/5 transition-colors duration-500">2</div>
+              <div className="relative z-10">
+                <div className="w-20 h-20 bg-gray-50 rounded-2xl flex items-center justify-center mb-8 group-hover:bg-[#2E75B6] group-hover:text-white transition-colors duration-300 text-[#0a0a0a]">
+                  <Download className="w-10 h-10" />
+                </div>
+                <h3 className="font-display font-black text-2xl text-[#0a0a0a] mb-4 uppercase tracking-tight">Upload Media</h3>
+                <p className="text-gray-500 font-medium leading-relaxed">
+                  Upload your high-quality performance music (MP3) directly through the form.
                 </p>
-                <p className="text-red-700 text-sm font-semibold">
-                  Registration closes strictly at the deadline. We cannot accept entries after this time.
+              </div>
+            </div>
+
+            {/* Step 3 */}
+            <div className="step-card relative bg-white rounded-[2rem] p-8 lg:p-10 shadow-[0_8px_30px_-10px_rgba(0,0,0,0.05)] border border-gray-100 group hover:-translate-y-2 transition-transform duration-300">
+              <div className="absolute -top-6 -right-6 text-[8rem] font-black text-gray-50 leading-none select-none z-0 group-hover:text-[#2E75B6]/5 transition-colors duration-500">3</div>
+              <div className="relative z-10">
+                <div className="w-20 h-20 bg-gray-50 rounded-2xl flex items-center justify-center mb-8 group-hover:bg-[#2E75B6] group-hover:text-white transition-colors duration-300 text-[#0a0a0a]">
+                  <CheckCircle2 className="w-10 h-10" />
+                </div>
+                <h3 className="font-display font-black text-2xl text-[#0a0a0a] mb-4 uppercase tracking-tight">Submit & Pay</h3>
+                <p className="text-gray-500 font-medium leading-relaxed">
+                  Submit your registration and bring your entry fee (Check/Money Order) to the event.
                 </p>
               </div>
             </div>
@@ -162,223 +278,131 @@ const Registration = () => {
         </div>
       </section>
 
-      <section className="py-20 bg-gray-50 border-t border-gray-100">
-        <div className="max-w-4xl mx-auto px-6">
+      {/* SECTION 4: THE FORM */}
+      <section id="register" className="py-24 bg-white border-y border-gray-100 scroll-mt-20 relative">
+        <div className="absolute inset-0 bg-[#fafafa]/50" />
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 relative z-10">
+          <div className="text-center mb-16">
+            <h2 className="font-display font-black text-4xl text-[#0a0a0a] mb-4 uppercase tracking-tighter">
+              Online <span className="text-[#2E75B6]">Registration</span>
+            </h2>
+            <p className="text-gray-500 font-medium">Please fill out all required fields carefully.</p>
+          </div>
+          
           <CompetitionRegistrationForm />
         </div>
       </section>
 
-      {/* SECTION 4: HOW TO REGISTER */}
-      <section className="py-20 bg-white border-t border-gray-100">
+      {/* SECTION 5: DETAILS & FEES */}
+      <section ref={infoRef} className="py-32 relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <h2 className="font-display font-black text-4xl text-gray-900 mb-4">
-              How to Register
-            </h2>
-            <p className="text-gray-500 text-lg mb-4">Follow these steps and submit by email before the deadline.</p>
-            <p className="text-red-600 font-semibold text-sm max-w-2xl mx-auto">
-              Registration opens April 1, 2026. You must complete registration before July 30, 2026, 12:00 AM. No registration on competition day.
-            </p>
-          </div>
-          
-          <div className="grid md:grid-cols-3 gap-8 lg:gap-12">
-            {/* Step 1 */}
-            <div className="text-center group p-6 rounded-3xl hover:bg-gray-50 transition-colors duration-300">
-              <div className="w-20 h-20 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300 shadow-sm">
-                <Download className="w-10 h-10 text-[#2E75B6]" />
-              </div>
-              <h3 className="font-display font-bold text-xl mb-4 text-gray-900">1. Download Form</h3>
-              <p className="text-gray-600 leading-relaxed">
-                Download the registration form above and fill out all required fields for your entry type.
-              </p>
-            </div>
-
-            {/* Step 2 */}
-            <div className="text-center group p-6 rounded-3xl hover:bg-gray-50 transition-colors duration-300">
-              <div className="w-20 h-20 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300 shadow-sm">
-                <FileText className="w-10 h-10 text-[#2E75B6]" />
-              </div>
-              <h3 className="font-display font-bold text-xl mb-4 text-gray-900">2. Prepare Materials</h3>
-              <p className="text-gray-600 leading-relaxed">
-                Gather high-resolution photos of contestants, your music file (MP3), and payment information.
-              </p>
-            </div>
-
-            {/* Step 3 */}
-            <div className="text-center group p-6 rounded-3xl hover:bg-gray-50 transition-colors duration-300">
-              <div className="w-20 h-20 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300 shadow-sm">
-                <Send className="w-10 h-10 text-[#2E75B6]" />
-              </div>
-              <h3 className="font-display font-bold text-xl mb-4 text-gray-900">3. Submit</h3>
-              <p className="text-gray-600 leading-relaxed">
-                Email your completed form and materials to <span className="text-[#2E75B6] font-semibold">topaz2.0@yahoo.com</span>. This is the only way to submit your registration.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* SECTION 5: REGISTRATION DETAILS */}
-      <section className="py-20 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid lg:grid-cols-2 gap-8 lg:gap-16">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-20">
             
             {/* Left Column: Requirements */}
-            <div className="bg-white rounded-3xl p-10 shadow-lg border border-gray-100">
-              <div className="flex items-center gap-4 mb-8">
-                <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-                  <CheckCircle2 className="w-6 h-6 text-[#2E75B6]" />
+            <div className="info-card">
+              <h3 className="font-display font-black text-3xl text-[#0a0a0a] mb-8 uppercase tracking-tight flex items-center gap-4">
+                <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center">
+                  <CheckCircle2 className="w-6 h-6 text-[#0a0a0a]" />
                 </div>
-                <h3 className="font-display font-bold text-2xl text-gray-900">What You'll Need</h3>
-              </div>
-              <ul className="space-y-6">
-                {[
-                  'Completed registration form',
-                  'High-resolution photo of all contestants',
-                  'Music selection (MP3, WAV, CD, or USB drive)',
-                  'Payment (check, cash, or credit card)',
-                  'Parent or teacher signature (for minors)',
-                  'Submit completed form and materials by email to topaz2.0@yahoo.com'
-                ].map((item, i) => (
-                  <li key={i} className="flex items-start gap-4 text-gray-700">
-                    <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <div className="w-2 h-2 rounded-full bg-green-600" />
-                    </div>
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Right Column: Entry Fees */}
-            <div className="bg-white rounded-3xl p-10 shadow-lg border border-gray-100">
-              <div className="flex items-center gap-4 mb-8">
-                <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-                  <DollarSign className="w-6 h-6 text-[#2E75B6]" />
-                </div>
-                <h3 className="font-display font-bold text-2xl text-gray-900">Entry Fees</h3>
-              </div>
-              <p className="text-sm text-gray-500 mb-6 leading-relaxed">
-                Official rates also appear on the registration PDF. Duo, trio, and groups are priced <strong>per person</strong> unless noted; solo is <strong>per entry</strong>.
-              </p>
-              <ul className="space-y-5">
-                {[
-                  { label: 'Solo', price: '$100 per entry' },
-                  { label: 'Duo', price: '$80 per person', note: '($160 total for 2)' },
-                  { label: 'Trio', price: '$70 per person', note: '($210 total for 3)' },
-                  { label: 'Small Group (4–10)', price: '$60 per person' },
-                  { label: 'Large Group (11+)', price: '$60 per person' },
-                  { label: 'Production', price: '$60 per person' },
-                ].map((item, i) => (
-                  <li key={i} className="border-b border-gray-100 pb-4 last:border-0 last:pb-0">
-                    <div className="flex flex-wrap items-baseline justify-between gap-2">
-                      <span className="text-gray-800 font-semibold">{item.label}</span>
-                      <span className="font-bold text-[#2E75B6] text-right">
-                        {item.price}
-                        {item.note ? (
-                          <span className="block text-sm font-semibold text-gray-600 mt-0.5">{item.note}</span>
-                        ) : null}
-                      </span>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-              <div className="mt-8 rounded-xl border border-gray-200 bg-gray-50 p-5">
-                <p className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-3">Sample totals</p>
-                <ul className="space-y-2 text-sm text-gray-700 leading-snug">
-                  <li>Solo: <strong className="text-[#2E75B6]">$100</strong></li>
-                  <li>Duo (2 people): <strong className="text-[#2E75B6]">$160</strong> total ($80 × 2)</li>
-                  <li>Trio (3 people): <strong className="text-[#2E75B6]">$210</strong> total ($70 × 3)</li>
-                  <li>Small group (5 people): <strong className="text-[#2E75B6]">$300</strong> total ($60 × 5)</li>
-                  <li>Large group (12 people): <strong className="text-[#2E75B6]">$720</strong> total ($60 × 12)</li>
-                  <li>Production (15 people): <strong className="text-[#2E75B6]">$900</strong> total ($60 × 15)</li>
+                What You'll Need
+              </h3>
+              
+              <div className="bg-white rounded-[2rem] p-8 lg:p-10 shadow-[0_8px_30px_-10px_rgba(0,0,0,0.05)] border border-gray-100">
+                <ul className="space-y-6">
+                  {[
+                    'Completed online registration form or PDF',
+                    'Performance music (MP3 upload or USB)',
+                    'Payment (check or money order)',
+                    'Parent or teacher signature (for minors)'
+                  ].map((item, i) => (
+                    <li key={i} className="flex items-start gap-4">
+                      <div className="w-8 h-8 rounded-full bg-green-50 flex items-center justify-center flex-shrink-0 mt-0.5 text-green-500">
+                        <CheckCircle2 className="w-5 h-5" />
+                      </div>
+                      <span className="text-gray-700 font-medium text-lg">{item}</span>
+                    </li>
+                  ))}
                 </ul>
               </div>
             </div>
 
-          </div>
-        </div>
-      </section>
-
-      {/* SECTION 6: IMPORTANT DATES */}
-      <section className="py-20 bg-white">
-        <div className="max-w-4xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <h2 className="font-display font-black text-4xl text-gray-900 mb-4">Important Dates</h2>
-            <p className="text-gray-500 text-lg">Mark your calendar for these deadlines</p>
-          </div>
-
-          <div className="relative">
-            <div className="absolute left-8 lg:left-1/2 top-0 bottom-0 w-0.5 bg-gray-200 lg:-translate-x-1/2" />
-            
-            <div className="space-y-12">
-              {[
-                { label: 'Registration Opens', date: 'April 1, 2026', status: 'future' },
-                { label: 'Registration Closes', date: 'July 30, 2026, 12:00 AM', desc: 'No exceptions. No day-of-event registration.', status: 'future', highlight: true },
-                { label: 'Competition Day', date: 'August 22, 2026', status: 'future' }
-              ].map((item, i) => (
-                <div key={i} className={`relative flex items-center lg:justify-center ${i % 2 === 0 ? 'lg:flex-row-reverse' : ''}`}>
-                  <div className="absolute left-8 lg:left-1/2 -translate-x-1/2 w-4 h-4 rounded-full border-4 border-white shadow-sm z-10 bg-[#2E75B6]" />
-                  
-                  <div className={`ml-20 lg:ml-0 lg:w-[45%] ${i % 2 === 0 ? 'lg:text-left' : 'lg:text-right'}`}>
-                    <div className={`inline-block p-6 rounded-2xl border ${item.highlight ? 'bg-[#2E75B6] text-white border-[#2E75B6] shadow-xl' : 'bg-white border-gray-100 shadow-md'}`}>
-                      <h4 className={`font-bold text-lg mb-1 ${item.highlight ? 'text-white' : 'text-gray-900'}`}>{item.label}</h4>
-                      <div className={`flex items-center gap-2 ${item.highlight ? 'text-blue-100' : 'text-[#2E75B6]'} font-semibold`}>
-                        <Calendar className="w-4 h-4" />
-                        <span>{item.date}</span>
-                      </div>
-                      {item.desc && (
-                        <p className={`text-sm mt-2 ${item.highlight ? 'text-white/80' : 'text-gray-500'}`}>{item.desc}</p>
-                      )}
-                    </div>
-                  </div>
-                  <div className="hidden lg:block lg:w-[45%]" />
+            {/* Right Column: Entry Fees */}
+            <div className="info-card">
+              <h3 className="font-display font-black text-3xl text-[#0a0a0a] mb-8 uppercase tracking-tight flex items-center gap-4">
+                <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center">
+                  <DollarSign className="w-6 h-6 text-[#0a0a0a]" />
                 </div>
-              ))}
-            </div>
-          </div>
+                Entry Fees
+              </h3>
 
-          <div className="mt-12 text-center">
-            <p className="text-red-600 font-bold text-sm md:text-base">
-              NO registrations accepted after July 30, 2026, 12:00 AM. NO day-of-event registration. Email only.
-            </p>
+              <div className="bg-white rounded-[2rem] p-8 lg:p-10 shadow-[0_8px_30px_-10px_rgba(0,0,0,0.05)] border border-gray-100">
+                <ul className="space-y-5 mb-8">
+                  {[
+                    { label: 'Solo', price: '$100', note: 'per entry' },
+                    { label: 'Duo', price: '$80', note: 'per person ($160 total)' },
+                    { label: 'Trio', price: '$70', note: 'per person ($210 total)' },
+                    { label: 'Small Group (4-10)', price: '$60', note: 'per person' },
+                    { label: 'Large Group (11+)', price: '$60', note: 'per person' },
+                    { label: 'Production', price: '$60', note: 'per person' },
+                  ].map((item, i) => (
+                    <li key={i} className="flex flex-wrap items-baseline justify-between gap-2 pb-4 border-b border-gray-50 last:border-0 last:pb-0">
+                      <span className="text-gray-900 font-bold text-lg">{item.label}</span>
+                      <div className="text-right">
+                        <span className="font-black text-xl text-[#2E75B6]">{item.price}</span>
+                        <span className="text-sm font-medium text-gray-500 ml-2">{item.note}</span>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+                <div className="bg-gray-50 rounded-xl p-5 border border-gray-100">
+                  <p className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 text-gray-500" />
+                    Important Note
+                  </p>
+                  <p className="text-sm text-gray-500 mt-2 font-medium">
+                    Duo, trio, and groups are priced per person unless noted. Solo is priced per entry.
+                  </p>
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
       </section>
 
-      {/* SECTION 7: FAQ ACCORDION */}
-      <section className="py-20 bg-gray-50">
+      {/* SECTION 6: FAQ ACCORDION */}
+      <section className="py-32 bg-white border-t border-gray-100">
         <div className="max-w-3xl mx-auto px-6">
           <div className="text-center mb-16">
-            <h2 className="font-display font-black text-4xl text-gray-900 mb-4">
-              Frequently Asked Questions
+            <h2 className="font-display font-black text-4xl text-[#0a0a0a] mb-6 uppercase tracking-tighter">
+              Common <span className="text-[#2E75B6]">Questions</span>
             </h2>
-            <p className="text-gray-500 text-lg">Common questions about registration</p>
+            <p className="text-lg text-gray-500 font-medium">Everything you need to know about registration.</p>
           </div>
 
           <div className="space-y-4">
             {faqs.map((faq, index) => (
               <div
                 key={index}
-                className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-300"
+                className="bg-[#fafafa] rounded-[1.5rem] overflow-hidden border border-gray-100 transition-all duration-300 hover:border-gray-200"
               >
                 <button
                   onClick={() => setOpenFaq(openFaq === index ? null : index)}
                   className="w-full px-8 py-6 flex items-center justify-between text-left"
                 >
-                  <span className="text-lg font-bold text-gray-800 pr-8">
+                  <span className="text-lg font-bold text-[#0a0a0a] pr-8">
                     {faq.question}
                   </span>
-                  <div className={`w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center transition-transform duration-300 ${openFaq === index ? 'rotate-180 bg-blue-50 text-[#2E75B6]' : 'text-gray-400'}`}>
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-all duration-500 ${openFaq === index ? 'bg-[#0a0a0a] text-white rotate-180' : 'bg-white border border-gray-200 text-gray-500'}`}>
                     <ChevronDown className="w-5 h-5" />
                   </div>
                 </button>
                 <div
-                  className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                  className={`overflow-hidden transition-all duration-500 ease-in-out ${
                     openFaq === index ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
                   }`}
                 >
-                  <div className="px-8 pb-8 text-gray-600 leading-relaxed border-t border-gray-50 pt-4">
+                  <div className="px-8 pb-8 text-gray-500 font-medium leading-relaxed">
                     {faq.answer}
                   </div>
                 </div>
@@ -388,51 +412,36 @@ const Registration = () => {
         </div>
       </section>
 
-      {/* SECTION 8: CONTACT SUPPORT */}
-      <section className="py-20 bg-white">
-        <div className="max-w-4xl mx-auto px-6">
-          <div className="bg-[#1F4E78] rounded-3xl p-10 md:p-16 text-center text-white relative overflow-hidden shadow-2xl">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-            <div className="absolute bottom-0 left-0 w-64 h-64 bg-white/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
+      {/* SECTION 7: CONTACT SUPPORT */}
+      <section className="py-24 bg-[#fafafa]">
+        <div className="max-w-5xl mx-auto px-6">
+          <div className="bg-[#0a0a0a] rounded-[3rem] p-10 md:p-16 text-center text-white relative overflow-hidden shadow-2xl">
+            {/* Decorative BG elements */}
+            <div className="absolute top-0 right-0 w-96 h-96 bg-[#2E75B6]/20 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-96 h-96 bg-[#2E75B6]/10 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/2 pointer-events-none" />
             
             <div className="relative z-10">
-              <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-8 backdrop-blur-sm">
-                <HelpCircle className="w-8 h-8 text-white" />
+              <div className="w-20 h-20 bg-white/5 border border-white/10 rounded-[1.5rem] flex items-center justify-center mx-auto mb-8 backdrop-blur-md">
+                <HelpCircle className="w-10 h-10 text-white" />
               </div>
               
-              <h2 className="font-display font-bold text-3xl mb-4">Need Help?</h2>
-              <p className="text-blue-100 text-lg mb-10 max-w-xl mx-auto">
-                Contact us with any questions about the registration process. We typically respond within 24 hours.
+              <h2 className="font-display font-black text-4xl mb-6 uppercase tracking-tight">Need Assistance?</h2>
+              <p className="text-white/60 text-lg mb-12 max-w-2xl mx-auto font-medium">
+                Our support team is ready to help you with the registration process. We typically respond within 24 hours.
               </p>
               
-              <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-12">
-                <a href="mailto:topaz2.0@yahoo.com" className="flex items-center gap-3 hover:text-blue-200 transition-colors bg-white/10 px-6 py-3 rounded-xl backdrop-blur-sm hover:bg-white/20">
-                  <Mail className="w-5 h-5" />
-                  <span className="font-semibold">topaz2.0@yahoo.com</span>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
+                <a href="mailto:topaz2.0@yahoo.com" className="group flex items-center gap-3 bg-white/5 border border-white/10 px-8 py-4 rounded-full backdrop-blur-sm hover:bg-white hover:text-[#0a0a0a] transition-all duration-300 w-full sm:w-auto">
+                  <Mail className="w-5 h-5 group-hover:text-[#2E75B6] transition-colors" />
+                  <span className="font-bold tracking-wide text-sm">topaz2.0@yahoo.com</span>
                 </a>
-                <a href="tel:971-299-4401" className="flex items-center gap-3 hover:text-blue-200 transition-colors bg-white/10 px-6 py-3 rounded-xl backdrop-blur-sm hover:bg-white/20">
-                  <Phone className="w-5 h-5" />
-                  <span className="font-semibold">971-299-4401</span>
+                <a href="tel:971-299-4401" className="group flex items-center gap-3 bg-white/5 border border-white/10 px-8 py-4 rounded-full backdrop-blur-sm hover:bg-white hover:text-[#0a0a0a] transition-all duration-300 w-full sm:w-auto">
+                  <Phone className="w-5 h-5 group-hover:text-[#2E75B6] transition-colors" />
+                  <span className="font-bold tracking-wide text-sm">971-299-4401</span>
                 </a>
               </div>
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* SECTION 9: BOTTOM CTA */}
-      <section className="py-20 bg-gray-900 text-white text-center">
-        <div className="max-w-4xl mx-auto px-6">
-          <h2 className="font-display font-black text-4xl lg:text-5xl mb-6">Ready to Register?</h2>
-          <p className="text-xl text-gray-400 mb-10">Join hundreds of dancers at TOPAZ 2.0</p>
-          <a
-            href={registrationPdfUrl}
-            download="TOPAZ-Registration-Form.pdf"
-            className="inline-flex items-center gap-3 px-10 py-5 bg-[#2E75B6] text-white font-bold rounded-xl hover:bg-[#1F4E78] transition-all shadow-lg hover:shadow-xl hover:-translate-y-1"
-          >
-            <Download className="w-6 h-6" />
-            Download Registration Form
-          </a>
         </div>
       </section>
 
