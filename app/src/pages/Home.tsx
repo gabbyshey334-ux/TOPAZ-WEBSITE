@@ -1,4 +1,4 @@
-import { useEffect, useRef, useLayoutEffect } from 'react';
+import { useEffect, useRef, useLayoutEffect, useState } from 'react';
 import { format, parseISO } from 'date-fns';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -14,11 +14,17 @@ import {
   Sparkles,
   Trophy,
   Heart,
+  Quote,
 } from 'lucide-react';
 import HeroSection from '../sections/HeroSection';
 import MailingListSection from '../components/MailingListSection';
 import type { LucideIcon } from 'lucide-react';
 import { useActiveEvent } from '@/hooks/useActiveEvent';
+import { supabase } from '@/lib/supabase';
+import type { Database } from '@/types/database';
+
+type TestimonialRow = Database['public']['Tables']['testimonials']['Row'];
+type InstructorRow = Database['public']['Tables']['instructors']['Row'];
 
 // Register GSAP plugin
 gsap.registerPlugin(ScrollTrigger);
@@ -120,6 +126,8 @@ const Home = () => {
     !eventLoading && activeEvent?.location
       ? activeEvent.location
       : 'Seaside Convention Center • 415 1st Ave, Seaside, OR 97138';
+  // Kept defined for future use / other renders. Intentionally not rendered in hero.
+  void tourVenueLine;
 
   const tourRef = useRef<HTMLDivElement>(null);
   const promoRef = useRef<HTMLDivElement>(null);
@@ -129,6 +137,45 @@ const Home = () => {
 
   const location = useLocation();
   const navigate = useNavigate();
+
+  const [testimonials, setTestimonials] = useState<TestimonialRow[]>([]);
+  const [activeTestimonial, setActiveTestimonial] = useState(0);
+  const [masterclassInstructors, setMasterclassInstructors] = useState<InstructorRow[]>([]);
+  const [judges, setJudges] = useState<InstructorRow[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const [t, i] = await Promise.all([
+        supabase
+          .from('testimonials')
+          .select('*')
+          .eq('is_visible', true)
+          .order('display_order', { ascending: true })
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('instructors')
+          .select('*')
+          .eq('is_visible', true)
+          .order('display_order', { ascending: true })
+          .order('created_at', { ascending: false }),
+      ]);
+      if (cancelled) return;
+      setTestimonials((t.data as TestimonialRow[]) ?? []);
+      const instructors = (i.data as InstructorRow[]) ?? [];
+      setMasterclassInstructors(instructors.filter((x) => x.type === 'masterclass'));
+      setJudges(instructors.filter((x) => x.type === 'judge'));
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  useEffect(() => {
+    if (testimonials.length <= 1) return;
+    const id = setInterval(() => {
+      setActiveTestimonial((prev) => (prev + 1) % testimonials.length);
+    }, 7000);
+    return () => clearInterval(id);
+  }, [testimonials.length]);
 
   // Auto-scroll to sections when arriving with ?scrollTo= query param
   useEffect(() => {
@@ -337,46 +384,169 @@ const Home = () => {
           </div>
 
           <div className="grid grid-cols-1 gap-6 md:grid-cols-3 lg:gap-8">
-            {promoCards.map((card) => (
-              <div
-                key={card.id}
-                className="promo-card group relative h-[400px] cursor-pointer overflow-hidden rounded-[2rem] md:h-[450px]"
-              >
-                <img
-                  src={card.image}
-                  alt={card.title}
-                  className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
-                />
-                <div className={`absolute inset-0 bg-gradient-to-br ${card.bg} transition-opacity duration-500`} />
-                <div className="absolute inset-x-6 bottom-6">
-                  <div className="rounded-2xl border border-white/20 bg-white/10 p-6 shadow-2xl backdrop-blur-xl transition-transform duration-500 group-hover:translate-y-[-8px]">
-                    <div
-                      className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl"
-                      style={{ backgroundColor: `${card.accent}30` }}
-                    >
-                      <card.icon
-                        className="h-6 w-6"
-                        style={{ color: card.accent === '#2E75B6' ? 'white' : card.accent }}
-                      />
-                    </div>
-                    <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-white/80">
-                      {card.subtitle}
-                    </p>
-                    <h3 className="mb-2 font-display text-2xl font-black text-white">{card.title}</h3>
-                    <p className="text-sm text-white/70">{card.description}</p>
-                    <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1.5 backdrop-blur-sm">
-                      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white" />
-                      <span className="text-xs font-bold uppercase tracking-wider text-white">
-                        Coming Soon
-                      </span>
+            {promoCards.map((card) => {
+              const isMasterclass = card.title === 'MASTER CLASSES';
+              const isJudges = card.title === 'PANEL & JUDGES';
+              const count = isMasterclass
+                ? masterclassInstructors.length
+                : isJudges
+                  ? judges.length
+                  : 0;
+              const hasData = (isMasterclass || isJudges) && count > 0;
+              const anchor = isMasterclass ? '#master-classes' : isJudges ? '#panel-judges' : undefined;
+
+              const inner = (
+                <>
+                  <img
+                    src={card.image}
+                    alt={card.title}
+                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  />
+                  <div className={`absolute inset-0 bg-gradient-to-br ${card.bg} transition-opacity duration-500`} />
+                  <div className="absolute inset-x-6 bottom-6">
+                    <div className="rounded-2xl border border-white/20 bg-white/10 p-6 shadow-2xl backdrop-blur-xl transition-transform duration-500 group-hover:translate-y-[-8px]">
+                      <div
+                        className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl"
+                        style={{ backgroundColor: `${card.accent}30` }}
+                      >
+                        <card.icon
+                          className="h-6 w-6"
+                          style={{ color: card.accent === '#2E75B6' ? 'white' : card.accent }}
+                        />
+                      </div>
+                      <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-white/80">
+                        {hasData ? `${count} ${count === 1 ? 'Confirmed' : 'Confirmed'}` : card.subtitle}
+                      </p>
+                      <h3 className="mb-2 font-display text-2xl font-black text-white">{card.title}</h3>
+                      <p className="text-sm text-white/70">{card.description}</p>
+                      {hasData ? (
+                        <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1.5 backdrop-blur-sm">
+                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-300" />
+                          <span className="text-xs font-bold uppercase tracking-wider text-white">
+                            View below
+                          </span>
+                        </div>
+                      ) : (
+                        <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1.5 backdrop-blur-sm">
+                          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white" />
+                          <span className="text-xs font-bold uppercase tracking-wider text-white">
+                            Coming Soon
+                          </span>
+                        </div>
+                      )}
                     </div>
                   </div>
+                </>
+              );
+
+              return hasData && anchor ? (
+                <a
+                  key={card.id}
+                  href={anchor}
+                  className="promo-card group relative h-[400px] cursor-pointer overflow-hidden rounded-[2rem] md:h-[450px] block"
+                >
+                  {inner}
+                </a>
+              ) : (
+                <div
+                  key={card.id}
+                  className="promo-card group relative h-[400px] cursor-pointer overflow-hidden rounded-[2rem] md:h-[450px]"
+                >
+                  {inner}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
+
+      {/* Master Classes — populated from instructors table */}
+      {masterclassInstructors.length > 0 && (
+        <section id="master-classes" className="relative overflow-hidden bg-white py-20 lg:py-28 scroll-mt-24">
+          <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="mb-12 text-center lg:mb-16">
+              <span className="font-mono text-sm font-bold uppercase tracking-[0.2em] text-violet-600">
+                Master Classes
+              </span>
+              <h2 className="mt-3 font-display text-3xl font-black tracking-tight text-gray-900 sm:text-4xl lg:text-5xl">
+                Learn from <span className="italic text-violet-600">Industry Pros</span>
+              </h2>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+              {masterclassInstructors.map((p) => (
+                <div
+                  key={p.id}
+                  className="group relative bg-white rounded-3xl border border-gray-100 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 overflow-hidden"
+                >
+                  <div className="aspect-[4/5] bg-gradient-to-br from-violet-100 to-indigo-100 overflow-hidden">
+                    {p.photo_url ? (
+                      <img
+                        src={p.photo_url}
+                        alt={p.name}
+                        loading="lazy"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Users className="w-16 h-16 text-violet-300" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-6">
+                    <h3 className="font-display font-black text-xl text-gray-900">{p.name}</h3>
+                    {p.title && <p className="text-sm font-bold text-violet-600 mt-0.5">{p.title}</p>}
+                    {p.bio && <p className="mt-3 text-sm text-gray-600 leading-relaxed line-clamp-4">{p.bio}</p>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Panel & Judges — populated from instructors table */}
+      {judges.length > 0 && (
+        <section id="panel-judges" className="relative overflow-hidden bg-[#f8fafc] py-20 lg:py-28 scroll-mt-24 border-y border-gray-100">
+          <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="mb-12 text-center lg:mb-16">
+              <span className="font-mono text-sm font-bold uppercase tracking-[0.2em] text-amber-600">
+                Panel &amp; Judges
+              </span>
+              <h2 className="mt-3 font-display text-3xl font-black tracking-tight text-gray-900 sm:text-4xl lg:text-5xl">
+                Our <span className="italic text-amber-600">Adjudicators</span>
+              </h2>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+              {judges.map((p) => (
+                <div
+                  key={p.id}
+                  className="group relative bg-white rounded-3xl border border-gray-100 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 overflow-hidden"
+                >
+                  <div className="aspect-[4/5] bg-gradient-to-br from-amber-100 to-orange-100 overflow-hidden">
+                    {p.photo_url ? (
+                      <img
+                        src={p.photo_url}
+                        alt={p.name}
+                        loading="lazy"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Users className="w-16 h-16 text-amber-300" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-6">
+                    <h3 className="font-display font-black text-xl text-gray-900">{p.name}</h3>
+                    {p.title && <p className="text-sm font-bold text-amber-600 mt-0.5">{p.title}</p>}
+                    {p.bio && <p className="mt-3 text-sm text-gray-600 leading-relaxed line-clamp-4">{p.bio}</p>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Official TOPAZ 2.0 banner */}
       <section className="bg-white py-10 sm:py-14">
@@ -481,10 +651,6 @@ const Home = () => {
                 <ArrowRight className="w-6 h-6" />
               </Link>
             </div>
-
-            <p className="text-white/60 text-lg max-w-2xl mx-auto pt-4">
-              {eventLoading ? '…' : tourVenueLine}
-            </p>
           </div>
         </div>
 
@@ -523,20 +689,54 @@ const Home = () => {
             </h2>
           </div>
 
-          <div className="testimonial-card rounded-[2.5rem] border border-white/20 bg-white/10 backdrop-blur-xl px-8 py-14 sm:px-12 sm:py-16 shadow-2xl">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 mb-6">
-              <span className="w-2 h-2 bg-white rounded-full animate-pulse" />
-              <span className="text-xs font-bold uppercase tracking-wider text-white">Coming Soon</span>
+          {testimonials.length > 0 ? (
+            <div className="testimonial-card rounded-[2.5rem] border border-white/20 bg-white/10 backdrop-blur-xl px-8 py-14 sm:px-12 sm:py-16 shadow-2xl">
+              <Quote className="w-10 h-10 text-white/40 mx-auto mb-6" />
+              <p className="text-white text-xl sm:text-2xl leading-relaxed font-light italic">
+                &ldquo;{testimonials[activeTestimonial]?.content}&rdquo;
+              </p>
+              <div className="mt-8">
+                <p className="font-display font-bold text-lg text-white">
+                  {testimonials[activeTestimonial]?.author_name}
+                </p>
+                {testimonials[activeTestimonial]?.author_role && (
+                  <p className="text-sm text-white/60 mt-1">
+                    {testimonials[activeTestimonial]?.author_role}
+                  </p>
+                )}
+              </div>
+              {testimonials.length > 1 && (
+                <div className="mt-8 flex justify-center gap-2">
+                  {testimonials.map((_, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => setActiveTestimonial(i)}
+                      aria-label={`Show testimonial ${i + 1}`}
+                      className={`h-2 rounded-full transition-all ${
+                        i === activeTestimonial ? 'w-8 bg-white' : 'w-2 bg-white/30 hover:bg-white/50'
+                      }`}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
-            <p className="text-white/90 text-xl leading-relaxed font-light">
-              Testimonials will appear here after the competition season. Check back soon to read comments from our students and participants.
-            </p>
-            <div className="mt-8 flex justify-center gap-1">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="w-2 h-2 rounded-full bg-white/30" />
-              ))}
+          ) : (
+            <div className="testimonial-card rounded-[2.5rem] border border-white/20 bg-white/10 backdrop-blur-xl px-8 py-14 sm:px-12 sm:py-16 shadow-2xl">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 mb-6">
+                <span className="w-2 h-2 bg-white rounded-full animate-pulse" />
+                <span className="text-xs font-bold uppercase tracking-wider text-white">Coming Soon</span>
+              </div>
+              <p className="text-white/90 text-xl leading-relaxed font-light">
+                Testimonials will appear here after the competition season. Check back soon to read comments from our students and participants.
+              </p>
+              <div className="mt-8 flex justify-center gap-1">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="w-2 h-2 rounded-full bg-white/30" />
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </section>
 

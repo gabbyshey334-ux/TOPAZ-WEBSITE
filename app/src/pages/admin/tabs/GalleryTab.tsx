@@ -33,6 +33,7 @@ import {
   CheckCircle2,
   KeyRound,
   Loader2,
+  AlertCircle,
 } from 'lucide-react';
 import { parseVideoUrl } from '@/lib/videoEmbed';
 import { cn } from '@/lib/utils';
@@ -345,12 +346,15 @@ function PhotoSection({ section }: { section: string }) {
   const [lockingAll, setLockingAll] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
+  const [reordering, setReordering] = useState(false);
+
   const load = useCallback(async () => {
     setLoading(true);
     const { data } = await supabase
       .from('gallery_images')
       .select('*')
       .eq('section', section)
+      .order('display_order', { ascending: true })
       .order('created_at', { ascending: false });
     setRows((data as ImgRow[]) ?? []);
     setLoading(false);
@@ -401,6 +405,13 @@ function PhotoSection({ section }: { section: string }) {
     const swapIdx = dir === 'up' ? idx - 1 : idx + 1;
     [next[idx], next[swapIdx]] = [next[swapIdx], next[idx]];
     setRows(next);
+    setReordering(true);
+    await Promise.all(
+      next.map((row, i) =>
+        supabase.from('gallery_images').update({ display_order: i }).eq('id', row.id)
+      )
+    );
+    setReordering(false);
   }
 
   async function confirmDelete() {
@@ -553,18 +564,20 @@ function PhotoSection({ section }: { section: string }) {
                     <button
                       type="button"
                       onClick={() => moveRow(r.id, 'up')}
-                      disabled={idx === 0}
+                      disabled={idx === 0 || reordering}
                       className="p-1 text-slate-500 hover:text-white disabled:opacity-20"
+                      title="Move up"
                     >
-                      <ChevronUp className="w-3.5 h-3.5" />
+                      {reordering ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ChevronUp className="w-3.5 h-3.5" />}
                     </button>
                     <button
                       type="button"
                       onClick={() => moveRow(r.id, 'down')}
-                      disabled={idx === rows.length - 1}
+                      disabled={idx === rows.length - 1 || reordering}
                       className="p-1 text-slate-500 hover:text-white disabled:opacity-20"
+                      title="Move down"
                     >
-                      <ChevronDown className="w-3.5 h-3.5" />
+                      {reordering ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ChevronDown className="w-3.5 h-3.5" />}
                     </button>
                     <button
                       type="button"
@@ -620,7 +633,11 @@ function VideoSection({ section }: { section: string }) {
   const [deleting, setDeleting] = useState(false);
   const [urlPreview, setUrlPreview] = useState<string | null>(null);
   const [lockingAll, setLockingAll] = useState(false);
+  const [videoSizeError, setVideoSizeError] = useState<string | null>(null);
+  const [reordering, setReordering] = useState(false);
   const videoFileRef = useRef<HTMLInputElement>(null);
+
+  const MAX_VIDEO_SIZE_BYTES = 100 * 1024 * 1024;
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -628,6 +645,7 @@ function VideoSection({ section }: { section: string }) {
       .from('gallery_videos')
       .select('*')
       .eq('section', section)
+      .order('display_order', { ascending: true })
       .order('created_at', { ascending: false });
     setRows((data as VidRow[]) ?? []);
     setLoading(false);
@@ -647,10 +665,20 @@ function VideoSection({ section }: { section: string }) {
   function resetForm() {
     setTitle(''); setUrl(''); setVideoFile(null); setMode('url');
     setSaveProgress(''); setSaving(false); setUrlPreview(null);
+    setVideoSizeError(null);
   }
 
   async function addVideo() {
+    setVideoSizeError(null);
+
     if (!title.trim()) { alert('Title is required.'); return; }
+
+    if (mode === 'file' && videoFile && videoFile.size > MAX_VIDEO_SIZE_BYTES) {
+      setVideoSizeError(
+        'This video file is too large. Maximum size is 100MB. Try compressing the video first, or upload it to YouTube and paste the link instead.'
+      );
+      return;
+    }
 
     setSaving(true);
 
@@ -685,6 +713,23 @@ function VideoSection({ section }: { section: string }) {
   async function updateVideo(id: string, patch: Partial<VidRow>) {
     await supabase.from('gallery_videos').update(patch).eq('id', id);
     setRows((prev) => prev.map((r) => r.id === id ? { ...r, ...patch } : r));
+  }
+
+  async function moveVideo(id: string, dir: 'up' | 'down') {
+    const idx = rows.findIndex((r) => r.id === id);
+    if (dir === 'up' && idx === 0) return;
+    if (dir === 'down' && idx === rows.length - 1) return;
+    const next = [...rows];
+    const swapIdx = dir === 'up' ? idx - 1 : idx + 1;
+    [next[idx], next[swapIdx]] = [next[swapIdx], next[idx]];
+    setRows(next);
+    setReordering(true);
+    await Promise.all(
+      next.map((row, i) =>
+        supabase.from('gallery_videos').update({ display_order: i }).eq('id', row.id)
+      )
+    );
+    setReordering(false);
   }
 
   async function confirmDelete() {
@@ -814,13 +859,29 @@ function VideoSection({ section }: { section: string }) {
               </div>
             ) : (
               <div>
-                <Label className="text-slate-300">Video file *</Label>
+                <div className="flex items-center justify-between">
+                  <Label className="text-slate-300">Video file *</Label>
+                  <span className="text-[10px] uppercase tracking-wider font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-full px-2 py-0.5">
+                    Max 100MB
+                  </span>
+                </div>
                 <input
                   ref={videoFileRef}
                   type="file"
                   accept="video/*"
                   className="sr-only"
-                  onChange={(e) => setVideoFile(e.target.files?.[0] ?? null)}
+                  onChange={(e) => {
+                    const f = e.target.files?.[0] ?? null;
+                    setVideoSizeError(null);
+                    if (f && f.size > MAX_VIDEO_SIZE_BYTES) {
+                      setVideoSizeError(
+                        'This video file is too large. Maximum size is 100MB. Try compressing the video first, or upload it to YouTube and paste the link instead.'
+                      );
+                      setVideoFile(null);
+                    } else {
+                      setVideoFile(f);
+                    }
+                  }}
                 />
                 <button
                   type="button"
@@ -837,9 +898,16 @@ function VideoSection({ section }: { section: string }) {
                     <span className="text-sm text-slate-400">Click to select video file…</span>
                   )}
                 </button>
-                <p className="text-xs text-slate-500 mt-1.5">
-                  Large files may take a minute to upload. Keep this window open.
-                </p>
+                {videoSizeError ? (
+                  <div className="mt-2 flex items-start gap-2 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2">
+                    <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+                    <p className="text-xs text-red-300 leading-relaxed">{videoSizeError}</p>
+                  </div>
+                ) : (
+                  <p className="text-xs text-slate-500 mt-1.5">
+                    Max 100MB. Large files may take a minute to upload. Keep this window open.
+                  </p>
+                )}
               </div>
             )}
 
@@ -874,7 +942,7 @@ function VideoSection({ section }: { section: string }) {
         </div>
       ) : (
         <div className="space-y-3">
-          {rows.map((r) => {
+          {rows.map((r, idx) => {
             const parsed = parseVideoUrl(r.url);
             const thumb = parsed?.kind === 'youtube'
               ? `https://img.youtube.com/vi/${parsed.id}/mqdefault.jpg`
@@ -931,6 +999,24 @@ function VideoSection({ section }: { section: string }) {
                     }`}
                   >
                     {r.is_protected ? <Lock className="w-4 h-4" /> : <LockOpen className="w-4 h-4" />}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => moveVideo(r.id, 'up')}
+                    disabled={idx === 0 || reordering}
+                    className="p-1 text-slate-500 hover:text-white disabled:opacity-20"
+                    title="Move up"
+                  >
+                    {reordering ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ChevronUp className="w-3.5 h-3.5" />}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => moveVideo(r.id, 'down')}
+                    disabled={idx === rows.length - 1 || reordering}
+                    className="p-1 text-slate-500 hover:text-white disabled:opacity-20"
+                    title="Move down"
+                  >
+                    {reordering ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ChevronDown className="w-3.5 h-3.5" />}
                   </button>
                   <button
                     type="button"

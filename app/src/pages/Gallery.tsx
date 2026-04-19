@@ -198,6 +198,16 @@ function GalleryPhotoItem({
 }
 
 // ── Protected video item ───────────────────────────────────────────────────────
+const DIRECT_VIDEO_EXT = /\.(mp4|mov|webm|avi|m4v|ogv)(\?|#|$)/i;
+
+function isDirectVideoUrl(url: string): boolean {
+  if (!url) return false;
+  if (DIRECT_VIDEO_EXT.test(url)) return true;
+  // Supabase storage URLs (any region / legacy / newer) sign the video
+  if (/supabase\.(co|in)/i.test(url)) return true;
+  return false;
+}
+
 function GalleryVideoItem({
   video,
   isUnlocked,
@@ -210,6 +220,7 @@ function GalleryVideoItem({
   onRequestUnlock: () => void;
 }) {
   const parsed = parseVideoUrl(video.url);
+  const directVideo = !parsed && isDirectVideoUrl(video.url);
   const needsLock = video.is_protected && !isUnlocked && passwordConfigured;
 
   const thumb =
@@ -256,6 +267,15 @@ function GalleryVideoItem({
             className="h-full w-full"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
+          />
+        ) : directVideo ? (
+          <video
+            src={video.url}
+            title={video.title}
+            controls
+            preload="metadata"
+            playsInline
+            className="h-full w-full bg-black object-contain"
           />
         ) : (
           <div className="flex h-full items-center justify-center text-sm text-white/70">
@@ -315,6 +335,7 @@ const Gallery = () => {
           .eq('section', 'history')
           .eq('is_visible', true)
           .eq('is_members_only', false)
+          .order('display_order', { ascending: true })
           .order('created_at', { ascending: false }),
         supabase
           .from('gallery_images')
@@ -322,18 +343,21 @@ const Gallery = () => {
           .eq('section', 'topaz2')
           .eq('is_visible', true)
           .eq('is_members_only', false)
+          .order('display_order', { ascending: true })
           .order('created_at', { ascending: false }),
         supabase
           .from('gallery_videos')
           .select('*')
           .eq('section', 'history')
           .eq('is_visible', true)
+          .order('display_order', { ascending: true })
           .order('created_at', { ascending: false }),
         supabase
           .from('gallery_videos')
           .select('*')
           .eq('section', 'topaz2')
           .eq('is_visible', true)
+          .order('display_order', { ascending: true })
           .order('created_at', { ascending: false }),
       ]);
       if (cancelled) return;

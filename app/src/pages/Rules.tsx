@@ -667,7 +667,7 @@ const Rules = () => {
                 </div>
                 <h3 className="font-display font-black text-2xl text-[#0a0a0a] mb-3">Category Awards</h3>
                 <p className="text-gray-600 leading-relaxed text-[15px]">
-                  1st, 2nd, 3rd, and 4th place trophy in each category. Ties are broken by judges, or occasionally stand as equal placements.
+                  1st place in each category receives a trophy. 2nd, 3rd, and 4th place receive ribbons. Ties are broken at judges&apos; discretion.
                 </p>
               </div>
               
@@ -687,7 +687,7 @@ const Rules = () => {
                 </div>
                 <h3 className="font-display font-black text-2xl text-[#0a0a0a] mb-3">Trophies & Ribbons</h3>
                 <p className="text-gray-600 leading-relaxed text-[15px]">
-                  Winning <strong>solos</strong> receive a trophy. <strong>Duos/Trios</strong> receive 1 trophy + ribbons for all. <strong>Groups</strong> receive 1 trophy + ribbons for all. <strong>Production</strong> 1st place receives an award for every participant!
+                  Winning <strong>solos</strong> receive a trophy. <strong>Duos/Trios</strong> receive 1 trophy + ribbons for all. <strong>Groups</strong> receive 1 trophy + ribbons for all. <strong>Production:</strong> 1st place receives a trophy.
                 </p>
               </div>
             </div>

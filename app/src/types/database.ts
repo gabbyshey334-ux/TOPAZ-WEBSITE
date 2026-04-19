@@ -182,6 +182,7 @@ export type Database = {
           is_visible: boolean;
           is_members_only: boolean;
           is_protected: boolean;
+          display_order: number;
         };
         Insert: {
           id?: string;
@@ -193,6 +194,7 @@ export type Database = {
           is_visible?: boolean;
           is_members_only?: boolean;
           is_protected?: boolean;
+          display_order?: number;
         };
         Update: {
           id?: string;
@@ -204,6 +206,7 @@ export type Database = {
           is_visible?: boolean;
           is_members_only?: boolean;
           is_protected?: boolean;
+          display_order?: number;
         };
         Relationships: [];
       };
@@ -216,6 +219,7 @@ export type Database = {
           title: string;
           is_visible: boolean;
           is_protected: boolean;
+          display_order: number;
         };
         Insert: {
           id?: string;
@@ -225,6 +229,7 @@ export type Database = {
           title: string;
           is_visible?: boolean;
           is_protected?: boolean;
+          display_order?: number;
         };
         Update: {
           id?: string;
@@ -234,6 +239,7 @@ export type Database = {
           title?: string;
           is_visible?: boolean;
           is_protected?: boolean;
+          display_order?: number;
         };
         Relationships: [];
       };
@@ -315,6 +321,72 @@ export type Database = {
           title?: string;
           body?: string;
           is_active?: boolean;
+        };
+        Relationships: [];
+      };
+      testimonials: {
+        Row: {
+          id: string;
+          created_at: string;
+          author_name: string;
+          author_role: string | null;
+          content: string;
+          is_visible: boolean;
+          display_order: number;
+        };
+        Insert: {
+          id?: string;
+          created_at?: string;
+          author_name: string;
+          author_role?: string | null;
+          content: string;
+          is_visible?: boolean;
+          display_order?: number;
+        };
+        Update: {
+          id?: string;
+          created_at?: string;
+          author_name?: string;
+          author_role?: string | null;
+          content?: string;
+          is_visible?: boolean;
+          display_order?: number;
+        };
+        Relationships: [];
+      };
+      instructors: {
+        Row: {
+          id: string;
+          created_at: string;
+          name: string;
+          title: string | null;
+          bio: string | null;
+          photo_url: string | null;
+          type: 'judge' | 'masterclass';
+          is_visible: boolean;
+          display_order: number;
+        };
+        Insert: {
+          id?: string;
+          created_at?: string;
+          name: string;
+          title?: string | null;
+          bio?: string | null;
+          photo_url?: string | null;
+          type: 'judge' | 'masterclass';
+          is_visible?: boolean;
+          display_order?: number;
+        };
+        Update: {
+          id?: string;
+          created_at?: string;
+          name?: string;
+          title?: string | null;
+          bio?: string | null;
+          photo_url?: string | null;
+          type?: 'judge' | 'masterclass';
+          is_visible?: boolean;
+          display_order?: number;
         };
         Relationships: [];
       };
