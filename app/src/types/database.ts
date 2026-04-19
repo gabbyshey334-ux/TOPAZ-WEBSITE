@@ -381,6 +381,30 @@ export type Database = {
         };
         Relationships: [];
       };
+      mailing_list: {
+        Row: {
+          id: string;
+          email: string;
+          name: string | null;
+          source: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          email: string;
+          name?: string | null;
+          source?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          email?: string;
+          name?: string | null;
+          source?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
       products: {
         Row: {
           id: string;

@@ -1,8 +1,8 @@
-import { useRef, useLayoutEffect } from 'react';
+import { useEffect, useRef, useLayoutEffect } from 'react';
 import { format, parseISO } from 'date-fns';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   ArrowRight,
   Calendar,
@@ -16,6 +16,7 @@ import {
   Heart,
 } from 'lucide-react';
 import HeroSection from '../sections/HeroSection';
+import MailingListSection from '../components/MailingListSection';
 import type { LucideIcon } from 'lucide-react';
 import { useActiveEvent } from '@/hooks/useActiveEvent';
 
@@ -125,6 +126,24 @@ const Home = () => {
   const aboutRef = useRef<HTMLDivElement>(null);
   const testimonialsRef = useRef<HTMLDivElement>(null);
   const heritageRef = useRef<HTMLDivElement>(null);
+
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // Auto-scroll to sections when arriving with ?scrollTo= query param
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const target = params.get('scrollTo');
+    if (!target) return;
+    const id = target === 'mailinglist' ? 'mailing-list' : target;
+    const el = document.getElementById(id);
+    if (el) {
+      requestAnimationFrame(() => {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    }
+    navigate(location.pathname, { replace: true });
+  }, [location.search, location.pathname, navigate]);
 
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
@@ -520,6 +539,9 @@ const Home = () => {
           </div>
         </div>
       </section>
+
+      {/* MAILING LIST SIGNUP */}
+      <MailingListSection />
 
       {/* FINAL CTA SECTION — Ultra Premium */}
       <section className="relative bg-gradient-to-br from-[#0F2847] via-[#1F4E78] to-[#2E75B6] py-24 lg:py-32 overflow-hidden">

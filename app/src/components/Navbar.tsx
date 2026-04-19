@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { useState, useEffect, type MouseEvent } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Menu, X, ShoppingBag } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 
@@ -17,7 +17,21 @@ const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const { count, openCart } = useCart();
+
+  const handleJoinClick = (e: MouseEvent) => {
+    e.preventDefault();
+    setIsMobileMenuOpen(false);
+    if (location.pathname === '/') {
+      const el = document.getElementById('mailing-list');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        return;
+      }
+    }
+    navigate('/?scrollTo=mailinglist');
+  };
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 40);
@@ -85,12 +99,13 @@ const Navbar = () => {
                   </span>
                 )}
               </button>
-              <Link
-                to="/registration"
+              <a
+                href="/?scrollTo=mailinglist"
+                onClick={handleJoinClick}
                 className="px-5 py-2.5 font-bold text-xs uppercase tracking-[0.15em] bg-[#2E75B6] text-white rounded-full hover:bg-[#1F4E78] transition-all duration-200"
               >
                 JOIN
-              </Link>
+              </a>
             </div>
 
             {/* Mobile: Cart + Hamburger */}
@@ -169,13 +184,13 @@ const Navbar = () => {
           >
             REGISTER
           </Link>
-          <Link
-            to="/registration"
-            onClick={() => setIsMobileMenuOpen(false)}
+          <a
+            href="/?scrollTo=mailinglist"
+            onClick={handleJoinClick}
             className="w-full py-4 text-center font-bold text-sm uppercase tracking-[0.2em] bg-[#2E75B6] text-white rounded-full hover:bg-[#1F4E78] transition-colors"
           >
             JOIN THE DANCE
-          </Link>
+          </a>
         </div>
       </div>
 
