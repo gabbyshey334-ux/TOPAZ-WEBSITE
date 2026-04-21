@@ -17,6 +17,7 @@ import Rules from '@/pages/Rules';
 import Contact from '@/pages/Contact';
 import Gallery from '@/pages/Gallery';
 import Registration from '@/pages/Registration';
+import RegistrationFormRedirect from '@/pages/RegistrationFormRedirect';
 import Shop from '@/pages/Shop';
 import AdminLogin from '@/pages/admin/AdminLogin';
 import AdminEntry from '@/pages/admin/AdminEntry';
@@ -63,6 +64,7 @@ function App() {
           <Route path="/contact" element={<Contact />} />
           <Route path="/gallery" element={<Gallery />} />
           <Route path="/registration" element={<Registration />} />
+          <Route path="/registration-form" element={<RegistrationFormRedirect />} />
           <Route path="/shop" element={<Shop />} />
           <Route
             path="/members/dashboard"

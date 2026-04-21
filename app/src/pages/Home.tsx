@@ -122,12 +122,6 @@ const Home = () => {
       : 'Saturday, August 22, 2026';
   const tourLocationLabel =
     !eventLoading && activeEvent?.location ? activeEvent.location : 'Seaside, OR';
-  const tourVenueLine =
-    !eventLoading && activeEvent?.location
-      ? activeEvent.location
-      : 'Seaside Convention Center • 415 1st Ave, Seaside, OR 97138';
-  // Kept defined for future use / other renders. Intentionally not rendered in hero.
-  void tourVenueLine;
 
   const tourRef = useRef<HTMLDivElement>(null);
   const promoRef = useRef<HTMLDivElement>(null);

@@ -203,8 +203,8 @@ const DIRECT_VIDEO_EXT = /\.(mp4|mov|webm|avi|m4v|ogv)(\?|#|$)/i;
 function isDirectVideoUrl(url: string): boolean {
   if (!url) return false;
   if (DIRECT_VIDEO_EXT.test(url)) return true;
-  // Supabase storage URLs (any region / legacy / newer) sign the video
-  if (/supabase\.(co|in)/i.test(url)) return true;
+  // Any Supabase storage URL (signed or public, any region) is a direct file
+  if (/supabase/i.test(url)) return true;
   return false;
 }
 

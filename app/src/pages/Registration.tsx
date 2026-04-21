@@ -16,13 +16,13 @@ import {
   ArrowRight,
   MapPin
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import CompetitionRegistrationForm from '@/components/registration/CompetitionRegistrationForm';
 
 gsap.registerPlugin(ScrollTrigger);
 
 const Registration = () => {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
-  const registrationPdfUrl = `${import.meta.env.BASE_URL}pdfs/topaz-registration-form.pdf`;
   
   const heroRef = useRef<HTMLDivElement>(null);
   const stepsRef = useRef<HTMLDivElement>(null);
@@ -166,14 +166,13 @@ const Registration = () => {
               Register Now
               <ArrowRight className="w-5 h-5" />
             </a>
-            <a
-              href={registrationPdfUrl}
-              download="TOPAZ-Registration-Form.pdf"
+            <Link
+              to="/registration-form"
               className="inline-flex items-center justify-center gap-3 px-8 py-4 bg-white/5 text-white border border-white/10 font-bold rounded-full hover:bg-white/10 transition-all duration-300 text-lg w-full sm:w-auto backdrop-blur-sm"
             >
-              <FileText className="w-5 h-5" />
-              Download PDF
-            </a>
+              <Download className="w-5 h-5" />
+              Download Registration Form
+            </Link>
           </div>
         </div>
 

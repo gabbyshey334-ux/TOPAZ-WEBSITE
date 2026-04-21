@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import type { RefObject } from 'react';
+import { Link } from 'react-router-dom';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import {
@@ -351,6 +352,10 @@ const Rules = () => {
               <Download className="w-5 h-5 mr-2 group-hover:-translate-y-1 transition-transform" />
               Download Rules PDF
             </a>
+            <Link to="/registration-form" className="group relative inline-flex items-center justify-center px-8 py-4 font-bold text-white transition-all duration-200 bg-transparent border border-white/30 rounded-full hover:bg-white hover:text-[#0a0a0a] hover:border-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white">
+              <Download className="w-5 h-5 mr-2 group-hover:-translate-y-1 transition-transform" />
+              Download Registration Form
+            </Link>
           </div>
         </div>
       </section>
@@ -781,12 +786,18 @@ const Rules = () => {
             Need a <span className="italic font-light">Physical Copy</span>?
           </h2>
           <p className="text-white/90 text-lg sm:text-xl mb-10 max-w-2xl mx-auto font-medium">
-            Download the complete rules PDF to share with studio directors, team members, or instructors.
+            Download the complete rules PDF and the official registration form to share with studio directors, team members, or instructors.
           </p>
-          <a href={pdfHref} download="TOPAZ_Rules_2026.pdf" className="inline-flex items-center gap-2 px-10 py-5 bg-white text-[#2E75B6] font-bold text-sm uppercase tracking-wider rounded-full hover:bg-white/90 hover:scale-105 transition-all shadow-xl shadow-black/10">
-            <Download className="w-5 h-5" />
-            Download Rules PDF
-          </a>
+          <div className="flex flex-wrap justify-center gap-4">
+            <a href={pdfHref} download="TOPAZ_Rules_2026.pdf" className="inline-flex items-center gap-2 px-10 py-5 bg-white text-[#2E75B6] font-bold text-sm uppercase tracking-wider rounded-full hover:bg-white/90 hover:scale-105 transition-all shadow-xl shadow-black/10">
+              <Download className="w-5 h-5" />
+              Download Rules PDF
+            </a>
+            <Link to="/registration-form" className="inline-flex items-center gap-2 px-10 py-5 bg-transparent text-white border-2 border-white/70 font-bold text-sm uppercase tracking-wider rounded-full hover:bg-white hover:text-[#2E75B6] hover:scale-105 transition-all">
+              <Download className="w-5 h-5" />
+              Download Registration Form
+            </Link>
+          </div>
         </div>
       </section>
     </div>

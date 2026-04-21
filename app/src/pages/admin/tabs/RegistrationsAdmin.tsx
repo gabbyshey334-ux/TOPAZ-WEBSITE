@@ -34,8 +34,56 @@ import {
   RefreshCw,
   Loader2,
   AlertTriangle,
+  Plus,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+
+// ── Options for Add Manual dialog ────────────────────────────────────────────
+const MANUAL_CATEGORIES = [
+  'TAP',
+  'BALLET',
+  'JAZZ',
+  'LYRICAL/CONTEMPORARY',
+  'VOCAL',
+  'ACTING',
+  'HIP HOP',
+  'VARIETY A (Song & Dance/Character/Combination of Performing Arts)',
+  'VARIETY B (Dance with Prop)',
+  'VARIETY C (Dance with Acrobatics)',
+  'VARIETY D (Dance with Acrobatics & Prop)',
+  'VARIETY E (Hip Hop)',
+  'VARIETY F (Ballroom)',
+  'VARIETY G (Line Dancing)',
+  'PRODUCTION',
+  'STUDENT CHOREOGRAPHY',
+  'TEACHER/STUDENT',
+] as const;
+
+const MANUAL_GROUP_SIZES = [
+  'Solo (2½ min limit)',
+  'Duo (2½ min limit)',
+  'Trio (3 min limit)',
+  'Small Group 4–10 contestants (3 min limit)',
+  'Large Group 11 or more (3½ min limit)',
+  'Production 10 or more (8 min limit)',
+] as const;
+
+function defaultContestantCountFor(gs: string): number {
+  if (gs.startsWith('Solo')) return 1;
+  if (gs.startsWith('Duo')) return 2;
+  if (gs.startsWith('Trio')) return 3;
+  if (gs.startsWith('Small Group')) return 4;
+  if (gs.startsWith('Large Group')) return 11;
+  if (gs.startsWith('Production')) return 10;
+  return 1;
+}
+
+function computeFeeFor(gs: string, count: number): number {
+  if (gs.startsWith('Solo')) return 100;
+  if (gs.startsWith('Duo')) return 80 * count;
+  if (gs.startsWith('Trio')) return 70 * count;
+  return 60 * count;
+}
 
 type RegRow = Database['public']['Tables']['registrations']['Row'];
 
@@ -396,7 +444,51 @@ export default function RegistrationsAdmin() {
   const [bulkSyncing, setBulkSyncing] = useState(false);
   const [bulkProgress, setBulkProgress] = useState<{ done: number; total: number } | null>(null);
   const [bulkResult, setBulkResult] = useState<string | null>(null);
+  const [bulkResultError, setBulkResultError] = useState(false);
   const [showBulkConfirm, setShowBulkConfirm] = useState(false);
+  // Manual add state
+  const [showAddManual, setShowAddManual] = useState(false);
+  const [addingManual, setAddingManual] = useState(false);
+  const [manualError, setManualError] = useState<string | null>(null);
+  const [m_contestantName, setMContestantName] = useState('');
+  const [m_groupSize, setMGroupSize] = useState<string>('');
+  const [m_category, setMCategory] = useState<string>('');
+  const [m_songTitle, setMSongTitle] = useState('');
+  const [m_artistName, setMArtistName] = useState('');
+  const [m_age, setMAge] = useState('');
+  const [m_studioName, setMStudioName] = useState('');
+  const [m_teacherName, setMTeacherName] = useState('');
+  const [m_musicDeliveryMethod, setMMusicDeliveryMethod] = useState<'usb' | 'upload'>('usb');
+  const [m_parentGuardianName, setMParentGuardianName] = useState('');
+  const [m_email, setMEmail] = useState('');
+  const [m_totalFee, setMTotalFee] = useState<string>('');
+
+  function resetManualForm() {
+    setMContestantName('');
+    setMGroupSize('');
+    setMCategory('');
+    setMSongTitle('');
+    setMArtistName('');
+    setMAge('');
+    setMStudioName('');
+    setMTeacherName('');
+    setMMusicDeliveryMethod('usb');
+    setMParentGuardianName('');
+    setMEmail('');
+    setMTotalFee('');
+    setManualError(null);
+  }
+
+  const m_ageNum = Number(m_age);
+  const m_isMinor = m_age.trim() !== '' && !Number.isNaN(m_ageNum) && m_ageNum < 18;
+
+  // Auto-suggest fee when group size or age changes, only if user hasn't set one
+  useEffect(() => {
+    if (!m_groupSize) return;
+    const count = defaultContestantCountFor(m_groupSize);
+    const suggested = computeFeeFor(m_groupSize, count);
+    setMTotalFee((prev) => (prev === '' ? String(suggested) : prev));
+  }, [m_groupSize]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -489,10 +581,112 @@ export default function RegistrationsAdmin() {
 
     setBulkSyncing(false);
     setBulkProgress(null);
+    setBulkResultError(failCount > 0 && successCount === 0);
     setBulkResult(
       `Bulk sync complete — ${successCount} succeeded, ${failCount} failed.`
     );
     setTimeout(() => setBulkResult(null), 8000);
+  }
+
+  async function submitManual() {
+    setManualError(null);
+    if (!m_contestantName.trim()) return setManualError('Dancer name is required.');
+    if (!m_groupSize) return setManualError('Entry type is required.');
+    if (!m_category) return setManualError('Category is required.');
+    if (!m_songTitle.trim()) return setManualError('Song title is required.');
+    if (!m_age.trim() || Number.isNaN(Number(m_age))) return setManualError('A valid age is required.');
+    if (!m_studioName.trim()) return setManualError('Studio name is required.');
+    if (!m_teacherName.trim()) return setManualError('Teacher name is required.');
+    if (!m_email.trim() || !m_email.includes('@')) return setManualError('A valid email is required.');
+    if (m_isMinor && !m_parentGuardianName.trim()) {
+      return setManualError('Parent / guardian name is required for minors.');
+    }
+    const feeNum = Number(m_totalFee);
+    if (m_totalFee.trim() === '' || Number.isNaN(feeNum) || feeNum < 0) {
+      return setManualError('A valid fee amount is required.');
+    }
+
+    setAddingManual(true);
+    try {
+      const count = defaultContestantCountFor(m_groupSize);
+      const row = {
+        status: 'confirmed',
+        contestant_name: m_contestantName.trim(),
+        age: m_age.trim(),
+        studio_name: m_studioName.trim(),
+        teacher_name: m_teacherName.trim(),
+        routine_name: m_songTitle.trim(),
+        phone: '',
+        email: m_email.trim().toLowerCase(),
+        years_of_training: '',
+        parent_guardian_name: m_parentGuardianName.trim() || null,
+        category: m_category,
+        age_division: '',
+        ability_level: '',
+        group_size: m_groupSize,
+        contestant_count: count,
+        total_fee: feeNum,
+        payment_method: 'Manual Entry',
+        song_title: m_songTitle.trim() || null,
+        artist_name: m_artistName.trim() || null,
+        music_delivery_method: m_musicDeliveryMethod,
+        disclaimer_accepted: true,
+        scoring_app_sync_status: 'pending',
+      };
+
+      const { data: insData, error: insErr } = await supabase
+        .from('registrations')
+        .insert(row)
+        .select('*')
+        .single();
+
+      if (insErr || !insData) {
+        throw new Error(insErr?.message ?? 'Insert failed');
+      }
+
+      // Add to list immediately
+      setRows((prev) => [insData as RegRow, ...prev]);
+
+      // Trigger sync-to-scoring-app Edge Function
+      let syncMsg = '';
+      let syncError = false;
+      try {
+        const { data: syncData, error: syncErr } = await supabase.functions.invoke(
+          'sync-to-scoring-app',
+          { body: { registrationId: (insData as RegRow).id } }
+        );
+        if (syncErr) throw new Error(syncErr.message);
+        if (syncData?.alreadySynced) {
+          syncMsg = 'Registration added — already synced to scoring app.';
+        } else if (syncData?.skipped) {
+          syncMsg = `Registration added — sync skipped: ${syncData.reason ?? 'duplicate'}.`;
+        } else {
+          syncMsg = `Registration added and synced! Entry #${syncData?.entryNumber ?? '—'} in scoring app.`;
+        }
+      } catch (e) {
+        syncError = true;
+        syncMsg = `Registration added, but sync failed: ${e instanceof Error ? e.message : String(e)}`;
+      }
+
+      // Refresh sync columns from DB
+      const { data: fresh } = await supabase
+        .from('registrations')
+        .select('scoring_app_sync_status, scoring_app_contestant_id, scoring_app_synced_at, scoring_app_sync_error')
+        .eq('id', (insData as RegRow).id)
+        .single();
+      if (fresh) handleSyncComplete((insData as RegRow).id, fresh as Partial<RegRow>);
+
+      setBulkResultError(syncError);
+      setBulkResult(syncMsg);
+      setTimeout(() => setBulkResult(null), 8000);
+
+      setShowAddManual(false);
+      resetManualForm();
+    } catch (e) {
+      setManualError(`Failed to add registration: ${e instanceof Error ? e.message : String(e)}`);
+    } finally {
+      setAddingManual(false);
+    }
   }
 
   function exportCsv() {
@@ -540,10 +734,19 @@ export default function RegistrationsAdmin() {
 
   return (
     <div className="space-y-6">
-      {/* Bulk sync result banner */}
+      {/* Bulk sync / manual add result banner */}
       {bulkResult && (
-        <div className="flex items-center gap-2 bg-emerald-950/40 border border-emerald-900/50 rounded-xl px-4 py-3 text-sm text-emerald-300">
-          <CheckCircle2 className="w-4 h-4 shrink-0" />
+        <div className={cn(
+          'flex items-center gap-2 rounded-xl px-4 py-3 text-sm',
+          bulkResultError
+            ? 'bg-red-950/40 border border-red-900/50 text-red-300'
+            : 'bg-emerald-950/40 border border-emerald-900/50 text-emerald-300'
+        )}>
+          {bulkResultError ? (
+            <XCircle className="w-4 h-4 shrink-0" />
+          ) : (
+            <CheckCircle2 className="w-4 h-4 shrink-0" />
+          )}
           {bulkResult}
         </div>
       )}
@@ -572,6 +775,13 @@ export default function RegistrationsAdmin() {
           </p>
         </div>
         <div className="flex flex-wrap gap-2 shrink-0">
+          <Button
+            className="bg-emerald-600 hover:bg-emerald-700 text-white"
+            onClick={() => { resetManualForm(); setShowAddManual(true); }}
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Add Manual Registration
+          </Button>
           {unsyncedCount > 0 && !bulkSyncing && (
             <Button
               className="bg-[#2E75B6] hover:bg-[#1e5a96] text-white"
@@ -859,6 +1069,235 @@ export default function RegistrationsAdmin() {
                 <>
                   <Trash2 className="w-4 h-4 mr-1.5" />
                   Delete permanently
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add manual registration dialog */}
+      <Dialog
+        open={showAddManual}
+        onOpenChange={(v) => {
+          if (!addingManual) {
+            setShowAddManual(v);
+            if (!v) resetManualForm();
+          }
+        }}
+      >
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-slate-950 border-slate-700 text-white">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-[#7EB8E8]">
+              <Plus className="w-5 h-5" />
+              Add Manual Registration
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="py-3 space-y-4">
+            {manualError && (
+              <div className="flex items-start gap-2 rounded-lg bg-red-950/40 border border-red-900/50 px-3 py-2 text-sm text-red-300">
+                <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
+                <span>{manualError}</span>
+              </div>
+            )}
+
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div className="sm:col-span-2">
+                <label className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-1 block">
+                  Dancer Name *
+                </label>
+                <Input
+                  value={m_contestantName}
+                  onChange={(e) => setMContestantName(e.target.value)}
+                  placeholder="First and last name"
+                  className="bg-slate-900 border-slate-700 text-white"
+                />
+              </div>
+
+              <div>
+                <label className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-1 block">
+                  Entry Type *
+                </label>
+                <Select value={m_groupSize} onValueChange={setMGroupSize}>
+                  <SelectTrigger className="bg-slate-900 border-slate-700 text-white">
+                    <SelectValue placeholder="Select entry type" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-slate-900 border-slate-700">
+                    {MANUAL_GROUP_SIZES.map((g) => (
+                      <SelectItem key={g} value={g} className="text-white">
+                        {g}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <label className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-1 block">
+                  Category *
+                </label>
+                <Select value={m_category} onValueChange={setMCategory}>
+                  <SelectTrigger className="bg-slate-900 border-slate-700 text-white">
+                    <SelectValue placeholder="Select category" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-slate-900 border-slate-700 max-h-[280px]">
+                    {MANUAL_CATEGORIES.map((c) => (
+                      <SelectItem key={c} value={c} className="text-white">
+                        {c}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <label className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-1 block">
+                  Song Title *
+                </label>
+                <Input
+                  value={m_songTitle}
+                  onChange={(e) => setMSongTitle(e.target.value)}
+                  placeholder="E.g. Bohemian Rhapsody"
+                  className="bg-slate-900 border-slate-700 text-white"
+                />
+              </div>
+
+              <div>
+                <label className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-1 block">
+                  Artist Name
+                </label>
+                <Input
+                  value={m_artistName}
+                  onChange={(e) => setMArtistName(e.target.value)}
+                  placeholder="E.g. Queen"
+                  className="bg-slate-900 border-slate-700 text-white"
+                />
+              </div>
+
+              <div>
+                <label className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-1 block">
+                  Age *
+                </label>
+                <Input
+                  type="number"
+                  min={0}
+                  value={m_age}
+                  onChange={(e) => setMAge(e.target.value)}
+                  placeholder="Age on competition day"
+                  className="bg-slate-900 border-slate-700 text-white"
+                />
+              </div>
+
+              <div>
+                <label className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-1 block">
+                  Studio *
+                </label>
+                <Input
+                  value={m_studioName}
+                  onChange={(e) => setMStudioName(e.target.value)}
+                  placeholder="Studio name"
+                  className="bg-slate-900 border-slate-700 text-white"
+                />
+              </div>
+
+              <div className="sm:col-span-2">
+                <label className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-1 block">
+                  Teacher *
+                </label>
+                <Input
+                  value={m_teacherName}
+                  onChange={(e) => setMTeacherName(e.target.value)}
+                  placeholder="Teacher / instructor name"
+                  className="bg-slate-900 border-slate-700 text-white"
+                />
+              </div>
+
+              <div>
+                <label className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-1 block">
+                  Music Delivery *
+                </label>
+                <Select
+                  value={m_musicDeliveryMethod}
+                  onValueChange={(v) => setMMusicDeliveryMethod(v as 'usb' | 'upload')}
+                >
+                  <SelectTrigger className="bg-slate-900 border-slate-700 text-white">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-slate-900 border-slate-700">
+                    <SelectItem value="usb" className="text-white">USB on competition day</SelectItem>
+                    <SelectItem value="upload" className="text-white">Digital upload</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <label className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-1 block">
+                  Fee Amount *
+                </label>
+                <Input
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  value={m_totalFee}
+                  onChange={(e) => setMTotalFee(e.target.value)}
+                  placeholder="0.00"
+                  className="bg-slate-900 border-slate-700 text-white"
+                />
+              </div>
+
+              <div className="sm:col-span-2">
+                <label className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-1 block">
+                  Email *
+                </label>
+                <Input
+                  type="email"
+                  value={m_email}
+                  onChange={(e) => setMEmail(e.target.value)}
+                  placeholder="dancer@example.com"
+                  className="bg-slate-900 border-slate-700 text-white"
+                />
+              </div>
+
+              {m_isMinor && (
+                <div className="sm:col-span-2">
+                  <label className="text-[10px] uppercase tracking-wider text-amber-400 font-semibold mb-1 block">
+                    Parent / Guardian Name * (required for minors)
+                  </label>
+                  <Input
+                    value={m_parentGuardianName}
+                    onChange={(e) => setMParentGuardianName(e.target.value)}
+                    placeholder="Full legal name"
+                    className="bg-slate-900 border-slate-700 text-white"
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2">
+            <Button
+              variant="ghost"
+              className="text-slate-300 hover:text-white"
+              onClick={() => { setShowAddManual(false); resetManualForm(); }}
+              disabled={addingManual}
+            >
+              Cancel
+            </Button>
+            <Button
+              className="bg-[#2E75B6] hover:bg-[#1e5a96] text-white"
+              onClick={submitManual}
+              disabled={addingManual}
+            >
+              {addingManual ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
+                  Adding & syncing…
+                </>
+              ) : (
+                <>
+                  <Plus className="w-4 h-4 mr-1.5" />
+                  Add & Sync
                 </>
               )}
             </Button>

@@ -47,9 +47,9 @@ export default function SettingsTab() {
             <BarChart3 className="w-5 h-5 text-[#7EB8E8]" />
           </div>
           <div>
-            <h3 className="font-bold text-white">View Site Analytics</h3>
+            <h3 className="font-bold text-white">Site Analytics</h3>
             <p className="text-sm text-slate-400 mt-0.5">
-              Real-time visitor dashboard with page views, unique visitors, and top pages.
+              See how many people are visiting your site, which pages they view, and where they come from.
             </p>
           </div>
         </div>
@@ -59,7 +59,7 @@ export default function SettingsTab() {
           rel="noopener noreferrer"
           className="inline-flex items-center gap-2 rounded-lg bg-[#2E75B6] hover:bg-[#1F4E78] text-white font-bold px-4 py-2 text-sm transition-colors"
         >
-          Open Analytics
+          View Analytics Dashboard
           <ExternalLink className="w-4 h-4" />
         </a>
       </div>

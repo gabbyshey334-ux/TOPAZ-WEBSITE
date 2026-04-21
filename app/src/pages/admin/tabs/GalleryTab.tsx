@@ -356,7 +356,21 @@ function PhotoSection({ section }: { section: string }) {
       .eq('section', section)
       .order('display_order', { ascending: true })
       .order('created_at', { ascending: false });
-    setRows((data as ImgRow[]) ?? []);
+    let list = (data as ImgRow[]) ?? [];
+
+    // One-time baseline: if every row still has display_order === 0, we've never
+    // persisted an order. Seed initial values from the current created_at sort
+    // so existing items have a stable baseline the admin can reorder from.
+    if (list.length > 0 && list.every((r) => (r.display_order ?? 0) === 0)) {
+      await Promise.all(
+        list.map((row, i) =>
+          supabase.from('gallery_images').update({ display_order: i }).eq('id', row.id)
+        )
+      );
+      list = list.map((r, i) => ({ ...r, display_order: i }));
+    }
+
+    setRows(list);
     setLoading(false);
   }, [section]);
 
@@ -647,7 +661,18 @@ function VideoSection({ section }: { section: string }) {
       .eq('section', section)
       .order('display_order', { ascending: true })
       .order('created_at', { ascending: false });
-    setRows((data as VidRow[]) ?? []);
+    let list = (data as VidRow[]) ?? [];
+
+    if (list.length > 0 && list.every((r) => (r.display_order ?? 0) === 0)) {
+      await Promise.all(
+        list.map((row, i) =>
+          supabase.from('gallery_videos').update({ display_order: i }).eq('id', row.id)
+        )
+      );
+      list = list.map((r, i) => ({ ...r, display_order: i }));
+    }
+
+    setRows(list);
     setLoading(false);
   }, [section]);
 
@@ -675,7 +700,7 @@ function VideoSection({ section }: { section: string }) {
 
     if (mode === 'file' && videoFile && videoFile.size > MAX_VIDEO_SIZE_BYTES) {
       setVideoSizeError(
-        'This video file is too large. Maximum size is 100MB. Try compressing the video first, or upload it to YouTube and paste the link instead.'
+        'This file is too large (max 100MB). For best results, upload your video to YouTube and paste the link instead.'
       );
       return;
     }
@@ -875,7 +900,7 @@ function VideoSection({ section }: { section: string }) {
                     setVideoSizeError(null);
                     if (f && f.size > MAX_VIDEO_SIZE_BYTES) {
                       setVideoSizeError(
-                        'This video file is too large. Maximum size is 100MB. Try compressing the video first, or upload it to YouTube and paste the link instead.'
+                        'This file is too large (max 100MB). For best results, upload your video to YouTube and paste the link instead.'
                       );
                       setVideoFile(null);
                     } else {
@@ -905,7 +930,7 @@ function VideoSection({ section }: { section: string }) {
                   </div>
                 ) : (
                   <p className="text-xs text-slate-500 mt-1.5">
-                    Max 100MB. Large files may take a minute to upload. Keep this window open.
+                    Max 100MB — or use YouTube link.
                   </p>
                 )}
               </div>
