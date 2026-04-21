@@ -1,34 +1,17 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import type { Database } from '@/types/database';
-import {
-  ClipboardList,
-  CheckCircle2,
-  Clock,
-  XCircle,
-  AlertCircle,
-  DollarSign,
-  Users,
-  CalendarCheck,
-  RefreshCw,
-  ArrowUpRight,
-  Sparkles,
-  MapPin,
-} from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { ClipboardList, CheckCircle2, Clock, XCircle, AlertCircle, DollarSign, Users, CalendarCheck, RefreshCw } from 'lucide-react';
 
 type RegRow = Database['public']['Tables']['registrations']['Row'];
 type EventRow = Database['public']['Tables']['events']['Row'];
 type TabId = 'overview' | 'registrations' | 'gallery' | 'events' | 'shop' | 'settings';
 
-const STATUS_CONFIG: Record<
-  string,
-  { label: string; color: string; bg: string; icon: typeof CheckCircle2 }
-> = {
-  pending:    { label: 'Pending',    color: 'text-[#f59e0b]', bg: 'bg-[#f59e0b]/10', icon: Clock },
-  confirmed:  { label: 'Confirmed',  color: 'text-[#10b981]', bg: 'bg-[#10b981]/10', icon: CheckCircle2 },
-  waitlisted: { label: 'Waitlisted', color: 'text-[#2E75B6]', bg: 'bg-[#2E75B6]/10', icon: AlertCircle },
-  cancelled:  { label: 'Cancelled',  color: 'text-[#ef4444]', bg: 'bg-[#ef4444]/10', icon: XCircle },
+const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; icon: typeof CheckCircle2 }> = {
+  pending:    { label: 'Pending',    color: 'text-amber-400',   bg: 'bg-amber-400/10',   icon: Clock },
+  confirmed:  { label: 'Confirmed',  color: 'text-emerald-400', bg: 'bg-emerald-400/10', icon: CheckCircle2 },
+  waitlisted: { label: 'Waitlisted', color: 'text-blue-400',    bg: 'bg-blue-400/10',    icon: AlertCircle },
+  cancelled:  { label: 'Cancelled',  color: 'text-red-400',     bg: 'bg-red-400/10',     icon: XCircle },
 };
 
 function entryLabel(groupSize: string): string {
@@ -39,72 +22,6 @@ function entryLabel(groupSize: string): string {
   if (groupSize.startsWith('Large Group')) return 'Large Group';
   if (groupSize.startsWith('Production'))  return 'Production';
   return groupSize;
-}
-
-// ── Stat card: icon in colored rounded square on left, number on right ────────
-function StatCard({
-  label,
-  value,
-  icon: Icon,
-  accent,
-  onClick,
-  hint,
-}: {
-  label: string;
-  value: string | number;
-  icon: typeof ClipboardList;
-  accent: 'blue' | 'amber' | 'green' | 'slate';
-  onClick?: () => void;
-  hint?: string;
-}) {
-  const accents: Record<typeof accent, { bg: string; text: string }> = {
-    blue:  { bg: 'bg-[#2E75B6]/15', text: 'text-[#2E75B6]' },
-    amber: { bg: 'bg-[#f59e0b]/15', text: 'text-[#f59e0b]' },
-    green: { bg: 'bg-[#10b981]/15', text: 'text-[#10b981]' },
-    slate: { bg: 'bg-[#1e1e1e]',    text: 'text-[#e5e7eb]' },
-  } as const;
-  const a = accents[accent];
-
-  const Tag = onClick ? 'button' : 'div';
-  return (
-    <Tag
-      type={onClick ? 'button' : undefined}
-      onClick={onClick}
-      className={cn(
-        'group w-full text-left bg-[#111111] border border-[#1e1e1e] rounded-xl p-4 flex items-center gap-4 transition-all',
-        onClick && 'hover:border-[#2E75B6]/40 hover:bg-[#141414] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2E75B6]/40'
-      )}
-    >
-      <div className={cn('w-11 h-11 rounded-xl flex items-center justify-center shrink-0', a.bg)}>
-        <Icon className={cn('w-5 h-5', a.text)} />
-      </div>
-      <div className="min-w-0 flex-1">
-        <p className="text-2xl font-black text-white tabular-nums leading-none">{value}</p>
-        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6b7280] mt-1.5 truncate">
-          {label}
-        </p>
-        {hint && (
-          <p className="text-[10px] text-[#6b7280] mt-0.5 truncate">{hint}</p>
-        )}
-      </div>
-      {onClick && (
-        <ArrowUpRight className="w-4 h-4 text-[#6b7280] group-hover:text-[#2E75B6] transition-colors shrink-0" />
-      )}
-    </Tag>
-  );
-}
-
-// ── Skeleton card matching StatCard shape ─────────────────────────────────────
-function StatCardSkeleton() {
-  return (
-    <div className="bg-[#111111] border border-[#1e1e1e] rounded-xl p-4 flex items-center gap-4 animate-pulse motion-reduce:animate-none">
-      <div className="w-11 h-11 rounded-xl bg-[#1e1e1e] shrink-0" />
-      <div className="flex-1 space-y-2">
-        <div className="h-5 bg-[#1e1e1e] rounded w-12" />
-        <div className="h-3 bg-[#1e1e1e] rounded w-20" />
-      </div>
-    </div>
-  );
 }
 
 export default function OverviewTab({ onNavigate }: { onNavigate: (tab: TabId) => void }) {
@@ -126,8 +43,8 @@ export default function OverviewTab({ onNavigate }: { onNavigate: (tab: TabId) =
   useEffect(() => { load(); }, [load]);
 
   // ── Derived stats ─────────────────────────────────────────────────────────
-  const totalRegs = regs.length;
-  const totalFee = regs.reduce((s, r) => s + Number(r.total_fee), 0);
+  const totalRegs   = regs.length;
+  const totalFee    = regs.reduce((s, r) => s + Number(r.total_fee), 0);
 
   const byStatus = useMemo(() => {
     const map: Record<string, number> = {};
@@ -156,177 +73,167 @@ export default function OverviewTab({ onNavigate }: { onNavigate: (tab: TabId) =
   const regStatus = useMemo(() => {
     if (!event) return null;
     const now = new Date();
-    const open  = event.registration_open_date  ? new Date(event.registration_open_date)  : null;
-    const close = event.registration_close_date ? new Date(event.registration_close_date) : null;
-    if (open && now < open)    return { open: false, label: `Opens ${open.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}` };
+    const open   = event.registration_open_date  ? new Date(event.registration_open_date)  : null;
+    const close  = event.registration_close_date ? new Date(event.registration_close_date) : null;
+    if (open && now < open)  return { open: false, label: `Opens ${open.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}` };
     if (close && now >= close) return { open: false, label: `Closed ${close.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}` };
     if (close) return { open: true, label: `Open · closes ${close.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}` };
     return { open: true, label: 'Open' };
   }, [event]);
 
-  const maxEntryCount = byEntryType[0]?.[1] ?? 1;
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="w-6 h-6 border-2 border-[#2E75B6]/30 border-t-[#2E75B6] rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
-      {/* ── Page header with subtle gradient separator ──────────────────────── */}
-      <header>
-        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6">
-          <div>
-            <h1 className="text-3xl font-black text-white tracking-tight">Dashboard</h1>
-            <p className="text-sm text-[#6b7280] mt-1 font-medium">
-              {event
-                ? `${event.name} · ${new Date(event.date).toLocaleDateString('en-US', {
-                    month: 'long',
-                    day: 'numeric',
-                    year: 'numeric',
-                  })}`
-                : 'TOPAZ 2.0 Admin'}
-            </p>
-          </div>
-          {regStatus && (
-            <div
-              className={cn(
-                'inline-flex items-center gap-2.5 rounded-lg px-4 py-2.5 border text-xs shrink-0',
-                regStatus.open
-                  ? 'bg-[#10b981]/10 border-[#10b981]/30 text-[#10b981]'
-                  : 'bg-[#1e1e1e] border-[#2a2a2a] text-[#e5e7eb]'
-              )}
-            >
-              <CalendarCheck className="w-4 h-4 shrink-0" />
-              <div className="leading-tight">
-                <p className="font-bold uppercase tracking-wider">
-                  Registration {regStatus.open ? 'Open' : 'Closed'}
-                </p>
-                <p className="text-[10px] opacity-70 font-medium">{regStatus.label}</p>
-              </div>
-            </div>
-          )}
-        </div>
-        <div className="h-px bg-gradient-to-r from-[#2E75B6]/30 via-[#1e1e1e] to-transparent" />
-      </header>
-
-      {/* ── Top stat cards row ──────────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        {loading ? (
-          <>
-            <StatCardSkeleton />
-            <StatCardSkeleton />
-            <StatCardSkeleton />
-            <StatCardSkeleton />
-          </>
-        ) : (
-          <>
-            <StatCard
-              label="Total Registrations"
-              value={totalRegs}
-              icon={ClipboardList}
-              accent="blue"
-              onClick={() => onNavigate('registrations')}
-              hint="View all"
-            />
-            <StatCard
-              label="Pending Review"
-              value={byStatus['pending'] ?? 0}
-              icon={Clock}
-              accent="amber"
-            />
-            <StatCard
-              label="Confirmed"
-              value={byStatus['confirmed'] ?? 0}
-              icon={CheckCircle2}
-              accent="green"
-            />
-            <StatCard
-              label="Total Entry Fees"
-              value={`$${totalFee.toLocaleString()}`}
-              icon={DollarSign}
-              accent="blue"
-            />
-          </>
-        )}
+      {/* Header */}
+      <div>
+        <h1 className="text-2xl font-bold text-white">Dashboard</h1>
+        <p className="text-sm text-slate-400 mt-1">
+          {event ? `${event.name} · ${new Date(event.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}` : 'TOPAZ 2.0 Admin'}
+        </p>
       </div>
 
-      {/* ── Scoring App Sync card ───────────────────────────────────────────── */}
-      {!loading && totalRegs > 0 && (
+      {/* Registration status banner */}
+      {regStatus && (
         <div
-          className={cn(
-            'border rounded-xl p-5',
-            syncStats.failed > 0
-              ? 'bg-[#f59e0b]/5 border-[#f59e0b]/30'
-              : 'bg-[#111111] border-[#1e1e1e]'
-          )}
+          className={`flex items-center gap-3 rounded-xl px-5 py-4 border ${
+            regStatus.open
+              ? 'bg-emerald-950/50 border-emerald-700 text-emerald-300'
+              : 'bg-slate-800/50 border-slate-600 text-slate-300'
+          }`}
         >
+          <CalendarCheck className="w-5 h-5 shrink-0" />
+          <div>
+            <p className="font-bold">Registration {regStatus.open ? 'is Open' : 'is Closed'}</p>
+            <p className="text-sm opacity-70">{regStatus.label}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Top stat cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Total registrations */}
+        <button
+          type="button"
+          onClick={() => onNavigate('registrations')}
+          className="bg-slate-900 border border-slate-700 rounded-xl p-4 text-left hover:border-[#2E75B6] transition-colors group"
+        >
+          <div className="flex items-center justify-between mb-3">
+            <ClipboardList className="w-5 h-5 text-[#2E75B6]" />
+            <span className="text-xs text-slate-500 group-hover:text-slate-300 transition-colors">View all →</span>
+          </div>
+          <p className="text-3xl font-black text-white">{totalRegs}</p>
+          <p className="text-xs text-slate-400 mt-1">Total registrations</p>
+        </button>
+
+        {/* Pending */}
+        <div className="bg-slate-900 border border-slate-700 rounded-xl p-4">
+          <div className="flex items-center justify-between mb-3">
+            <Clock className="w-5 h-5 text-amber-400" />
+          </div>
+          <p className="text-3xl font-black text-amber-400">{byStatus['pending'] ?? 0}</p>
+          <p className="text-xs text-slate-400 mt-1">Pending review</p>
+        </div>
+
+        {/* Confirmed */}
+        <div className="bg-slate-900 border border-slate-700 rounded-xl p-4">
+          <div className="flex items-center justify-between mb-3">
+            <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+          </div>
+          <p className="text-3xl font-black text-emerald-400">{byStatus['confirmed'] ?? 0}</p>
+          <p className="text-xs text-slate-400 mt-1">Confirmed</p>
+        </div>
+
+        {/* Fees */}
+        <div className="bg-slate-900 border border-slate-700 rounded-xl p-4">
+          <div className="flex items-center justify-between mb-3">
+            <DollarSign className="w-5 h-5 text-[#2E75B6]" />
+          </div>
+          <p className="text-2xl font-black text-white">${totalFee.toLocaleString()}</p>
+          <p className="text-xs text-slate-400 mt-1">Total entry fees</p>
+        </div>
+      </div>
+
+      {/* Scoring App Sync card — spans full width when failed > 0 */}
+      {totalRegs > 0 && (
+        <div className={`border rounded-xl p-5 ${
+          syncStats.failed > 0
+            ? 'bg-amber-950/20 border-amber-700/50'
+            : 'bg-slate-900 border-slate-700'
+        }`}>
           <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2.5">
-              <div
-                className={cn(
-                  'w-8 h-8 rounded-lg flex items-center justify-center',
-                  syncStats.failed > 0 ? 'bg-[#f59e0b]/15' : 'bg-[#2E75B6]/15'
-                )}
-              >
-                <RefreshCw className={cn('w-4 h-4', syncStats.failed > 0 ? 'text-[#f59e0b]' : 'text-[#2E75B6]')} />
-              </div>
-              <h3 className="font-bold text-white text-sm uppercase tracking-wide">Scoring App Sync</h3>
+            <div className="flex items-center gap-2">
+              <RefreshCw className={`w-4 h-4 ${syncStats.failed > 0 ? 'text-amber-400' : 'text-[#2E75B6]'}`} />
+              <h3 className="font-bold text-white text-sm">Scoring App Sync</h3>
             </div>
             {syncStats.failed > 0 && (
               <button
                 type="button"
                 onClick={() => onNavigate('registrations')}
-                className="text-xs text-[#f59e0b] hover:text-[#fbbf24] transition-colors font-bold uppercase tracking-wider"
+                className="text-xs text-amber-400 hover:text-amber-300 transition-colors font-medium"
               >
                 View Failed →
               </button>
             )}
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <SyncStat label="Synced"  value={syncStats.synced}  color="text-[#10b981]" />
-            <SyncStat label="Pending" value={syncStats.pending} color="text-[#6b7280]" />
-            <SyncStat label="Failed"  value={syncStats.failed}  color={syncStats.failed > 0 ? 'text-[#ef4444]' : 'text-[#374151]'} />
-            <SyncStat label="Skipped" value={syncStats.skipped} color="text-[#2E75B6]" />
+            <div className="text-center">
+              <p className="text-2xl font-black text-emerald-400">{syncStats.synced}</p>
+              <p className="text-xs text-slate-400 mt-0.5">Synced</p>
+            </div>
+            <div className="text-center">
+              <p className="text-2xl font-black text-slate-400">{syncStats.pending}</p>
+              <p className="text-xs text-slate-400 mt-0.5">Pending</p>
+            </div>
+            <div className="text-center">
+              <p className={`text-2xl font-black ${syncStats.failed > 0 ? 'text-red-400' : 'text-slate-600'}`}>
+                {syncStats.failed}
+              </p>
+              <p className="text-xs text-slate-400 mt-0.5">Failed</p>
+            </div>
+            <div className="text-center">
+              <p className="text-2xl font-black text-blue-400">{syncStats.skipped}</p>
+              <p className="text-xs text-slate-400 mt-0.5">Skipped</p>
+            </div>
           </div>
           {syncStats.failed > 0 && (
-            <p className="text-xs text-[#f59e0b] mt-4 flex items-center gap-1.5 font-medium">
+            <p className="text-xs text-amber-300 mt-3 flex items-center gap-1.5">
               <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-              {syncStats.failed} registration{syncStats.failed !== 1 ? 's' : ''} failed to sync — open Registrations and click "Sync All Unsync'd".
+              {syncStats.failed} registration{syncStats.failed !== 1 ? 's' : ''} failed to sync. Go to Registrations and click "Sync All Unsync'd" to retry.
             </p>
           )}
         </div>
       )}
 
-      {/* ── Two-column lower section: entries by type + recent activity ─────── */}
-      <div className="grid lg:grid-cols-2 gap-5">
-        {/* Entries by type — horizontal bars */}
-        <div className="bg-[#111111] border border-[#1e1e1e] rounded-xl p-5">
-          <div className="flex items-center gap-2.5 mb-5">
-            <div className="w-8 h-8 rounded-lg bg-[#2E75B6]/15 flex items-center justify-center">
-              <Users className="w-4 h-4 text-[#2E75B6]" />
-            </div>
-            <h3 className="font-bold text-white text-sm uppercase tracking-wide">Entries by Type</h3>
+      {/* Two-column lower section */}
+      <div className="grid lg:grid-cols-2 gap-6">
+
+        {/* Entries by type */}
+        <div className="bg-slate-900 border border-slate-700 rounded-xl p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <Users className="w-4 h-4 text-[#2E75B6]" />
+            <h3 className="font-bold text-white text-sm">Entries by Type</h3>
           </div>
-          {loading ? (
-            <div className="space-y-3">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="h-6 bg-[#1e1e1e] rounded animate-pulse motion-reduce:animate-none" />
-              ))}
-            </div>
-          ) : byEntryType.length === 0 ? (
-            <EmptyState
-              icon={Users}
-              title="No entries yet"
-              body="Registrations will appear here as they come in."
-            />
+          {byEntryType.length === 0 ? (
+            <p className="text-slate-500 text-sm">No registrations yet.</p>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2">
               {byEntryType.map(([type, count]) => (
-                <div key={type}>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-xs font-semibold text-[#e5e7eb]">{type}</span>
-                    <span className="text-xs font-bold text-white tabular-nums">{count}</span>
+                <div key={type} className="flex items-center gap-3">
+                  <div className="flex-1 flex items-center justify-between">
+                    <span className="text-sm text-slate-300">{type}</span>
+                    <span className="text-sm font-bold text-white">{count}</span>
                   </div>
-                  <div className="h-2 bg-[#1e1e1e] rounded-full overflow-hidden">
+                  <div className="w-32 h-1.5 bg-slate-700 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-gradient-to-r from-[#2E75B6] to-[#5B9BD5] rounded-full transition-[width] duration-700 motion-reduce:transition-none"
-                      style={{ width: `${(count / maxEntryCount) * 100}%` }}
+                      className="h-full bg-[#2E75B6] rounded-full"
+                      style={{ width: `${(count / totalRegs) * 100}%` }}
                     />
                   </div>
                 </div>
@@ -335,151 +242,87 @@ export default function OverviewTab({ onNavigate }: { onNavigate: (tab: TabId) =
           )}
         </div>
 
-        {/* Recent activity feed */}
-        <div className="bg-[#111111] border border-[#1e1e1e] rounded-xl p-5">
-          <div className="flex items-center justify-between mb-5">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-[#2E75B6]/15 flex items-center justify-center">
-                <Sparkles className="w-4 h-4 text-[#2E75B6]" />
-              </div>
-              <h3 className="font-bold text-white text-sm uppercase tracking-wide">Recent Activity</h3>
-            </div>
-            {recentRegs.length > 0 && (
-              <button
-                type="button"
-                onClick={() => onNavigate('registrations')}
-                className="text-[10px] font-bold uppercase tracking-wider text-[#2E75B6] hover:text-[#5B9BD5] transition-colors"
-              >
-                View all →
-              </button>
-            )}
+        {/* Status breakdown */}
+        <div className="bg-slate-900 border border-slate-700 rounded-xl p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <ClipboardList className="w-4 h-4 text-[#2E75B6]" />
+            <h3 className="font-bold text-white text-sm">Entries by Status</h3>
           </div>
-
-          {loading ? (
-            <div className="space-y-3">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="h-12 bg-[#1e1e1e] rounded animate-pulse motion-reduce:animate-none" />
-              ))}
-            </div>
-          ) : recentRegs.length === 0 ? (
-            <EmptyState
-              icon={Sparkles}
-              title="No activity yet"
-              body="New registrations will show up here."
-            />
-          ) : (
-            <ul className="space-y-1">
-              {recentRegs.map((r) => {
-                const cfg = STATUS_CONFIG[r.status] ?? STATUS_CONFIG['pending'];
-                return (
-                  <li
-                    key={r.id}
-                    className="flex items-center justify-between gap-3 py-2.5 border-b border-[#1e1e1e] last:border-0"
-                  >
-                    <div className="min-w-0 flex-1">
-                      <p className="font-semibold text-white text-sm truncate">{r.contestant_name}</p>
-                      <p className="text-xs text-[#6b7280] truncate">
-                        {r.studio_name} · {entryLabel(r.group_size)}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <span className="text-[10px] text-[#6b7280] tabular-nums">
-                        {new Date(r.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                      </span>
-                      <span className={cn('text-[10px] font-bold px-2 py-0.5 rounded-full', cfg.bg, cfg.color)}>
-                        {cfg.label}
-                      </span>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
+          <div className="space-y-2">
+            {Object.entries(STATUS_CONFIG).map(([key, cfg]) => {
+              const count = byStatus[key] ?? 0;
+              const Icon = cfg.icon;
+              return (
+                <div key={key} className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Icon className={`w-3.5 h-3.5 ${cfg.color}`} />
+                    <span className="text-sm text-slate-300">{cfg.label}</span>
+                  </div>
+                  <span className={`text-sm font-bold ${count > 0 ? cfg.color : 'text-slate-600'}`}>
+                    {count}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
 
-      {/* ── Event hero card — large, prominent, gradient ───────────────────── */}
-      {event && (
-        <div className="relative overflow-hidden rounded-2xl border border-[#2E75B6]/30 bg-gradient-to-br from-[#2E75B6]/20 via-[#1F4E78]/10 to-[#0a0a0a] p-6 sm:p-8">
-          <div className="absolute top-0 right-0 w-80 h-80 bg-[#2E75B6]/20 rounded-full blur-[100px] translate-x-1/3 -translate-y-1/3 pointer-events-none" aria-hidden />
-          <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#2E75B6]/10 rounded-full blur-[80px] -translate-x-1/3 translate-y-1/3 pointer-events-none" aria-hidden />
-
-          <div className="relative">
-            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#7EB8E8] mb-3">
-              Next Competition
-            </p>
-            <h3 className="font-display font-black text-3xl sm:text-4xl text-white tracking-tight uppercase leading-none mb-4">
-              {event.name}
-            </h3>
-            <div className="grid sm:grid-cols-2 gap-4 mb-6 max-w-2xl">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center border border-white/10 shrink-0">
-                  <CalendarCheck className="w-5 h-5 text-[#7EB8E8]" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-[#7EB8E8]">Date</p>
-                  <p className="text-base font-bold text-white truncate">
-                    {new Date(event.date).toLocaleDateString('en-US', {
-                      weekday: 'long',
-                      month: 'long',
-                      day: 'numeric',
-                      year: 'numeric',
-                    })}
-                  </p>
-                </div>
-              </div>
-              {event.location && (
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center border border-white/10 shrink-0">
-                    <MapPin className="w-5 h-5 text-[#7EB8E8]" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-[#7EB8E8]">Location</p>
-                    <p className="text-base font-bold text-white truncate">{event.location}</p>
-                  </div>
-                </div>
-              )}
-            </div>
+      {/* Recent registrations */}
+      {recentRegs.length > 0 && (
+        <div className="bg-slate-900 border border-slate-700 rounded-xl p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-bold text-white text-sm">Recent Registrations</h3>
             <button
               type="button"
-              onClick={() => onNavigate('events')}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[#2E75B6] hover:bg-[#1F4E78] text-white text-xs font-bold uppercase tracking-wider transition-colors shadow-[0_0_20px_rgba(46,117,182,0.3)]"
+              onClick={() => onNavigate('registrations')}
+              className="text-xs text-[#2E75B6] hover:text-[#7EB8E8] transition-colors"
             >
-              Edit Event Details
-              <ArrowUpRight className="w-3.5 h-3.5" />
+              View all →
             </button>
+          </div>
+          <div className="space-y-3">
+            {recentRegs.map((r) => {
+              const cfg = STATUS_CONFIG[r.status] ?? STATUS_CONFIG['pending'];
+              return (
+                <div key={r.id} className="flex items-center justify-between gap-3 py-2 border-b border-slate-800 last:border-0">
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-white text-sm truncate">{r.contestant_name}</p>
+                    <p className="text-xs text-slate-500 truncate">{r.studio_name} · {entryLabel(r.group_size)}</p>
+                  </div>
+                  <div className="flex items-center gap-3 shrink-0">
+                    <span className="text-xs text-slate-500">
+                      {new Date(r.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    </span>
+                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${cfg.bg} ${cfg.color}`}>
+                      {cfg.label}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
-    </div>
-  );
-}
 
-function SyncStat({ label, value, color }: { label: string; value: number; color: string }) {
-  return (
-    <div className="text-center bg-[#0a0a0a] rounded-lg py-3 border border-[#1e1e1e]">
-      <p className={cn('text-2xl font-black tabular-nums', color)}>{value}</p>
-      <p className="text-[10px] text-[#6b7280] mt-1 font-bold uppercase tracking-wider">{label}</p>
-    </div>
-  );
-}
-
-function EmptyState({
-  icon: Icon,
-  title,
-  body,
-}: {
-  icon: typeof Users;
-  title: string;
-  body: string;
-}) {
-  return (
-    <div className="text-center py-8 px-4">
-      <div className="w-12 h-12 rounded-xl bg-[#1e1e1e] flex items-center justify-center mx-auto mb-3">
-        <Icon className="w-5 h-5 text-[#6b7280]" />
-      </div>
-      <p className="text-sm font-bold text-[#e5e7eb]">{title}</p>
-      <p className="text-xs text-[#6b7280] mt-1">{body}</p>
+      {/* Event card */}
+      {event && (
+        <div className="bg-[#1F4E78]/20 border border-[#2E75B6]/30 rounded-xl p-5">
+          <p className="text-xs font-mono uppercase tracking-widest text-[#7EB8E8] mb-2">Next Event</p>
+          <p className="text-xl font-bold text-white">{event.name}</p>
+          <p className="text-sm text-slate-300 mt-1">{event.location}</p>
+          <p className="text-sm text-[#7EB8E8] mt-1 font-medium">
+            {new Date(event.date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+          </p>
+          <button
+            type="button"
+            onClick={() => onNavigate('events')}
+            className="mt-4 text-xs text-[#2E75B6] hover:text-[#7EB8E8] transition-colors"
+          >
+            Edit event details →
+          </button>
+        </div>
+      )}
     </div>
   );
 }

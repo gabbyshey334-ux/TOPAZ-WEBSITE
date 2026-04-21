@@ -200,15 +200,10 @@ export default function MembersTab() {
 
   return (
     <div className="space-y-6">
-      <header>
-        <div className="mb-5">
-          <h1 className="text-3xl font-black text-white tracking-tight">Members</h1>
-          <p className="text-sm text-[#6b7280] mt-1 font-medium">
-            Approve studio accounts or manage the public mailing list.
-          </p>
-        </div>
-        <div className="h-px bg-gradient-to-r from-[#2E75B6]/30 via-[#1e1e1e] to-transparent" />
-      </header>
+      <div>
+        <h2 className="text-2xl font-bold text-white">Members</h2>
+        <p className="text-sm text-slate-400">Approve studios or manage the public mailing list.</p>
+      </div>
 
       <Tabs defaultValue="members" className="w-full">
         <TabsList className="bg-slate-900 border border-slate-700">

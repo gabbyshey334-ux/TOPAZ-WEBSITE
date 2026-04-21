@@ -17,13 +17,10 @@ export default function SettingsTab() {
 
   return (
     <div className="space-y-6">
-      <header>
-        <div className="mb-5">
-          <h1 className="text-3xl font-black text-white tracking-tight">Settings</h1>
-          <p className="text-sm text-[#6b7280] mt-1 font-medium">Account, analytics, and session management.</p>
-        </div>
-        <div className="h-px bg-gradient-to-r from-[#2E75B6]/30 via-[#1e1e1e] to-transparent" />
-      </header>
+      <div>
+        <h2 className="text-2xl font-bold text-white">Settings</h2>
+        <p className="text-sm text-slate-400 mt-0.5">Account and session management.</p>
+      </div>
 
       {/* Account card */}
       <div className="rounded-xl border border-slate-700 bg-slate-900/50 p-5 space-y-4">

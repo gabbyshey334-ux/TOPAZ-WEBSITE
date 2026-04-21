@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import {
   AlertCircle,
   CheckCircle2,
+  FileEdit,
   ImageIcon,
   Link as LinkIcon,
   Loader2,
@@ -471,28 +472,27 @@ export default function ContentTab() {
 
   return (
     <div className="space-y-6">
-      <header>
-        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-5">
-          <div>
-            <h1 className="text-3xl font-black text-white tracking-tight">Content</h1>
-            <p className="text-sm text-[#6b7280] mt-1 font-medium">
-              Swap the four hero photos and background video on the homepage. Changes go live instantly.
-            </p>
-          </div>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={load}
-            disabled={loading}
-            className="border-[#2a2a2a] bg-[#111111] text-[#e5e7eb] hover:bg-[#1a1a1a] shrink-0"
-            title="Reload from database"
-          >
-            {loading ? <Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5 mr-2" />}
-            Reload
-          </Button>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+            <FileEdit className="w-5 h-5 text-[#2E75B6]" />
+            Homepage Content
+          </h2>
+          <p className="text-sm text-slate-400 mt-0.5">
+            Swap the four hero photos and the background video shown on the homepage. Changes go live instantly.
+          </p>
         </div>
-        <div className="h-px bg-gradient-to-r from-[#2E75B6]/30 via-[#1e1e1e] to-transparent" />
-      </header>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={load}
+          disabled={loading}
+          className="border-slate-600 text-slate-300 hover:bg-slate-800 shrink-0"
+          title="Reload from database"
+        >
+          {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+        </Button>
+      </div>
 
       {loadError && (
         <div className="flex items-start gap-3 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3">

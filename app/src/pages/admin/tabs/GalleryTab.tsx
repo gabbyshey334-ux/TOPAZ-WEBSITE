@@ -1127,15 +1127,12 @@ function SectionManager({ section }: { section: string; label: string }) {
 export default function GalleryTab() {
   return (
     <div className="space-y-6">
-      <header>
-        <div className="mb-5">
-          <h1 className="text-3xl font-black text-white tracking-tight">Gallery</h1>
-          <p className="text-sm text-[#6b7280] mt-1 font-medium">
-            Upload photos and videos. Changes appear on the public gallery immediately.
-          </p>
-        </div>
-        <div className="h-px bg-gradient-to-r from-[#2E75B6]/30 via-[#1e1e1e] to-transparent" />
-      </header>
+      <div>
+        <h2 className="text-2xl font-bold text-white">Gallery</h2>
+        <p className="text-sm text-slate-400 mt-0.5">
+          Upload photos and videos. Changes appear on the public gallery immediately.
+        </p>
+      </div>
 
       {/* Password protection card */}
       <GalleryPasswordCard />
