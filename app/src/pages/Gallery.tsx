@@ -166,22 +166,28 @@ function GalleryPhotoItem({
   onRequestUnlock: () => void;
 }) {
   const needsLock = photo.is_protected && !isUnlocked && passwordConfigured;
+  const caption = photo.caption?.trim();
 
   return (
     <button
       type="button"
       onClick={needsLock ? onRequestUnlock : onOpenLightbox}
-      className="group relative mb-2 block min-h-[200px] w-full overflow-hidden rounded-2xl bg-gray-100 p-3 shadow-lg transition-all duration-300 hover:shadow-xl sm:rounded-3xl sm:p-4"
+      className="group relative mb-2 block min-h-[200px] w-full overflow-hidden rounded-2xl bg-gray-100 p-3 text-left shadow-lg transition-all duration-300 hover:shadow-xl sm:rounded-3xl sm:p-4"
     >
       <img
         src={photo.url}
-        alt={needsLock ? '' : (photo.caption || photo.filename || undefined)}
+        alt={needsLock ? '' : (caption || photo.filename || undefined)}
         className={`block min-h-[180px] h-auto max-h-[min(85vh,720px)] w-full object-contain transition-transform duration-500 group-hover:scale-[1.02] ${
           needsLock ? 'blur-[14px] scale-105 select-none pointer-events-none' : ''
         }`}
         onError={historyImageOnError}
         aria-hidden={needsLock}
       />
+      {!needsLock && caption && (
+        <p className="mt-3 px-1 text-sm font-medium text-gray-700 line-clamp-2 leading-snug">
+          {caption}
+        </p>
+      )}
       {needsLock && (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 z-10">
           <div className="bg-black/50 backdrop-blur-sm rounded-2xl px-5 py-4 flex flex-col items-center gap-2">
