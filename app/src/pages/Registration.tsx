@@ -14,7 +14,11 @@ import {
   CheckCircle2,
   Sparkles,
   ArrowRight,
-  MapPin
+  MapPin,
+  Award,
+  Trophy,
+  ShieldCheck,
+  Clock,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import CompetitionRegistrationForm from '@/components/registration/CompetitionRegistrationForm';
@@ -277,18 +281,92 @@ const Registration = () => {
         </div>
       </section>
 
-      {/* SECTION 4: THE FORM */}
-      <section id="register" className="py-24 bg-white border-y border-gray-100 scroll-mt-20 relative">
-        <div className="absolute inset-0 bg-[#fafafa]/50" />
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 relative z-10">
-          <div className="text-center mb-16">
-            <h2 className="font-display font-black text-4xl text-[#0a0a0a] mb-4 uppercase tracking-tighter">
-              Online <span className="text-[#2E75B6]">Registration</span>
-            </h2>
-            <p className="text-gray-500 font-medium">Please fill out all required fields carefully.</p>
+      {/* SECTION 4: THE FORM — split-panel layout */}
+      <section id="register" className="relative scroll-mt-20 bg-[#f4f5f7] border-y border-gray-200">
+        <div className="max-w-7xl mx-auto lg:grid lg:grid-cols-5 lg:min-h-[calc(100vh-4rem)]">
+          {/* Left branding panel — sticky on desktop */}
+          <aside className="relative lg:col-span-2 bg-gradient-to-br from-[#0a0a0a] via-[#0a1a2e] to-[#0a0a0a] text-white overflow-hidden lg:sticky lg:top-0 lg:h-screen">
+            {/* Decorative gradient + watermark */}
+            <div className="absolute top-0 right-0 w-80 h-80 bg-[#2E75B6]/30 rounded-full blur-[120px] -translate-y-1/3 translate-x-1/4 pointer-events-none" aria-hidden />
+            <div className="absolute bottom-0 -left-20 w-80 h-80 bg-[#2E75B6]/20 rounded-full blur-[100px] pointer-events-none" aria-hidden />
+            <div className="absolute inset-0 opacity-[0.04] pointer-events-none select-none flex items-center justify-center" aria-hidden>
+              <span className="font-display font-black text-[18rem] leading-none text-white">T</span>
+            </div>
+
+            <div className="relative z-10 h-full flex flex-col px-6 sm:px-10 py-10 lg:py-16">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-md mb-6 w-fit">
+                <Sparkles className="w-3.5 h-3.5 text-[#7EB8E8]" />
+                <span className="text-[10px] font-bold tracking-widest text-white uppercase">Season 2026</span>
+              </div>
+
+              <h2 className="font-display font-black text-4xl sm:text-5xl lg:text-6xl text-white leading-[0.9] tracking-tighter uppercase mb-4">
+                Secure your <span className="text-[#7EB8E8]">spot</span>
+              </h2>
+              <p className="text-white/70 font-medium text-base sm:text-lg leading-relaxed mb-8 max-w-md">
+                Fill out the form on the right — it takes under 5 minutes. Your spot is locked the moment you submit.
+              </p>
+
+              {/* Competition chip */}
+              <div className="grid grid-cols-2 gap-3 mb-8 max-w-md">
+                <div className="rounded-xl bg-white/5 border border-white/10 p-4 backdrop-blur-sm">
+                  <div className="flex items-center gap-2 text-[#7EB8E8] mb-1">
+                    <Calendar className="w-3.5 h-3.5" />
+                    <span className="text-[10px] font-bold uppercase tracking-widest">Date</span>
+                  </div>
+                  <p className="text-sm font-bold text-white leading-tight">Aug 22, 2026</p>
+                </div>
+                <div className="rounded-xl bg-white/5 border border-white/10 p-4 backdrop-blur-sm">
+                  <div className="flex items-center gap-2 text-[#7EB8E8] mb-1">
+                    <MapPin className="w-3.5 h-3.5" />
+                    <span className="text-[10px] font-bold uppercase tracking-widest">Venue</span>
+                  </div>
+                  <p className="text-sm font-bold text-white leading-tight">Seaside Convention Ctr.</p>
+                </div>
+              </div>
+
+              {/* Countdown */}
+              <RegistrationCountdown />
+
+              {/* What's included */}
+              <div className="mt-auto pt-8 max-w-md">
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#7EB8E8] mb-4">
+                  What's Included
+                </p>
+                <ul className="space-y-3">
+                  {[
+                    { icon: Award, text: 'Official scorecard & adjudication' },
+                    { icon: Trophy, text: 'Medal program eligibility' },
+                    { icon: ShieldCheck, text: 'Professional, certified judging panel' },
+                  ].map(({ icon: Icon, text }, i) => (
+                    <li key={i} className="flex items-center gap-3 text-white/80 font-medium text-sm">
+                      <div className="w-8 h-8 rounded-lg bg-[#2E75B6]/20 border border-[#2E75B6]/30 flex items-center justify-center shrink-0">
+                        <Icon className="w-4 h-4 text-[#7EB8E8]" />
+                      </div>
+                      {text}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </aside>
+
+          {/* Right form panel */}
+          <div className="lg:col-span-3 bg-white lg:overflow-y-auto lg:max-h-screen">
+            <div className="px-4 sm:px-8 lg:px-12 py-12 lg:py-16">
+              <div className="mb-10">
+                <p className="text-xs font-bold uppercase tracking-widest text-[#2E75B6] mb-3">
+                  Registration Form
+                </p>
+                <h3 className="font-display font-black text-3xl sm:text-4xl text-[#0a0a0a] uppercase tracking-tight leading-none mb-3">
+                  Let's get you on stage
+                </h3>
+                <p className="text-gray-500 font-medium">
+                  Five quick steps. All fields marked * are required.
+                </p>
+              </div>
+              <CompetitionRegistrationForm />
+            </div>
           </div>
-          
-          <CompetitionRegistrationForm />
         </div>
       </section>
 
@@ -449,3 +527,63 @@ const Registration = () => {
 };
 
 export default Registration;
+
+// ─── Countdown to registration close (July 30, 2026 12:00 AM) ─────────────────
+function RegistrationCountdown() {
+  const close = new Date('2026-07-30T00:00:00').getTime();
+  const [now, setNow] = useState<number>(() => Date.now());
+
+  useEffect(() => {
+    const id = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(id);
+  }, []);
+
+  const diff = Math.max(0, close - now);
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+  const minutes = Math.floor((diff / (1000 * 60)) % 60);
+  const seconds = Math.floor((diff / 1000) % 60);
+
+  if (diff <= 0) {
+    return (
+      <div className="rounded-2xl bg-red-500/10 border border-red-500/30 p-5 max-w-md">
+        <div className="flex items-center gap-2 text-red-300 mb-1">
+          <Clock className="w-3.5 h-3.5" />
+          <span className="text-[10px] font-bold uppercase tracking-widest">Registration Closed</span>
+        </div>
+        <p className="text-sm font-bold text-white">The deadline has passed.</p>
+      </div>
+    );
+  }
+
+  const cells = [
+    { value: days, label: 'Days' },
+    { value: hours, label: 'Hrs' },
+    { value: minutes, label: 'Min' },
+    { value: seconds, label: 'Sec' },
+  ];
+
+  return (
+    <div className="rounded-2xl bg-white/5 border border-white/10 p-5 backdrop-blur-sm max-w-md">
+      <div className="flex items-center gap-2 text-[#7EB8E8] mb-3">
+        <Clock className="w-3.5 h-3.5" />
+        <span className="text-[10px] font-bold uppercase tracking-widest">Registration Closes In</span>
+      </div>
+      <div className="grid grid-cols-4 gap-2">
+        {cells.map((c) => (
+          <div key={c.label} className="text-center rounded-lg bg-black/30 border border-white/5 py-2">
+            <p className="font-display font-black text-2xl text-white tabular-nums leading-none">
+              {String(c.value).padStart(2, '0')}
+            </p>
+            <p className="text-[9px] font-bold uppercase tracking-widest text-[#7EB8E8] mt-1">
+              {c.label}
+            </p>
+          </div>
+        ))}
+      </div>
+      <p className="text-[10px] font-medium text-white/50 mt-3 text-center">
+        Midnight, July 30, 2026
+      </p>
+    </div>
+  );
+}

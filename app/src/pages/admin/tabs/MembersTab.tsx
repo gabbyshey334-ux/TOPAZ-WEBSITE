@@ -3,6 +3,16 @@ import { supabase } from '@/lib/supabase';
 import type { Database } from '@/types/database';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import {
   Table,
   TableBody,
@@ -12,7 +22,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Download, Mail, Trash2, Users } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Download, Mail, Send, Trash2, Users } from 'lucide-react';
 
 type Row = Database['public']['Tables']['members']['Row'];
 type MailingRow = Database['public']['Tables']['mailing_list']['Row'];
@@ -26,6 +36,19 @@ export default function MembersTab() {
   const [mailingRows, setMailingRows] = useState<MailingRow[]>([]);
   const [mailingLoading, setMailingLoading] = useState(true);
   const [mailingSearch, setMailingSearch] = useState('');
+
+  // Broadcast dialog state
+  const [broadcastOpen, setBroadcastOpen] = useState(false);
+  const [broadcastSubject, setBroadcastSubject] = useState('');
+  const [broadcastMessage, setBroadcastMessage] = useState('');
+  const [broadcastPreview, setBroadcastPreview] = useState('');
+  const [broadcastSending, setBroadcastSending] = useState(false);
+  const [broadcastError, setBroadcastError] = useState<string | null>(null);
+  const [broadcastResult, setBroadcastResult] = useState<{
+    sent: number;
+    failed: number;
+    total: number;
+  } | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -113,12 +136,79 @@ export default function MembersTab() {
     URL.revokeObjectURL(url);
   }
 
+  function openBroadcastDialog() {
+    setBroadcastSubject('');
+    setBroadcastMessage('');
+    setBroadcastPreview('');
+    setBroadcastError(null);
+    setBroadcastResult(null);
+    setBroadcastOpen(true);
+  }
+
+  async function sendBroadcast() {
+    const subject = broadcastSubject.trim();
+    const message = broadcastMessage.trim();
+    const preview = broadcastPreview.trim();
+
+    if (!subject || !message) {
+      setBroadcastError('Subject and message are both required.');
+      return;
+    }
+    if (mailingRows.length === 0) {
+      setBroadcastError('There are no subscribers to send to.');
+      return;
+    }
+
+    const confirmed = confirm(
+      `Are you sure? This will email all ${mailingRows.length} subscriber${
+        mailingRows.length === 1 ? '' : 's'
+      } immediately.`
+    );
+    if (!confirmed) return;
+
+    setBroadcastSending(true);
+    setBroadcastError(null);
+    setBroadcastResult(null);
+
+    const { data, error } = await supabase.functions.invoke('send-broadcast-email', {
+      body: {
+        subject,
+        message,
+        preview_text: preview || undefined,
+      },
+    });
+
+    setBroadcastSending(false);
+
+    if (error) {
+      setBroadcastError(error.message || 'Failed to send broadcast.');
+      return;
+    }
+
+    const payload = data as { sent?: number; failed?: number; total?: number; error?: string };
+    if (payload?.error) {
+      setBroadcastError(payload.error);
+      return;
+    }
+
+    setBroadcastResult({
+      sent: payload?.sent ?? 0,
+      failed: payload?.failed ?? 0,
+      total: payload?.total ?? mailingRows.length,
+    });
+  }
+
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold text-white">Members</h2>
-        <p className="text-sm text-slate-400">Approve studios or manage the public mailing list.</p>
-      </div>
+      <header>
+        <div className="mb-5">
+          <h1 className="text-3xl font-black text-white tracking-tight">Members</h1>
+          <p className="text-sm text-[#6b7280] mt-1 font-medium">
+            Approve studio accounts or manage the public mailing list.
+          </p>
+        </div>
+        <div className="h-px bg-gradient-to-r from-[#2E75B6]/30 via-[#1e1e1e] to-transparent" />
+      </header>
 
       <Tabs defaultValue="members" className="w-full">
         <TabsList className="bg-slate-900 border border-slate-700">
@@ -216,6 +306,27 @@ export default function MembersTab() {
         </TabsContent>
 
         <TabsContent value="mailing" className="space-y-4 mt-6">
+          {/* Broadcast action bar */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-xl border border-slate-700 bg-gradient-to-r from-slate-900 to-slate-800 p-5">
+            <div>
+              <h3 className="text-white font-bold text-base flex items-center gap-2">
+                <Send className="w-4 h-4 text-[#2E75B6]" />
+                Broadcast to Mailing List
+              </h3>
+              <p className="text-xs text-slate-400 mt-1">
+                Send an announcement email to every subscriber on the list.
+              </p>
+            </div>
+            <Button
+              onClick={openBroadcastDialog}
+              disabled={mailingLoading || mailingRows.length === 0}
+              className="bg-[#2E75B6] hover:bg-[#1F4E78] text-white gap-2 shrink-0"
+            >
+              <Send className="w-4 h-4" />
+              Send Email to All Subscribers
+            </Button>
+          </div>
+
           {/* Stat card */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="rounded-xl border border-slate-700 bg-slate-900 p-5">
@@ -301,6 +412,150 @@ export default function MembersTab() {
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* ── Broadcast Email Dialog ──────────────────────────────────────── */}
+      <Dialog
+        open={broadcastOpen}
+        onOpenChange={(open) => {
+          if (broadcastSending) return; // prevent closing while sending
+          setBroadcastOpen(open);
+        }}
+      >
+        <DialogContent className="bg-slate-900 border-slate-700 text-white sm:max-w-xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-white">
+              <Send className="w-5 h-5 text-[#2E75B6]" />
+              Broadcast Email to Subscribers
+            </DialogTitle>
+            <DialogDescription className="text-slate-400">
+              This will send to{' '}
+              <span className="font-bold text-white">{mailingRows.length}</span>{' '}
+              subscriber{mailingRows.length === 1 ? '' : 's'}.
+            </DialogDescription>
+          </DialogHeader>
+
+          {broadcastResult ? (
+            <div className="space-y-4 py-2">
+              <div className="flex items-start gap-3 rounded-lg border border-emerald-900/50 bg-emerald-950/30 p-4">
+                <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+                <div className="text-sm">
+                  <p className="font-bold text-emerald-300">Broadcast complete</p>
+                  <p className="text-slate-300 mt-1">
+                    Sent to <span className="font-bold text-white">{broadcastResult.sent}</span> of{' '}
+                    <span className="font-bold text-white">{broadcastResult.total}</span>{' '}
+                    subscriber{broadcastResult.total === 1 ? '' : 's'}.
+                    {broadcastResult.failed > 0 && (
+                      <>
+                        {' '}
+                        <span className="text-amber-300 font-bold">
+                          {broadcastResult.failed} failed
+                        </span>
+                        .
+                      </>
+                    )}
+                  </p>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button
+                  onClick={() => setBroadcastOpen(false)}
+                  className="bg-[#2E75B6] hover:bg-[#1F4E78] text-white"
+                >
+                  Done
+                </Button>
+              </DialogFooter>
+            </div>
+          ) : (
+            <div className="space-y-4 py-2">
+              <div className="space-y-2">
+                <Label htmlFor="broadcast-subject" className="text-slate-300 text-sm">
+                  Subject line <span className="text-red-400">*</span>
+                </Label>
+                <Input
+                  id="broadcast-subject"
+                  value={broadcastSubject}
+                  onChange={(e) => setBroadcastSubject(e.target.value)}
+                  disabled={broadcastSending}
+                  placeholder="e.g. Registration is now open!"
+                  className="bg-slate-950 border-slate-600 text-white placeholder:text-slate-500"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="broadcast-preview" className="text-slate-300 text-sm">
+                  Preview text <span className="text-slate-500 text-xs">(optional)</span>
+                </Label>
+                <Input
+                  id="broadcast-preview"
+                  value={broadcastPreview}
+                  onChange={(e) => setBroadcastPreview(e.target.value)}
+                  disabled={broadcastSending}
+                  placeholder="Shown in the inbox preview before opening the email"
+                  className="bg-slate-950 border-slate-600 text-white placeholder:text-slate-500"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="broadcast-message" className="text-slate-300 text-sm">
+                  Message <span className="text-red-400">*</span>
+                </Label>
+                <Textarea
+                  id="broadcast-message"
+                  value={broadcastMessage}
+                  onChange={(e) => setBroadcastMessage(e.target.value)}
+                  disabled={broadcastSending}
+                  placeholder="Write your announcement here. Plain text — it will be wrapped in TOPAZ branded HTML automatically."
+                  rows={8}
+                  className="bg-slate-950 border-slate-600 text-white placeholder:text-slate-500 resize-y min-h-[160px]"
+                />
+                <p className="text-xs text-slate-500">
+                  Plain text. Newlines preserved, URLs auto-linked.
+                </p>
+              </div>
+
+              {broadcastError && (
+                <div className="flex items-start gap-3 rounded-lg border border-red-900/50 bg-red-950/30 p-3">
+                  <AlertTriangle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
+                  <p className="text-sm text-red-300">{broadcastError}</p>
+                </div>
+              )}
+
+              <DialogFooter className="gap-2">
+                <Button
+                  variant="ghost"
+                  onClick={() => setBroadcastOpen(false)}
+                  disabled={broadcastSending}
+                  className="text-slate-300 hover:text-white hover:bg-slate-800"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={sendBroadcast}
+                  disabled={
+                    broadcastSending ||
+                    !broadcastSubject.trim() ||
+                    !broadcastMessage.trim() ||
+                    mailingRows.length === 0
+                  }
+                  className="bg-[#2E75B6] hover:bg-[#1F4E78] text-white gap-2 disabled:opacity-50"
+                >
+                  {broadcastSending ? (
+                    <>
+                      <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Sending to {mailingRows.length}…
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-4 h-4" />
+                      Send Now
+                    </>
+                  )}
+                </Button>
+              </DialogFooter>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

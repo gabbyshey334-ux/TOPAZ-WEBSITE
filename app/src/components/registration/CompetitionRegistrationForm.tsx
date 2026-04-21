@@ -9,6 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import {
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   CheckCircle2,
   Plus,
   Trash2,
@@ -17,6 +18,11 @@ import {
   Usb,
   AlertTriangle,
   Info,
+  CalendarPlus,
+  Share2,
+  Home as HomeIcon,
+  PartyPopper,
+  MapPin,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -244,6 +250,9 @@ export default function CompetitionRegistrationForm() {
   // ── Step 5: Disclaimer ───────────────────────────────────────────────────
   const [disclaimerAccepted, setDisclaimerAccepted] = useState(false);
 
+  // ── Optional mailing address expansion ───────────────────────────────────
+  const [showAddress, setShowAddress] = useState(false);
+
   // ── Derived values ───────────────────────────────────────────────────────
   const computedAge = useMemo(() => {
     if (!dateOfBirth) return '';
@@ -379,6 +388,14 @@ export default function CompetitionRegistrationForm() {
     }
     const fee = computeFee(groupSize, n);
 
+    // ── Build participants payload — ALWAYS an array, never null/undefined ──
+    // The DB column `participants_json` is NOT NULL (with default '[]'::jsonb),
+    // so we must never send null or undefined here.
+    const participantsPayload: RegistrationParticipant[] =
+      needsParticipantTable(groupSize) && Array.isArray(participants)
+        ? participants
+        : [];
+
     // ── Upload music file if provided ──────────────────────────────────────
     let musicFileUrl: string | null = null;
     if (musicDeliveryMethod === 'upload' && musicFile) {
@@ -431,7 +448,7 @@ export default function CompetitionRegistrationForm() {
       contestant_count: n,
       total_fee: fee,
       payment_method: paymentMethod,
-      participants_json: needsParticipantTable(groupSize) ? (participants ?? []) : [],
+      participants_json: participantsPayload ?? [],
       disclaimer_accepted: true,
     };
 
@@ -505,112 +522,53 @@ export default function CompetitionRegistrationForm() {
   if (isAfterClose) return <RegistrationClosedBanner />;
 
   if (success) {
-    return (
-      <div className="max-w-2xl mx-auto bg-white rounded-[2rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] border border-gray-100 overflow-hidden animate-in zoom-in-95 duration-500">
-        <div className="bg-[#2E75B6] p-12 text-center text-white relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/2" />
-          <div className="relative z-10">
-            <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-6 backdrop-blur-md shadow-lg border border-white/20">
-              <CheckCircle2 className="w-10 h-10 text-white" />
-            </div>
-            <h2 className="font-display font-black text-3xl uppercase tracking-tight mb-2">Registration Received!</h2>
-            <p className="text-white/80 font-medium text-lg">Thank you, {success.contestant_name}</p>
-          </div>
-        </div>
-
-        <div className="p-8 sm:p-12">
-          <div className="grid sm:grid-cols-2 gap-x-8 gap-y-6 mb-10">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1">Category</p>
-              <p className="font-bold text-[#0a0a0a] text-lg">{success.category}</p>
-            </div>
-            <div>
-              <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1">Entry Type</p>
-              <p className="font-bold text-[#0a0a0a] text-lg">{success.group_size}</p>
-            </div>
-            {success.song_title && (
-              <div className="sm:col-span-2">
-                <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1">Song</p>
-                <p className="font-bold text-[#0a0a0a] text-lg">
-                  {success.song_title}{success.artist_name ? ` — ${success.artist_name}` : ''}
-                </p>
-              </div>
-            )}
-            <div>
-              <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1">Total Entry Fee</p>
-              <p className="font-black text-3xl text-[#2E75B6]">${success.total_fee.toFixed(2)}</p>
-            </div>
-            <div>
-              <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1">Confirmation Email</p>
-              <p className="font-bold text-[#0a0a0a] text-base truncate">{success.email}</p>
-            </div>
-          </div>
-
-          <div className="bg-gray-50 border border-gray-100 rounded-2xl p-6 mb-10">
-            <h4 className="font-display font-bold text-lg text-[#0a0a0a] mb-4 flex items-center gap-2">
-              <Info className="w-5 h-5 text-[#2E75B6]" />
-              What happens next?
-            </h4>
-            <ul className="space-y-3 text-gray-600 font-medium">
-              <li className="flex gap-3"><span className="text-[#2E75B6]">•</span> Check your email for a full confirmation summary</li>
-              <li className="flex gap-3"><span className="text-[#2E75B6]">•</span> Competition date: <strong className="text-[#0a0a0a]">August 22, 2026</strong></li>
-              <li className="flex gap-3"><span className="text-[#2E75B6]">•</span> Location: <strong className="text-[#0a0a0a]">Seaside Convention Center, OR</strong></li>
-            </ul>
-          </div>
-
-          <Link
-            to="/"
-            className="flex items-center justify-center w-full py-5 bg-white border-2 border-gray-200 text-[#0a0a0a] font-bold rounded-2xl hover:border-[#0a0a0a] hover:bg-gray-50 transition-all uppercase tracking-widest text-sm"
-          >
-            Back to Home
-          </Link>
-        </div>
-      </div>
-    );
+    return <SuccessScreen success={success} />;
   }
 
   const steps = ['Info', 'Category', 'Division', 'Payment', 'Review'];
 
   return (
-    <div className="max-w-4xl mx-auto space-y-12">
-      {/* Premium Step Indicator */}
-      <div className="relative pt-6 pb-12">
-        <div className="absolute top-10 left-[10%] right-[10%] h-1 bg-gray-100 rounded-full" />
-        <div 
-          className="absolute top-10 left-[10%] h-1 bg-[#2E75B6] rounded-full transition-all duration-700 ease-out"
-          style={{ width: `${((step - 1) / (steps.length - 1)) * 80}%` }}
-        />
-        
-        <div className="relative flex justify-between w-full">
-          {steps.map((label, i) => {
-            const n = i + 1;
-            const isActive = step === n;
-            const isCompleted = step > n;
-            return (
-              <div key={n} className="flex flex-col items-center relative z-10 w-1/5">
-                <div 
-                  className={cn(
-                    "w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-500 shadow-sm",
-                    isActive 
-                      ? "bg-[#2E75B6] text-white scale-110 shadow-md shadow-[#2E75B6]/30 ring-4 ring-[#2E75B6]/10" 
-                      : isCompleted 
-                        ? "bg-[#0a0a0a] text-white" 
-                        : "bg-white border-2 border-gray-100 text-gray-400"
-                  )}
-                >
-                  {isCompleted ? <CheckCircle2 className="w-5 h-5" /> : n}
+    <div className="max-w-4xl mx-auto space-y-8">
+      {/* Premium Step Indicator — sticky on desktop */}
+      <div className="sticky top-0 z-20 -mx-4 sm:-mx-8 lg:-mx-12 px-4 sm:px-8 lg:px-12 pt-6 pb-10 bg-white/95 backdrop-blur-sm border-b border-gray-100">
+        <div className="relative">
+          <div className="absolute top-5 left-[10%] right-[10%] h-1 bg-gray-100 rounded-full" />
+          <div
+            className="absolute top-5 left-[10%] h-1 bg-[#2E75B6] rounded-full transition-all duration-700 ease-out motion-reduce:transition-none"
+            style={{ width: `${((step - 1) / (steps.length - 1)) * 80}%` }}
+          />
+
+          <div className="relative flex justify-between w-full">
+            {steps.map((label, i) => {
+              const n = i + 1;
+              const isActive = step === n;
+              const isCompleted = step > n;
+              return (
+                <div key={n} className="flex flex-col items-center relative z-10 w-1/5">
+                  <div
+                    className={cn(
+                      'w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-500 shadow-sm motion-reduce:transition-none',
+                      isActive
+                        ? 'bg-[#2E75B6] text-white scale-110 shadow-md shadow-[#2E75B6]/30 ring-4 ring-[#2E75B6]/20 animate-pulse motion-reduce:animate-none'
+                        : isCompleted
+                          ? 'bg-[#2E75B6] text-white'
+                          : 'bg-white border-2 border-gray-200 text-gray-400'
+                    )}
+                  >
+                    {isCompleted ? <CheckCircle2 className="w-5 h-5" /> : n}
+                  </div>
+                  <span
+                    className={cn(
+                      'absolute top-12 text-[10px] sm:text-xs font-bold uppercase tracking-widest whitespace-nowrap transition-colors duration-300',
+                      isActive ? 'text-[#2E75B6]' : isCompleted ? 'text-[#0a0a0a]' : 'text-gray-400'
+                    )}
+                  >
+                    {label}
+                  </span>
                 </div>
-                <span 
-                  className={cn(
-                    "hidden sm:block absolute top-14 text-xs font-bold uppercase tracking-widest whitespace-nowrap transition-colors duration-300",
-                    isActive ? "text-[#2E75B6]" : isCompleted ? "text-[#0a0a0a]" : "text-gray-400"
-                  )}
-                >
-                  {label}
-                </span>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       </div>
 
@@ -702,24 +660,54 @@ export default function CompetitionRegistrationForm() {
                 <FormInput type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" />
               </div>
 
-              <div className="sm:col-span-2 mt-8 mb-4">
-                <h4 className="font-display font-black text-xl text-[#0a0a0a] uppercase tracking-tight">Mailing Address <span className="text-gray-400 text-base font-medium normal-case ml-2">(Optional)</span></h4>
+              <div className="sm:col-span-2 mt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowAddress((v) => !v)}
+                  aria-expanded={showAddress}
+                  className="w-full flex items-center justify-between gap-3 rounded-xl bg-gray-50 hover:bg-gray-100 border border-gray-200 px-5 py-4 transition-colors"
+                >
+                  <div className="flex items-center gap-3 text-left">
+                    <div className="w-9 h-9 rounded-lg bg-white border border-gray-200 flex items-center justify-center shrink-0">
+                      <MapPin className="w-4 h-4 text-[#2E75B6]" />
+                    </div>
+                    <div>
+                      <p className="font-bold text-[#0a0a0a] text-sm">
+                        {showAddress ? 'Hide mailing address' : 'Add mailing address'}
+                        <span className="ml-2 text-[10px] font-bold uppercase tracking-widest text-gray-400">Optional</span>
+                      </p>
+                      <p className="text-xs text-gray-500 font-medium mt-0.5">
+                        Only needed for certain competitions. Skip if unsure.
+                      </p>
+                    </div>
+                  </div>
+                  <ChevronDown
+                    className={cn(
+                      'w-5 h-5 text-gray-400 transition-transform duration-300 motion-reduce:transition-none',
+                      showAddress && 'rotate-180'
+                    )}
+                  />
+                </button>
               </div>
 
-              <div className="sm:col-span-2">
-                <FormLabel>Street address</FormLabel>
-                <FormInput value={soloistAddress} onChange={(e) => setSoloistAddress(e.target.value)} />
-              </div>
-              <div><FormLabel>City</FormLabel><FormInput value={city} onChange={(e) => setCity(e.target.value)} /></div>
-              <div><FormLabel>State</FormLabel><FormInput value={state} onChange={(e) => setState(e.target.value)} /></div>
-              <div><FormLabel>Zip</FormLabel><FormInput value={zip} onChange={(e) => setZip(e.target.value)} /></div>
-              <div className="sm:col-span-2">
-                <FormLabel>Studio street address</FormLabel>
-                <FormInput value={studioAddress} onChange={(e) => setStudioAddress(e.target.value)} />
-              </div>
-              <div><FormLabel>Studio city</FormLabel><FormInput value={studioCity} onChange={(e) => setStudioCity(e.target.value)} /></div>
-              <div><FormLabel>Studio state</FormLabel><FormInput value={studioState} onChange={(e) => setStudioState(e.target.value)} /></div>
-              <div><FormLabel>Studio zip</FormLabel><FormInput value={studioZip} onChange={(e) => setStudioZip(e.target.value)} /></div>
+              {showAddress && (
+                <div className="sm:col-span-2 grid gap-x-8 gap-y-6 sm:grid-cols-2 animate-in fade-in slide-in-from-top-4 duration-300 motion-reduce:animate-none">
+                  <div className="sm:col-span-2">
+                    <FormLabel>Street address</FormLabel>
+                    <FormInput value={soloistAddress} onChange={(e) => setSoloistAddress(e.target.value)} />
+                  </div>
+                  <div><FormLabel>City</FormLabel><FormInput value={city} onChange={(e) => setCity(e.target.value)} /></div>
+                  <div><FormLabel>State</FormLabel><FormInput value={state} onChange={(e) => setState(e.target.value)} /></div>
+                  <div><FormLabel>Zip</FormLabel><FormInput value={zip} onChange={(e) => setZip(e.target.value)} /></div>
+                  <div className="sm:col-span-2">
+                    <FormLabel>Studio street address</FormLabel>
+                    <FormInput value={studioAddress} onChange={(e) => setStudioAddress(e.target.value)} />
+                  </div>
+                  <div><FormLabel>Studio city</FormLabel><FormInput value={studioCity} onChange={(e) => setStudioCity(e.target.value)} /></div>
+                  <div><FormLabel>Studio state</FormLabel><FormInput value={studioState} onChange={(e) => setStudioState(e.target.value)} /></div>
+                  <div><FormLabel>Studio zip</FormLabel><FormInput value={studioZip} onChange={(e) => setStudioZip(e.target.value)} /></div>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -1102,6 +1090,180 @@ export default function CompetitionRegistrationForm() {
             )}
           </button>
         )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Success Screen — celebration with calendar/share actions ─────────────────
+type SuccessData = {
+  contestant_name: string;
+  category: string;
+  group_size: string;
+  total_fee: number;
+  email: string;
+  song_title: string;
+  artist_name: string;
+};
+
+function SuccessScreen({ success }: { success: SuccessData }) {
+  const [shareCopied, setShareCopied] = useState(false);
+
+  function downloadIcs() {
+    // August 22, 2026 all-day event
+    const ics = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//TOPAZ 2.0//Registration//EN',
+      'BEGIN:VEVENT',
+      `UID:topaz-2026-${Date.now()}@topaz2.com`,
+      `DTSTAMP:${new Date().toISOString().replace(/[-:]/g, '').split('.')[0]}Z`,
+      'DTSTART;VALUE=DATE:20260822',
+      'DTEND;VALUE=DATE:20260823',
+      'SUMMARY:TOPAZ 2.0 Competition',
+      'DESCRIPTION:The Return of TOPAZ 2.0 — see you on stage!',
+      'LOCATION:Seaside Convention Center, Seaside, OR',
+      'END:VEVENT',
+      'END:VCALENDAR',
+    ].join('\r\n');
+    const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'topaz-2.0-competition.ics';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  async function share() {
+    const text = `I just registered for TOPAZ 2.0 on August 22, 2026 at Seaside Convention Center! #TOPAZ2`;
+    if (typeof navigator !== 'undefined' && 'share' in navigator) {
+      try {
+        await navigator.share({ title: 'TOPAZ 2.0', text, url: window.location.origin });
+        return;
+      } catch {
+        // Fall through to clipboard
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(text);
+      setShareCopied(true);
+      window.setTimeout(() => setShareCopied(false), 2200);
+    } catch {
+      // Silently ignore clipboard failures
+    }
+  }
+
+  return (
+    <div className="max-w-2xl mx-auto bg-white rounded-[2rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.08)] border border-gray-100 overflow-hidden animate-in zoom-in-95 duration-500">
+      {/* Celebration header */}
+      <div className="bg-gradient-to-br from-[#2E75B6] via-[#1F4E78] to-[#0a0a0a] p-10 sm:p-14 text-center text-white relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-80 h-80 bg-[#2E75B6]/40 rounded-full blur-[100px] -translate-y-1/3 translate-x-1/3 pointer-events-none" aria-hidden />
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-white/10 rounded-full blur-[80px] translate-y-1/3 -translate-x-1/3 pointer-events-none" aria-hidden />
+
+        <div className="relative z-10">
+          {/* Animated checkmark — respects reduced motion via `motion-reduce:animate-none` */}
+          <div className="relative w-24 h-24 mx-auto mb-8">
+            <div className="absolute inset-0 rounded-full bg-[#10b981]/30 animate-ping motion-reduce:animate-none" aria-hidden />
+            <div className="absolute inset-0 rounded-full bg-[#10b981] flex items-center justify-center shadow-[0_0_40px_rgba(16,185,129,0.5)]">
+              <CheckCircle2 className="w-12 h-12 text-white drop-shadow" />
+            </div>
+          </div>
+          <h2 className="font-display font-black text-3xl sm:text-5xl uppercase tracking-tight mb-3 leading-none">
+            You're Registered! <PartyPopper className="inline-block w-8 h-8 sm:w-10 sm:h-10 text-amber-300 align-[-0.2em]" />
+          </h2>
+          <p className="text-white/80 font-medium text-lg">
+            Nice work, <strong className="text-white">{success.contestant_name}</strong> — see you on stage.
+          </p>
+        </div>
+      </div>
+
+      {/* Competition detail card */}
+      <div className="px-6 sm:px-10 pt-10 -mt-4 relative z-20">
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-lg p-6 sm:p-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6 pb-5 border-b border-gray-100">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-[#2E75B6] mb-1">Your competition</p>
+              <h3 className="font-display font-black text-2xl sm:text-3xl text-[#0a0a0a] uppercase tracking-tight leading-none">
+                TOPAZ 2.0
+              </h3>
+              <p className="text-sm text-gray-500 font-medium mt-1">
+                Saturday, August 22, 2026 · Seaside Convention Center, OR
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Total paid on-site</p>
+              <p className="font-black text-3xl text-[#2E75B6] tabular-nums">${success.total_fee.toFixed(2)}</p>
+            </div>
+          </div>
+
+          <div className="grid sm:grid-cols-2 gap-x-6 gap-y-5">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Category</p>
+              <p className="font-bold text-[#0a0a0a] mt-0.5">{success.category}</p>
+            </div>
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Entry Type</p>
+              <p className="font-bold text-[#0a0a0a] mt-0.5">{success.group_size}</p>
+            </div>
+            {success.song_title && (
+              <div className="sm:col-span-2">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Song</p>
+                <p className="font-bold text-[#0a0a0a] mt-0.5">
+                  {success.song_title}{success.artist_name ? ` — ${success.artist_name}` : ''}
+                </p>
+              </div>
+            )}
+            <div className="sm:col-span-2">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Confirmation Email</p>
+              <p className="font-bold text-[#0a0a0a] mt-0.5 truncate">{success.email}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Action buttons */}
+      <div className="px-6 sm:px-10 pt-8">
+        <div className="grid sm:grid-cols-2 gap-3">
+          <button
+            type="button"
+            onClick={downloadIcs}
+            className="flex items-center justify-center gap-2 h-12 px-5 rounded-xl bg-[#0a0a0a] text-white font-bold uppercase tracking-wider text-xs hover:bg-[#2E75B6] transition-colors shadow-md"
+          >
+            <CalendarPlus className="w-4 h-4" />
+            Add to Calendar
+          </button>
+          <button
+            type="button"
+            onClick={share}
+            className="flex items-center justify-center gap-2 h-12 px-5 rounded-xl bg-white border-2 border-gray-200 text-[#0a0a0a] font-bold uppercase tracking-wider text-xs hover:border-[#2E75B6] hover:text-[#2E75B6] transition-colors"
+          >
+            <Share2 className="w-4 h-4" />
+            {shareCopied ? 'Copied to clipboard!' : 'Share the news'}
+          </button>
+        </div>
+
+        <div className="mt-6 bg-gray-50 border border-gray-100 rounded-2xl p-5 flex items-start gap-3">
+          <Info className="w-5 h-5 text-[#2E75B6] shrink-0 mt-0.5" />
+          <div className="text-sm text-gray-600 font-medium leading-relaxed">
+            <p className="text-[#0a0a0a] font-bold mb-1">What happens next?</p>
+            <ul className="space-y-1">
+              <li>· A full confirmation summary was just sent to your email</li>
+              <li>· Bring your entry fee (check / money order) to the event</li>
+              <li>· Our team will be in touch if we need anything else</li>
+            </ul>
+          </div>
+        </div>
+
+        <Link
+          to="/"
+          className="flex items-center justify-center gap-2 w-full mt-6 mb-10 h-12 rounded-xl bg-white border-2 border-gray-200 text-gray-600 font-bold hover:border-[#0a0a0a] hover:text-[#0a0a0a] transition-all uppercase tracking-widest text-xs"
+        >
+          <HomeIcon className="w-4 h-4" />
+          Back to Home
+        </Link>
       </div>
     </div>
   );

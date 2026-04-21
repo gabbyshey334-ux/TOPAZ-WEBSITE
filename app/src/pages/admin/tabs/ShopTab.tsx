@@ -925,10 +925,15 @@ function OrdersSection() {
 export default function ShopTab() {
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold text-white">Shop</h2>
-        <p className="text-sm text-slate-400 mt-0.5">Manage TOPAZ 2.0 merchandise, products, and orders.</p>
-      </div>
+      <header>
+        <div className="mb-5">
+          <h1 className="text-3xl font-black text-white tracking-tight">Shop</h1>
+          <p className="text-sm text-[#6b7280] mt-1 font-medium">
+            Manage TOPAZ 2.0 merchandise, products, and orders.
+          </p>
+        </div>
+        <div className="h-px bg-gradient-to-r from-[#2E75B6]/30 via-[#1e1e1e] to-transparent" />
+      </header>
 
       <Tabs defaultValue="products">
         <TabsList className="bg-slate-800 border border-slate-700 mb-6">

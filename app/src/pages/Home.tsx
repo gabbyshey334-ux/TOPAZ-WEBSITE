@@ -91,26 +91,36 @@ const promoCards = [
   },
 ] as const;
 
-const legacyHistoryPhotos = [
+/**
+ * Fallback URLs for the 4 homepage "heritage" photos, used when the
+ * `site_content` rows haven't loaded yet (or are missing). The admin
+ * "Content" tab writes overrides into the `site_content` table keyed by
+ * `hero_image_1` .. `hero_image_4` and `hero_video_url`.
+ */
+const LEGACY_HERITAGE_FALLBACKS = [
   {
+    key: 'hero_image_1',
     src: `${BASE}images/homepage/boy-tuxedo-trophy.png`,
     alt: 'Vintage TOPAZ competition — young dancer in tuxedo with trophy',
-    aspect: 'tall'
+    aspect: 'tall',
   },
   {
+    key: 'hero_image_2',
     src: `${BASE}images/homepage/duo-trophy.png`,
     alt: 'Vintage TOPAZ competition — duo with trophy',
-    aspect: 'square'
+    aspect: 'square',
   },
   {
+    key: 'hero_image_3',
     src: `${BASE}images/homepage/group-dancers-trophy.png`,
     alt: 'Vintage TOPAZ competition — group of dancers with trophy',
-    aspect: 'square'
+    aspect: 'square',
   },
   {
+    key: 'hero_image_4',
     src: `${BASE}images/homepage/newspaper-1975.png`,
     alt: '1975 newspaper clipping featuring TOPAZ',
-    aspect: 'tall'
+    aspect: 'tall',
   },
 ] as const;
 
@@ -136,11 +146,22 @@ const Home = () => {
   const [activeTestimonial, setActiveTestimonial] = useState(0);
   const [masterclassInstructors, setMasterclassInstructors] = useState<InstructorRow[]>([]);
   const [judges, setJudges] = useState<InstructorRow[]>([]);
+  const [siteContent, setSiteContent] = useState<Record<string, string | null>>({});
+
+  // Resolve each heritage photo URL from site_content first, falling back to
+  // the hardcoded public path so the homepage always renders something even
+  // if the DB request fails or is slow.
+  const heritagePhotos = LEGACY_HERITAGE_FALLBACKS.map((p) => ({
+    src: siteContent[p.key] && siteContent[p.key]!.trim() ? siteContent[p.key]! : p.src,
+    alt: p.alt,
+    aspect: p.aspect,
+  }));
+  const heroVideoUrl = siteContent['hero_video_url'] ?? null;
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const [t, i] = await Promise.all([
+      const [t, i, c] = await Promise.all([
         supabase
           .from('testimonials')
           .select('*')
@@ -153,12 +174,19 @@ const Home = () => {
           .eq('is_visible', true)
           .order('display_order', { ascending: true })
           .order('created_at', { ascending: false }),
+        supabase.from('site_content').select('key, value'),
       ]);
       if (cancelled) return;
       setTestimonials((t.data as TestimonialRow[]) ?? []);
       const instructors = (i.data as InstructorRow[]) ?? [];
       setMasterclassInstructors(instructors.filter((x) => x.type === 'masterclass'));
       setJudges(instructors.filter((x) => x.type === 'judge'));
+
+      const map: Record<string, string | null> = {};
+      for (const row of (c.data as { key: string; value: string | null }[] | null) ?? []) {
+        map[row.key] = row.value;
+      }
+      setSiteContent(map);
     })();
     return () => { cancelled = true; };
   }, []);
@@ -295,7 +323,7 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-white selection:bg-[#2E75B6] selection:text-white">
-      <HeroSection />
+      <HeroSection videoUrl={heroVideoUrl} />
 
       {/* Heritage Photos - Masonry Layout */}
       <section
@@ -311,8 +339,8 @@ const Home = () => {
               {/* Photo 1 - Tall */}
               <div className="heritage-photo flex min-h-[260px] items-center justify-center overflow-hidden rounded-xl bg-gray-100 shadow-md transition-shadow duration-300 hover:shadow-lg sm:min-h-[300px] sm:rounded-2xl md:min-h-[340px] lg:min-h-[380px] xl:min-h-[420px]">
                 <img
-                  src={legacyHistoryPhotos[0].src}
-                  alt={legacyHistoryPhotos[0].alt}
+                  src={heritagePhotos[0].src}
+                  alt={heritagePhotos[0].alt}
                   loading="lazy"
                   decoding="async"
                   className="max-h-full w-full object-contain object-top"
@@ -321,8 +349,8 @@ const Home = () => {
               {/* Photo 3 - Squareish */}
               <div className="heritage-photo flex min-h-[220px] items-center justify-center overflow-hidden rounded-xl bg-gray-100 shadow-md transition-shadow duration-300 hover:shadow-lg sm:min-h-[260px] sm:rounded-2xl md:min-h-[300px] lg:min-h-[340px] xl:min-h-[380px]">
                 <img
-                  src={legacyHistoryPhotos[2].src}
-                  alt={legacyHistoryPhotos[2].alt}
+                  src={heritagePhotos[2].src}
+                  alt={heritagePhotos[2].alt}
                   loading="lazy"
                   decoding="async"
                   className="max-h-full w-full object-contain object-top"
@@ -335,8 +363,8 @@ const Home = () => {
               {/* Photo 2 - Squareish */}
               <div className="heritage-photo flex min-h-[220px] items-center justify-center overflow-hidden rounded-xl bg-gray-100 shadow-md transition-shadow duration-300 hover:shadow-lg sm:min-h-[260px] sm:rounded-2xl md:min-h-[300px] lg:min-h-[340px] xl:min-h-[380px]">
                 <img
-                  src={legacyHistoryPhotos[1].src}
-                  alt={legacyHistoryPhotos[1].alt}
+                  src={heritagePhotos[1].src}
+                  alt={heritagePhotos[1].alt}
                   loading="lazy"
                   decoding="async"
                   className="max-h-full w-full object-contain object-top"
@@ -345,8 +373,8 @@ const Home = () => {
               {/* Photo 4 - Tall */}
               <div className="heritage-photo flex min-h-[260px] items-center justify-center overflow-hidden rounded-xl bg-gray-100 shadow-md transition-shadow duration-300 hover:shadow-lg sm:min-h-[300px] sm:rounded-2xl md:min-h-[340px] lg:min-h-[380px] xl:min-h-[420px]">
                 <img
-                  src={legacyHistoryPhotos[3].src}
-                  alt={legacyHistoryPhotos[3].alt}
+                  src={heritagePhotos[3].src}
+                  alt={heritagePhotos[3].alt}
                   loading="lazy"
                   decoding="async"
                   className="max-h-full w-full object-contain object-top"

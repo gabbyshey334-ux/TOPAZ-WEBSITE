@@ -104,21 +104,24 @@ export default function EventsTab() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-white">Events</h1>
-          <p className="text-sm text-slate-400 mt-0.5">
-            Changes here appear immediately on the public website — no deployment needed.
-          </p>
+      <header>
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-5">
+          <div>
+            <h1 className="text-3xl font-black text-white tracking-tight">Events</h1>
+            <p className="text-sm text-[#6b7280] mt-1 font-medium">
+              Changes appear immediately on the public website — no deployment needed.
+            </p>
+          </div>
+          <Button
+            className="bg-[#2E75B6] hover:bg-[#1F4E78] text-white font-bold shadow-[0_0_12px_rgba(46,117,182,0.25)] shrink-0"
+            onClick={() => setCreateOpen(true)}
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Add Event
+          </Button>
         </div>
-        <Button
-          className="bg-[#2E75B6] hover:bg-[#1F4E78]"
-          onClick={() => setCreateOpen(true)}
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Add Event
-        </Button>
-      </div>
+        <div className="h-px bg-gradient-to-r from-[#2E75B6]/30 via-[#1e1e1e] to-transparent" />
+      </header>
 
       {/* Create event dialog */}
       <Dialog

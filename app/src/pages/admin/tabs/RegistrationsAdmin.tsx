@@ -23,7 +23,6 @@ import {
   Trash2,
   Music,
   ChevronDown,
-  ChevronUp,
   X,
   Search,
   ClipboardList,
@@ -88,11 +87,12 @@ function computeFeeFor(gs: string, count: number): number {
 type RegRow = Database['public']['Tables']['registrations']['Row'];
 
 // ── Sync status config ───────────────────────────────────────────────────────
-const SYNC_CONFIG: Record<string, { label: string; color: string; bg: string; icon: typeof CheckCircle2; dot: string }> = {
-  pending:  { label: 'Not Synced', color: 'text-slate-400',   bg: 'bg-slate-400/10',   icon: Clock,         dot: 'bg-slate-400' },
-  synced:   { label: 'Synced',     color: 'text-emerald-400', bg: 'bg-emerald-400/10', icon: CheckCircle2,  dot: 'bg-emerald-400' },
-  failed:   { label: 'Sync Failed',color: 'text-red-400',     bg: 'bg-red-400/10',     icon: XCircle,       dot: 'bg-red-400' },
-  skipped:  { label: 'Skipped',    color: 'text-blue-400',    bg: 'bg-blue-400/10',    icon: SkipForward,   dot: 'bg-blue-400' },
+// `stripe` is used for the colored left-border strip on each registration card.
+const SYNC_CONFIG: Record<string, { label: string; color: string; bg: string; icon: typeof CheckCircle2; dot: string; stripe: string }> = {
+  pending:  { label: 'Not Synced',  color: 'text-[#f59e0b]', bg: 'bg-[#f59e0b]/10', icon: Clock,        dot: 'bg-[#f59e0b]', stripe: 'bg-[#f59e0b]' },
+  synced:   { label: 'Synced',      color: 'text-[#10b981]', bg: 'bg-[#10b981]/10', icon: CheckCircle2, dot: 'bg-[#10b981]', stripe: 'bg-[#10b981]' },
+  failed:   { label: 'Sync Failed', color: 'text-[#ef4444]', bg: 'bg-[#ef4444]/10', icon: XCircle,      dot: 'bg-[#ef4444]', stripe: 'bg-[#ef4444]' },
+  skipped:  { label: 'Skipped',     color: 'text-[#2E75B6]', bg: 'bg-[#2E75B6]/10', icon: SkipForward,  dot: 'bg-[#2E75B6]', stripe: 'bg-[#2E75B6]' },
 };
 
 function syncCfg(s: string) {
@@ -120,6 +120,26 @@ function entryType(groupSize: string): string {
   if (groupSize.startsWith('Large Group')) return 'Large Group';
   if (groupSize.startsWith('Production'))  return 'Production';
   return groupSize;
+}
+
+// ── Inline expanded detail cell — label above, value below ──────────────────
+function DetailCell({
+  label,
+  value,
+  capitalize,
+}: {
+  label: string;
+  value?: string | null;
+  capitalize?: boolean;
+}) {
+  return (
+    <div className="min-w-0">
+      <span className="text-[10px] font-bold uppercase tracking-wider text-[#6b7280]">{label}</span>
+      <p className={cn('text-[#e5e7eb] font-medium mt-0.5 truncate', capitalize && 'capitalize')}>
+        {value || '—'}
+      </p>
+    </div>
+  );
 }
 
 // ── Detail field row helper ──────────────────────────────────────────────────
@@ -766,43 +786,47 @@ export default function RegistrationsAdmin() {
         </div>
       )}
 
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row gap-4 sm:items-start sm:justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-white">Registrations</h2>
-          <p className="text-sm text-slate-400 mt-0.5">
-            {filtered.length} of {rows.length} entr{rows.length === 1 ? 'y' : 'ies'}
-            {activeFilters.length > 0 && ` · filtered by ${activeFilters.join(', ')}`}
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2 shrink-0">
-          <Button
-            className="bg-emerald-600 hover:bg-emerald-700 text-white"
-            onClick={() => { resetManualForm(); setShowAddManual(true); }}
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Add Manual Registration
-          </Button>
-          {unsyncedCount > 0 && !bulkSyncing && (
+      {/* ── Page header — title left, actions pinned top-right ─────────────── */}
+      <header>
+        <div className="flex flex-col sm:flex-row gap-4 sm:items-end sm:justify-between mb-5">
+          <div>
+            <h1 className="text-3xl font-black text-white tracking-tight">Registrations</h1>
+            <p className="text-sm text-[#6b7280] mt-1 font-medium">
+              {filtered.length} of {rows.length} entr{rows.length === 1 ? 'y' : 'ies'}
+              {activeFilters.length > 0 && ` · filtered by ${activeFilters.join(', ')}`}
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2 shrink-0">
             <Button
-              className="bg-[#2E75B6] hover:bg-[#1e5a96] text-white"
-              onClick={() => setShowBulkConfirm(true)}
-              disabled={bulkSyncing}
+              className="bg-[#2E75B6] hover:bg-[#1F4E78] text-white font-bold"
+              onClick={() => { resetManualForm(); setShowAddManual(true); }}
             >
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Sync All Unsync'd ({unsyncedCount})
+              <Plus className="w-4 h-4 mr-2" />
+              Add Manual
             </Button>
-          )}
-          <Button
-            variant="outline"
-            className="border-slate-600 text-white hover:bg-slate-800"
-            onClick={exportCsv}
-          >
-            <Download className="w-4 h-4 mr-2" />
-            Export CSV
-          </Button>
+            {unsyncedCount > 0 && !bulkSyncing && (
+              <Button
+                variant="outline"
+                className="border-[#2E75B6]/40 bg-[#2E75B6]/10 text-[#2E75B6] hover:bg-[#2E75B6]/20 hover:text-[#7EB8E8] font-bold"
+                onClick={() => setShowBulkConfirm(true)}
+                disabled={bulkSyncing}
+              >
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Sync All ({unsyncedCount})
+              </Button>
+            )}
+            <Button
+              variant="outline"
+              className="border-[#2a2a2a] bg-[#111111] text-[#e5e7eb] hover:bg-[#1a1a1a]"
+              onClick={exportCsv}
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Export CSV
+            </Button>
+          </div>
         </div>
-      </div>
+        <div className="h-px bg-gradient-to-r from-[#2E75B6]/30 via-[#1e1e1e] to-transparent" />
+      </header>
 
       {/* Search + filters */}
       <div className="space-y-3">
@@ -873,144 +897,175 @@ export default function RegistrationsAdmin() {
         </div>
       </div>
 
-      {/* Registration cards (mobile-first, no horizontal scroll needed) */}
+      {/* ── Registration cards ────────────────────────────────────────────── */}
       {loading ? (
-        <div className="flex items-center justify-center py-20">
-          <div className="w-6 h-6 border-2 border-[#2E75B6]/30 border-t-[#2E75B6] rounded-full animate-spin" />
+        <div className="space-y-3">
+          {[1, 2, 3, 4].map((i) => (
+            <div
+              key={i}
+              className="bg-[#111111] border border-[#1e1e1e] rounded-xl h-24 animate-pulse motion-reduce:animate-none"
+            />
+          ))}
         </div>
       ) : filtered.length === 0 ? (
-        <div className="text-center py-16">
-          <ClipboardList className="w-10 h-10 text-slate-600 mx-auto mb-3" />
-          <p className="text-slate-400">No registrations match your filters.</p>
+        <div className="text-center py-16 bg-[#111111] border border-[#1e1e1e] rounded-xl">
+          <div className="w-16 h-16 rounded-2xl bg-[#1e1e1e] flex items-center justify-center mx-auto mb-4">
+            <ClipboardList className="w-7 h-7 text-[#6b7280]" />
+          </div>
+          <p className="text-[#e5e7eb] font-bold mb-1">No registrations yet</p>
+          <p className="text-[#6b7280] text-sm">
+            {rows.length === 0
+              ? 'New entries will appear here as they come in.'
+              : 'Try adjusting your filters to see more results.'}
+          </p>
         </div>
       ) : (
         <div className="space-y-3">
           {filtered.map((r) => {
             const cfg = statusCfg(r.status);
+            const sc = syncCfg(r.scoring_app_sync_status ?? 'pending');
+            const SyncIcon = sc.icon;
             const isExpanded = expandedId === r.id;
             return (
               <div
                 key={r.id}
-                className="bg-slate-900 border border-slate-700 rounded-xl overflow-hidden"
+                className={cn(
+                  'relative bg-[#111111] border border-[#1e1e1e] rounded-xl overflow-hidden transition-colors',
+                  'hover:border-[#2a2a2a]'
+                )}
               >
-                {/* Card main row */}
-                <div className="flex items-start gap-3 p-4">
-                  {/* Status dot */}
-                  <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${cfg.dot}`} />
+                {/* Colored left-border strip indicating sync status */}
+                <div
+                  className={cn('absolute left-0 top-0 bottom-0 w-1', sc.stripe)}
+                  aria-hidden
+                />
 
+                {/* Card main row */}
+                <div className="flex items-start gap-3 p-4 pl-5">
                   {/* Main info */}
                   <div className="flex-1 min-w-0">
-                    <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mb-1">
-                      <p className="font-bold text-white text-sm leading-tight">{r.contestant_name}</p>
-                      <span className="text-xs text-slate-500">{entryType(r.group_size)}</span>
+                    <div className="flex flex-wrap items-center gap-2 mb-1">
+                      <p className="font-bold text-white text-base leading-tight truncate">
+                        {r.contestant_name}
+                      </p>
+                      <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#2E75B6]/15 text-[#7EB8E8]">
+                        {entryType(r.group_size)}
+                      </span>
+                      <span className={cn('inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full', cfg.color, 'bg-[#1a1a1a] border border-[#2a2a2a]')}>
+                        <span className={cn('w-1.5 h-1.5 rounded-full', cfg.dot)} />
+                        {cfg.label}
+                      </span>
                     </div>
-                    <p className="text-xs text-slate-400 truncate">{r.studio_name}</p>
-                    <p className="text-xs text-slate-500 mt-0.5 truncate">{r.category}</p>
+                    <p className="text-xs text-[#e5e7eb] truncate font-medium">{r.studio_name}</p>
+                    <p className="text-[11px] text-[#6b7280] mt-0.5 truncate">{r.category}</p>
                   </div>
 
-                  {/* Right side: fee + date + sync badge */}
-                  <div className="shrink-0 text-right space-y-1">
-                    <p className="text-sm font-bold text-white">${Number(r.total_fee).toFixed(0)}</p>
-                    <p className="text-[10px] text-slate-500">
+                  {/* Right: fee + date + sync badge */}
+                  <div className="shrink-0 text-right space-y-1.5">
+                    <p className="text-base font-black text-white tabular-nums">
+                      ${Number(r.total_fee).toFixed(0)}
+                    </p>
+                    <p className="text-[10px] text-[#6b7280] tabular-nums">
                       {new Date(r.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                     </p>
-                    {(() => {
-                      const sc = syncCfg(r.scoring_app_sync_status ?? 'pending');
-                      const Icon = sc.icon;
-                      return (
-                        <span className={`inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full ${sc.color} ${sc.bg}`}>
-                          <Icon className="w-2.5 h-2.5" />
-                          {sc.label}
-                        </span>
-                      );
-                    })()}
+                    <span className={cn('inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-full', sc.color, sc.bg)}>
+                      <SyncIcon className="w-2.5 h-2.5" />
+                      {sc.label}
+                    </span>
                   </div>
+
+                  {/* Expand chevron */}
+                  <button
+                    type="button"
+                    onClick={() => setExpandedId(isExpanded ? null : r.id)}
+                    className="shrink-0 w-8 h-8 flex items-center justify-center rounded-lg text-[#6b7280] hover:text-white hover:bg-[#1e1e1e] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2E75B6]/40"
+                    aria-expanded={isExpanded}
+                    aria-label={isExpanded ? 'Collapse' : 'Expand'}
+                  >
+                    <ChevronDown
+                      className={cn(
+                        'w-4 h-4 transition-transform duration-300 ease-out motion-reduce:transition-none',
+                        isExpanded && 'rotate-180'
+                      )}
+                    />
+                  </button>
                 </div>
 
-                {/* Action strip */}
-                <div className="border-t border-slate-800 px-4 py-2 flex items-center gap-2">
-                  {/* Status selector */}
-                  <Select value={r.status} onValueChange={(v) => setStatus(r.id, v)}>
-                    <SelectTrigger className="h-7 w-[130px] bg-slate-800 border-slate-600 text-xs text-white">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="bg-slate-900 border-slate-700">
-                      {STATUSES.map((s) => (
-                        <SelectItem key={s.value} value={s.value} className={`text-xs ${s.color}`}>
-                          {s.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-
-                  <div className="flex items-center gap-1 ml-auto">
-                    {/* View detail */}
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="h-7 px-2 text-slate-300 hover:text-white hover:bg-slate-700"
-                      onClick={() => setDetail(r)}
-                      title="View full details"
-                    >
-                      <Eye className="w-4 h-4" />
-                    </Button>
-                    {/* Expand inline */}
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="h-7 px-2 text-slate-400 hover:text-white hover:bg-slate-700"
-                      onClick={() => setExpandedId(isExpanded ? null : r.id)}
-                      title={isExpanded ? 'Collapse' : 'Quick view'}
-                    >
-                      {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                    </Button>
-                    {/* Delete */}
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="h-7 px-2 text-red-500 hover:text-red-400 hover:bg-red-950/30"
-                      onClick={() => setDeleteTarget(r.id)}
-                      title="Delete registration"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Inline expanded view */}
-                {isExpanded && (
-                  <div className="border-t border-slate-800 px-4 py-3 grid grid-cols-2 gap-x-6 gap-y-2 text-xs bg-slate-900/50">
-                    <div><span className="text-slate-500">Email</span><p className="text-white truncate">{r.email}</p></div>
-                    <div><span className="text-slate-500">Phone</span><p className="text-white">{r.phone}</p></div>
-                    <div><span className="text-slate-500">Teacher</span><p className="text-white">{r.teacher_name}</p></div>
-                    <div><span className="text-slate-500">Routine</span><p className="text-white truncate">{r.routine_name}</p></div>
-                    {r.song_title && (
-                      <div className="col-span-2">
-                        <span className="text-slate-500">Song</span>
-                        <p className="text-white">{r.song_title}{r.artist_name ? ` — ${r.artist_name}` : ''}</p>
+                {/* Smoothly-expanding inline details */}
+                <div
+                  className={cn(
+                    'grid transition-[grid-template-rows] duration-300 ease-out motion-reduce:transition-none',
+                    isExpanded ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
+                  )}
+                >
+                  <div className="overflow-hidden">
+                    <div className="border-t border-[#1e1e1e] px-5 py-4 bg-[#0a0a0a]/40">
+                      <div className="grid grid-cols-2 gap-x-6 gap-y-3 text-xs mb-4">
+                        <DetailCell label="Email"          value={r.email} />
+                        <DetailCell label="Phone"          value={r.phone} />
+                        <DetailCell label="Teacher"        value={r.teacher_name} />
+                        <DetailCell label="Routine"        value={r.routine_name} />
+                        {r.song_title && (
+                          <div className="col-span-2">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-[#6b7280]">Song</span>
+                            <p className="text-[#e5e7eb] font-medium mt-0.5">
+                              {r.song_title}
+                              {r.artist_name ? ` — ${r.artist_name}` : ''}
+                            </p>
+                          </div>
+                        )}
+                        <DetailCell label="Music delivery" value={r.music_delivery_method} capitalize />
+                        <DetailCell label="Age division"   value={r.age_division} />
+                        <DetailCell label="Ability"        value={r.ability_level} />
+                        <DetailCell label="Payment"        value={r.payment_method} />
+                        {r.parent_guardian_name && (
+                          <div className="col-span-2">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-[#6b7280]">Parent / Guardian</span>
+                            <p className="text-[#e5e7eb] font-medium mt-0.5">{r.parent_guardian_name}</p>
+                          </div>
+                        )}
                       </div>
-                    )}
-                    <div><span className="text-slate-500">Music delivery</span><p className="text-white capitalize">{r.music_delivery_method}</p></div>
-                    <div><span className="text-slate-500">Age division</span><p className="text-white">{r.age_division}</p></div>
-                    <div><span className="text-slate-500">Ability</span><p className="text-white">{r.ability_level}</p></div>
-                    <div><span className="text-slate-500">Payment</span><p className="text-white">{r.payment_method}</p></div>
-                    {r.parent_guardian_name && (
-                      <div className="col-span-2">
-                        <span className="text-slate-500">Parent / Guardian</span>
-                        <p className="text-white">{r.parent_guardian_name}</p>
+
+                      {/* Action strip: status + sync now + view + delete — lives in expanded area */}
+                      <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-[#1e1e1e]">
+                        <Select value={r.status} onValueChange={(v) => setStatus(r.id, v)}>
+                          <SelectTrigger className="h-8 w-[140px] bg-[#1a1a1a] border-[#2a2a2a] text-xs text-white">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent className="bg-[#1a1a1a] border-[#2a2a2a]">
+                            {STATUSES.map((s) => (
+                              <SelectItem key={s.value} value={s.value} className={cn('text-xs', s.color)}>
+                                {s.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-8 px-3 border-[#2a2a2a] bg-[#1a1a1a] text-[#e5e7eb] hover:bg-[#111111] text-xs"
+                          onClick={() => setDetail(r)}
+                        >
+                          <Eye className="w-3.5 h-3.5 mr-1.5" />
+                          View Full Details
+                        </Button>
+
+                        <div className="ml-auto">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-8 px-3 text-[#ef4444] hover:text-[#ef4444] hover:bg-[#ef4444]/10 text-xs font-bold"
+                            onClick={() => setDeleteTarget(r.id)}
+                          >
+                            <Trash2 className="w-3.5 h-3.5 mr-1.5" />
+                            Delete
+                          </Button>
+                        </div>
                       </div>
-                    )}
-                    <div className="col-span-2 pt-1">
-                      <button
-                        type="button"
-                        className="text-[#7EB8E8] hover:text-white"
-                        onClick={() => setDetail(r)}
-                      >
-                        Open full detail →
-                      </button>
                     </div>
                   </div>
-                )}
+                </div>
               </div>
             );
           })}

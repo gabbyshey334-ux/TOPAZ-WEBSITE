@@ -2,12 +2,23 @@ import { useRef, useEffect, useState } from 'react';
 import { gsap } from 'gsap';
 import { ChevronDown } from 'lucide-react';
 
-const SHOWREEL_VIDEO_URL = 'https://video.wixstatic.com/video/187f75_27990c00a54e450aa41497ecc3f40b68/480p/mp4/file.mp4';
+// Fallback used when the DB value for `hero_video_url` is missing or not yet loaded.
+const DEFAULT_SHOWREEL_VIDEO_URL = 'https://video.wixstatic.com/video/187f75_27990c00a54e450aa41497ecc3f40b68/480p/mp4/file.mp4';
 const BASE = import.meta.env.BASE_URL;
 const MASK_LOGO = `${BASE}images/logos/topaz-logo-masks.png`;
 const MASK_LOGO_FALLBACK = `${BASE}images/logos/topaz-logo.png`;
 
-const HeroSection = () => {
+interface HeroSectionProps {
+  /**
+   * Optional URL for the background video. If omitted or empty, the default
+   * showreel URL is used. Usually passed in from `Home.tsx` after being
+   * loaded from the `site_content` table so admins can swap it without code.
+   */
+  videoUrl?: string | null;
+}
+
+const HeroSection = ({ videoUrl }: HeroSectionProps = {}) => {
+  const activeVideoUrl = videoUrl && videoUrl.trim() ? videoUrl : DEFAULT_SHOWREEL_VIDEO_URL;
   const sectionRef = useRef<HTMLElement>(null);
   const logoRef = useRef<HTMLImageElement>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
@@ -63,13 +74,14 @@ const HeroSection = () => {
   return (
     <section ref={sectionRef} className="relative min-h-screen w-full overflow-hidden bg-black">
       <video
+        key={activeVideoUrl /* reload when the URL changes */}
         autoPlay
         muted
         loop
         playsInline
         className="absolute inset-0 h-full w-full object-cover"
       >
-        <source src={SHOWREEL_VIDEO_URL} type="video/mp4" />
+        <source src={activeVideoUrl} type="video/mp4" />
       </video>
 
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/60" />

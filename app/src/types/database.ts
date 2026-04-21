@@ -477,6 +477,24 @@ export type Database = {
         };
         Relationships: [];
       };
+      site_content: {
+        Row: {
+          key: string;
+          value: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          key: string;
+          value?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          key?: string;
+          value?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       products: {
         Row: {
           id: string;
