@@ -431,7 +431,7 @@ export default function CompetitionRegistrationForm() {
       contestant_count: n,
       total_fee: fee,
       payment_method: paymentMethod,
-      participants_json: needsParticipantTable(groupSize) ? participants : null,
+      participants_json: needsParticipantTable(groupSize) ? (participants ?? []) : [],
       disclaimer_accepted: true,
     };
 

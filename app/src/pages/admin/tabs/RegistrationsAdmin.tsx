@@ -630,6 +630,7 @@ export default function RegistrationsAdmin() {
         song_title: m_songTitle.trim() || null,
         artist_name: m_artistName.trim() || null,
         music_delivery_method: m_musicDeliveryMethod,
+        participants_json: [],
         disclaimer_accepted: true,
         scoring_app_sync_status: 'pending',
       };
