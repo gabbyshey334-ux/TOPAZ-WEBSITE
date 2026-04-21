@@ -7,7 +7,6 @@ import { Label } from '@/components/ui/label';
 import {
   AlertCircle,
   CheckCircle2,
-  FileEdit,
   ImageIcon,
   Link as LinkIcon,
   Loader2,
