@@ -35,8 +35,38 @@ import {
   Loader2,
   AlertTriangle,
   Plus,
+  Mail,
+  MailCheck,
+  MailWarning,
+  Send,
+  Users,
+  Link2,
+  List,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+
+// ── Sync error classification ────────────────────────────────────────────────
+// When the scoring app doesn't have the TOPAZ competition yet, the edge
+// function returns an error containing "No matching competition". We surface
+// this as a clear, human-readable banner so Nick knows exactly what to do.
+const MISSING_COMPETITION_HINT =
+  "No competition found in the scoring app. Please create 'The Return of TOPAZ 2.0' in the scoring app first, then try syncing again.";
+
+function isMissingCompetitionError(err: string | null | undefined): boolean {
+  if (!err) return false;
+  const lower = err.toLowerCase();
+  return (
+    lower.includes('no matching competition') ||
+    lower.includes('no competition found') ||
+    lower.includes("'the return of topaz 2.0'")
+  );
+}
+
+function friendlySyncError(err: string | null | undefined): string | null {
+  if (!err) return null;
+  if (isMissingCompetitionError(err)) return MISSING_COMPETITION_HINT;
+  return err;
+}
 
 // ── Options for Add Manual dialog ────────────────────────────────────────────
 const MANUAL_CATEGORIES = [
@@ -122,6 +152,30 @@ function entryType(groupSize: string): string {
   return groupSize;
 }
 
+// ── Routine/link normalization + linked-row finder ───────────────────────────
+// Normalizes a routine_name / group_link_code into the lookup key we use for
+// grouping and for detecting linked entries. Trims + lowercases; returns '' when
+// the underlying value is missing, which means "no key" (cannot be linked by
+// that field).
+function normalizeKey(v: string | null | undefined): string {
+  return (v ?? '').trim().toLowerCase();
+}
+
+function findLinkedRegistrations(row: RegRow, all: RegRow[]): RegRow[] {
+  const routineKey = normalizeKey(row.routine_name);
+  const codeKey = normalizeKey(row.group_link_code);
+  if (!routineKey && !codeKey) return [];
+  return all.filter((r) => {
+    if (r.id === row.id) return false;
+    const rRoutine = normalizeKey(r.routine_name);
+    const rCode = normalizeKey(r.group_link_code);
+    return (
+      (routineKey !== '' && rRoutine === routineKey) ||
+      (codeKey !== '' && rCode === codeKey)
+    );
+  });
+}
+
 // ── Detail field row helper ──────────────────────────────────────────────────
 function Field({ label, value }: { label: string; value?: string | null }) {
   if (!value) return null;
@@ -136,20 +190,27 @@ function Field({ label, value }: { label: string; value?: string | null }) {
 // ── Registration detail dialog ───────────────────────────────────────────────
 function DetailDialog({
   row,
+  allRows,
   onClose,
   onStatusChange,
   onSyncComplete,
+  onOpenRelated,
 }: {
   row: RegRow | null;
+  allRows: RegRow[];
   onClose: () => void;
   onStatusChange: (id: string, status: string) => void;
   onSyncComplete: (id: string, updated: Partial<RegRow>) => void;
+  onOpenRelated: (row: RegRow) => void;
 }) {
   const [musicUrl, setMusicUrl] = useState<string | null>(null);
   const [loadingMusic, setLoadingMusic] = useState(false);
   const [statusSaving, setStatusSaving] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [syncMsg, setSyncMsg] = useState<string | null>(null);
+  // Resend email state
+  const [resendingEmail, setResendingEmail] = useState(false);
+  const [resendMsg, setResendMsg] = useState<{ text: string; error: boolean } | null>(null);
 
   useEffect(() => {
     if (!row?.music_file_url) { setMusicUrl(null); return; }
@@ -203,6 +264,41 @@ function DetailDialog({
       if (fresh) onSyncComplete(row.id, fresh as Partial<RegRow>);
     } finally {
       setSyncing(false);
+    }
+  }
+
+  async function handleResendEmail() {
+    if (!row) return;
+    setResendingEmail(true);
+    setResendMsg(null);
+    try {
+      const { data, error } = await supabase.functions.invoke('send-registration-confirmation', {
+        body: { registrationId: row.id },
+      });
+      if (error) throw new Error(error.message);
+      if (data?.warning) {
+        setResendMsg({ text: data.warning, error: true });
+      } else {
+        setResendMsg({ text: `Confirmation email sent to ${row.email}.`, error: false });
+      }
+      // Refresh email status columns from DB
+      const { data: fresh } = await supabase
+        .from('registrations')
+        .select('confirmation_email_sent_at, confirmation_email_error')
+        .eq('id', row.id)
+        .single();
+      if (fresh) onSyncComplete(row.id, fresh as Partial<RegRow>);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      setResendMsg({ text: `Failed to send: ${msg}`, error: true });
+      const { data: fresh } = await supabase
+        .from('registrations')
+        .select('confirmation_email_sent_at, confirmation_email_error')
+        .eq('id', row.id)
+        .single();
+      if (fresh) onSyncComplete(row.id, fresh as Partial<RegRow>);
+    } finally {
+      setResendingEmail(false);
     }
   }
 
@@ -276,13 +372,84 @@ function DetailDialog({
           <div>
             <p className="text-xs uppercase tracking-wider text-[#7EB8E8] mb-3 font-semibold">Competition Entry</p>
             <div className="space-y-0">
-              <Field label="Routine Name"  value={row.routine_name} />
-              <Field label="Category"      value={row.category} />
-              <Field label="Entry Type"    value={row.group_size} />
-              <Field label="Age Division"  value={row.age_division} />
-              <Field label="Ability Level" value={row.ability_level} />
+              <Field label="Routine Name"    value={row.routine_name} />
+              <Field label="Group Link Code" value={row.group_link_code ?? undefined} />
+              <Field label="Category"        value={row.category} />
+              <Field label="Entry Type"      value={row.group_size} />
+              <Field label="Age Division"    value={row.age_division} />
+              <Field label="Ability Level"   value={row.ability_level} />
             </div>
           </div>
+
+          {/* Linked entries — other registrations sharing routine_name or group_link_code */}
+          {(() => {
+            const linked = findLinkedRegistrations(row, allRows);
+            if (linked.length === 0) {
+              // Still show the section for group entries so Nick knows the
+              // linking mechanism exists and that nobody else is linked yet.
+              if (row.group_size.startsWith('Solo')) return null;
+              return (
+                <div>
+                  <p className="text-xs uppercase tracking-wider text-[#7EB8E8] mb-3 font-semibold flex items-center gap-2">
+                    <Link2 className="w-3.5 h-3.5" />
+                    Linked Entries
+                  </p>
+                  <div className="bg-slate-900 rounded-xl p-4 text-xs text-slate-400">
+                    No other registrations share this routine name
+                    {row.group_link_code ? ' or group link code' : ''} yet.
+                  </div>
+                </div>
+              );
+            }
+            const linkedTotal = linked.reduce((sum, r) => sum + Number(r.total_fee || 0), 0);
+            return (
+              <div>
+                <p className="text-xs uppercase tracking-wider text-[#7EB8E8] mb-3 font-semibold flex items-center gap-2">
+                  <Link2 className="w-3.5 h-3.5" />
+                  Linked Entries ({linked.length})
+                </p>
+                <div className="bg-slate-900 rounded-xl p-3 space-y-2">
+                  <p className="text-[10px] uppercase tracking-wider text-slate-500 px-1">
+                    Same routine "{row.routine_name}"
+                    {row.group_link_code ? ` · code ${row.group_link_code}` : ''} — group total ${(Number(row.total_fee || 0) + linkedTotal).toFixed(2)}
+                  </p>
+                  <div className="space-y-1.5">
+                    {linked.map((lr) => {
+                      const lcfg = statusCfg(lr.status);
+                      const matchRoutine = normalizeKey(lr.routine_name) === normalizeKey(row.routine_name) && normalizeKey(row.routine_name) !== '';
+                      const matchCode = normalizeKey(lr.group_link_code) === normalizeKey(row.group_link_code) && normalizeKey(row.group_link_code) !== '';
+                      return (
+                        <button
+                          key={lr.id}
+                          type="button"
+                          onClick={() => onOpenRelated(lr)}
+                          className="w-full text-left bg-slate-800/70 hover:bg-slate-800 rounded-lg px-3 py-2 flex items-center gap-3 transition-colors group"
+                        >
+                          <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${lcfg.dot}`} />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-white truncate group-hover:text-[#7EB8E8] transition-colors">
+                              {lr.contestant_name}
+                            </p>
+                            <p className="text-[11px] text-slate-400 truncate">
+                              {entryType(lr.group_size)} · {lr.studio_name || '—'}
+                            </p>
+                          </div>
+                          <div className="shrink-0 text-right">
+                            <p className="text-xs font-semibold text-white">${Number(lr.total_fee).toFixed(0)}</p>
+                            <p className="text-[10px] text-slate-500 flex items-center gap-1 justify-end mt-0.5">
+                              {matchRoutine && <span title="Matches routine name">name</span>}
+                              {matchRoutine && matchCode && <span>·</span>}
+                              {matchCode && <span title="Matches group link code">code</span>}
+                            </p>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
 
           {/* Music */}
           <div>
@@ -398,12 +565,32 @@ function DetailDialog({
                   <p className="text-xs text-slate-300">{new Date(row.scoring_app_synced_at).toLocaleString()}</p>
                 </div>
               )}
-              {row.scoring_app_sync_error && (
-                <div className="bg-red-950/40 border border-red-900/50 rounded-lg px-3 py-2">
-                  <p className="text-[10px] uppercase tracking-wider text-red-400 mb-0.5">Error</p>
-                  <p className="text-xs text-red-300">{row.scoring_app_sync_error}</p>
-                </div>
-              )}
+              {row.scoring_app_sync_error && (() => {
+                const friendly = friendlySyncError(row.scoring_app_sync_error);
+                const isMissing = isMissingCompetitionError(row.scoring_app_sync_error);
+                return (
+                  <div
+                    className={cn(
+                      'rounded-lg px-3 py-2 border',
+                      isMissing
+                        ? 'bg-amber-950/40 border-amber-800/60'
+                        : 'bg-red-950/40 border-red-900/50'
+                    )}
+                  >
+                    <p
+                      className={cn(
+                        'text-[10px] uppercase tracking-wider mb-0.5',
+                        isMissing ? 'text-amber-400' : 'text-red-400'
+                      )}
+                    >
+                      {isMissing ? 'Action needed' : 'Error'}
+                    </p>
+                    <p className={cn('text-xs', isMissing ? 'text-amber-200' : 'text-red-300')}>
+                      {friendly}
+                    </p>
+                  </div>
+                );
+              })()}
               {syncMsg && (
                 <div className={cn(
                   'rounded-lg px-3 py-2 text-xs',
@@ -412,6 +599,79 @@ function DetailDialog({
                     : 'bg-emerald-950/40 border border-emerald-900/50 text-emerald-300'
                 )}>
                   {syncMsg}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Email Status */}
+          <div>
+            <p className="text-xs uppercase tracking-wider text-[#7EB8E8] mb-3 font-semibold">Confirmation Email</p>
+            <div className="bg-slate-900 rounded-xl p-4 space-y-3">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  {row.confirmation_email_sent_at ? (
+                    <>
+                      <MailCheck className="w-4 h-4 text-emerald-400" />
+                      <span className="text-sm font-medium text-emerald-400">Sent</span>
+                    </>
+                  ) : row.confirmation_email_error ? (
+                    <>
+                      <MailWarning className="w-4 h-4 text-red-400" />
+                      <span className="text-sm font-medium text-red-400">Delivery Failed</span>
+                    </>
+                  ) : (
+                    <>
+                      <Mail className="w-4 h-4 text-slate-400" />
+                      <span className="text-sm font-medium text-slate-400">Not sent yet</span>
+                    </>
+                  )}
+                </div>
+                <Button
+                  size="sm"
+                  className="h-7 px-3 bg-[#2E75B6] hover:bg-[#1e5a96] text-white text-xs"
+                  onClick={handleResendEmail}
+                  disabled={resendingEmail || !row.email}
+                  title={!row.email ? 'No email on file' : 'Resend confirmation email'}
+                >
+                  {resendingEmail ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin mr-1" />
+                  ) : (
+                    <Send className="w-3.5 h-3.5 mr-1" />
+                  )}
+                  {resendingEmail ? 'Sending…' : 'Resend Confirmation Email'}
+                </Button>
+              </div>
+
+              <div>
+                <p className="text-[10px] uppercase tracking-wider text-slate-500 mb-0.5">Recipient</p>
+                <p className="text-xs text-slate-300 font-mono break-all">{row.email || '—'}</p>
+              </div>
+
+              {row.confirmation_email_sent_at && (
+                <div>
+                  <p className="text-[10px] uppercase tracking-wider text-slate-500 mb-0.5">Sent At</p>
+                  <p className="text-xs text-slate-300">{new Date(row.confirmation_email_sent_at).toLocaleString()}</p>
+                </div>
+              )}
+
+              {row.confirmation_email_error && (
+                <div className="bg-red-950/40 border border-red-900/50 rounded-lg px-3 py-2">
+                  <p className="text-[10px] uppercase tracking-wider text-red-400 mb-0.5">Last Error</p>
+                  <p className="text-xs text-red-300 break-words">{row.confirmation_email_error}</p>
+                </div>
+              )}
+
+              {resendMsg && (
+                <div
+                  className={cn(
+                    'rounded-lg px-3 py-2 text-xs',
+                    resendMsg.error
+                      ? 'bg-red-950/40 border border-red-900/50 text-red-300'
+                      : 'bg-emerald-950/40 border border-emerald-900/50 text-emerald-300'
+                  )}
+                >
+                  {resendMsg.text}
                 </div>
               )}
             </div>
@@ -436,6 +696,7 @@ export default function RegistrationsAdmin() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [entryTypeFilter, setEntryTypeFilter] = useState<string>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [viewMode, setViewMode] = useState<'all' | 'groups'>('all');
   const [detail, setDetail] = useState<RegRow | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
@@ -443,8 +704,12 @@ export default function RegistrationsAdmin() {
   // Bulk sync state
   const [bulkSyncing, setBulkSyncing] = useState(false);
   const [bulkProgress, setBulkProgress] = useState<{ done: number; total: number } | null>(null);
-  const [bulkResult, setBulkResult] = useState<string | null>(null);
-  const [bulkResultError, setBulkResultError] = useState(false);
+  const [bulkResult, setBulkResult] = useState<{
+    successCount: number;
+    failCount: number;
+    failures: { name: string; error: string }[];
+  } | null>(null);
+  const [bulkResultText, setBulkResultText] = useState<{ text: string; error: boolean } | null>(null);
   const [showBulkConfirm, setShowBulkConfirm] = useState(false);
   // Manual add state
   const [showAddManual, setShowAddManual] = useState(false);
@@ -513,13 +778,57 @@ export default function RegistrationsAdmin() {
       const matchSearch = !q
         || r.contestant_name.toLowerCase().includes(q)
         || r.studio_name.toLowerCase().includes(q)
-        || r.email.toLowerCase().includes(q);
+        || r.email.toLowerCase().includes(q)
+        || (r.routine_name ?? '').toLowerCase().includes(q)
+        || (r.group_link_code ?? '').toLowerCase().includes(q);
       const matchStatus    = statusFilter === 'all'    || r.status === statusFilter;
       const matchEntry     = entryTypeFilter === 'all' || entryType(r.group_size) === entryTypeFilter;
       const matchCategory  = categoryFilter === 'all'  || r.category === categoryFilter;
       return matchSearch && matchStatus && matchEntry && matchCategory;
     });
   }, [rows, search, statusFilter, entryTypeFilter, categoryFilter]);
+
+  // Grouped-by-routine-name view.
+  // Grouping key = lowercased/trimmed routine_name. Rows missing a routine name
+  // fall into a single catch-all bucket so Nick can still see them.
+  type RoutineGroup = {
+    key: string;
+    routineName: string;
+    rows: RegRow[];
+    totalFee: number;
+    hasLinkCodeMismatch: boolean;
+  };
+  const groups = useMemo<RoutineGroup[]>(() => {
+    const map = new Map<string, RoutineGroup>();
+    for (const r of filtered) {
+      const key = normalizeKey(r.routine_name) || '__no_routine__';
+      const g = map.get(key);
+      if (g) {
+        g.rows.push(r);
+        g.totalFee += Number(r.total_fee || 0);
+      } else {
+        map.set(key, {
+          key,
+          routineName: key === '__no_routine__' ? '(No routine name)' : r.routine_name,
+          rows: [r],
+          totalFee: Number(r.total_fee || 0),
+          hasLinkCodeMismatch: false,
+        });
+      }
+    }
+    // Flag groups where dancers disagree on the group_link_code (a likely
+    // data-entry error that Nick should notice).
+    for (const g of map.values()) {
+      const codes = new Set(
+        g.rows.map((r) => normalizeKey(r.group_link_code)).filter((c) => c !== '')
+      );
+      g.hasLinkCodeMismatch = codes.size > 1;
+    }
+    return Array.from(map.values()).sort((a, b) => {
+      if (b.rows.length !== a.rows.length) return b.rows.length - a.rows.length;
+      return a.routineName.localeCompare(b.routineName);
+    });
+  }, [filtered]);
 
   async function setStatus(id: string, status: string) {
     await supabase.from('registrations').update({ status }).eq('id', id);
@@ -550,26 +859,46 @@ export default function RegistrationsAdmin() {
     setBulkSyncing(true);
     setBulkProgress({ done: 0, total: targets.length });
     setBulkResult(null);
+    setBulkResultText(null);
 
     let successCount = 0;
-    let failCount = 0;
+    const failures: { name: string; error: string }[] = [];
 
     for (let i = 0; i < targets.length; i++) {
       const reg = targets[i];
+      let thisError: string | null = null;
       try {
-        const { error } = await supabase.functions.invoke('sync-to-scoring-app', {
+        const { data, error } = await supabase.functions.invoke('sync-to-scoring-app', {
           body: { registrationId: reg.id },
         });
-        if (error) { failCount++; } else { successCount++; }
-      } catch { failCount++; }
+        if (error) {
+          thisError = error.message || 'Unknown error';
+        } else if (data && typeof data === 'object' && 'error' in data && data.error) {
+          thisError = String((data as { error: unknown }).error);
+        } else {
+          successCount++;
+        }
+      } catch (e) {
+        thisError = e instanceof Error ? e.message : String(e);
+      }
 
-      // Refresh this row from DB
+      // Refresh this row from DB so we pick up the authoritative server-side error
       const { data: fresh } = await supabase
         .from('registrations')
         .select('scoring_app_sync_status, scoring_app_contestant_id, scoring_app_synced_at, scoring_app_sync_error')
         .eq('id', reg.id)
         .single();
       if (fresh) handleSyncComplete(reg.id, fresh as Partial<RegRow>);
+
+      // Prefer the DB-persisted sync error (set by the edge function) over the
+      // client-side error, because the edge function has richer context.
+      if (thisError || (fresh && (fresh as { scoring_app_sync_status?: string }).scoring_app_sync_status === 'failed')) {
+        const dbError = (fresh as { scoring_app_sync_error?: string | null } | null)?.scoring_app_sync_error;
+        failures.push({
+          name: reg.contestant_name,
+          error: dbError || thisError || 'Unknown error',
+        });
+      }
 
       setBulkProgress({ done: i + 1, total: targets.length });
 
@@ -581,11 +910,7 @@ export default function RegistrationsAdmin() {
 
     setBulkSyncing(false);
     setBulkProgress(null);
-    setBulkResultError(failCount > 0 && successCount === 0);
-    setBulkResult(
-      `Bulk sync complete — ${successCount} succeeded, ${failCount} failed.`
-    );
-    setTimeout(() => setBulkResult(null), 8000);
+    setBulkResult({ successCount, failCount: failures.length, failures });
   }
 
   async function submitManual() {
@@ -677,9 +1002,8 @@ export default function RegistrationsAdmin() {
         .single();
       if (fresh) handleSyncComplete((insData as RegRow).id, fresh as Partial<RegRow>);
 
-      setBulkResultError(syncError);
-      setBulkResult(syncMsg);
-      setTimeout(() => setBulkResult(null), 8000);
+      setBulkResultText({ text: syncMsg, error: syncError });
+      setTimeout(() => setBulkResultText(null), 8000);
 
       setShowAddManual(false);
       resetManualForm();
@@ -733,22 +1057,98 @@ export default function RegistrationsAdmin() {
     [rows]
   );
 
+  // Rows that are currently stuck on "No matching competition" — they need
+  // Nick to create the competition in the scoring app before any sync can work.
+  const missingCompetitionRows = useMemo(
+    () => rows.filter(
+      (r) =>
+        r.scoring_app_sync_status === 'failed' &&
+        isMissingCompetitionError(r.scoring_app_sync_error)
+    ),
+    [rows]
+  );
+
   return (
     <div className="space-y-6">
-      {/* Bulk sync / manual add result banner */}
-      {bulkResult && (
+      {/* Missing-competition warning banner — shown whenever any failed sync
+          is due to the scoring app not having the competition configured. */}
+      {missingCompetitionRows.length > 0 && (
+        <div className="rounded-xl border border-amber-700/60 bg-amber-950/40 px-4 py-3">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-amber-200">
+                {missingCompetitionRows.length} registration{missingCompetitionRows.length !== 1 ? 's' : ''} can't sync yet
+              </p>
+              <p className="text-xs text-amber-300/90 mt-1 leading-relaxed">
+                {MISSING_COMPETITION_HINT}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Manual add / transient result banner */}
+      {bulkResultText && (
         <div className={cn(
           'flex items-center gap-2 rounded-xl px-4 py-3 text-sm',
-          bulkResultError
+          bulkResultText.error
             ? 'bg-red-950/40 border border-red-900/50 text-red-300'
             : 'bg-emerald-950/40 border border-emerald-900/50 text-emerald-300'
         )}>
-          {bulkResultError ? (
+          {bulkResultText.error ? (
             <XCircle className="w-4 h-4 shrink-0" />
           ) : (
             <CheckCircle2 className="w-4 h-4 shrink-0" />
           )}
-          {bulkResult}
+          {bulkResultText.text}
+        </div>
+      )}
+
+      {/* Bulk sync completion summary with per-failure detail */}
+      {bulkResult && (
+        <div
+          className={cn(
+            'rounded-xl px-4 py-3 border text-sm',
+            bulkResult.failCount === 0
+              ? 'bg-emerald-950/40 border-emerald-900/50 text-emerald-300'
+              : bulkResult.successCount === 0
+                ? 'bg-red-950/40 border-red-900/50 text-red-300'
+                : 'bg-amber-950/40 border-amber-800/60 text-amber-200'
+          )}
+        >
+          <div className="flex items-start gap-2">
+            {bulkResult.failCount === 0 ? (
+              <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />
+            ) : (
+              <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+            )}
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold">
+                Bulk sync complete — {bulkResult.successCount} succeeded, {bulkResult.failCount} failed.
+              </p>
+              {bulkResult.failures.length > 0 && (
+                <ul className="mt-2 space-y-1.5 text-xs">
+                  {bulkResult.failures.map((f, i) => (
+                    <li key={i} className="flex items-start gap-2">
+                      <XCircle className="w-3.5 h-3.5 text-red-400 shrink-0 mt-0.5" />
+                      <span className="flex-1 min-w-0">
+                        <span className="font-semibold text-white">{f.name}:</span>{' '}
+                        <span className="text-amber-100/90">{friendlySyncError(f.error)}</span>
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <button
+                type="button"
+                onClick={() => setBulkResult(null)}
+                className="text-[11px] underline text-slate-400 hover:text-white mt-2"
+              >
+                Dismiss
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
@@ -873,6 +1273,48 @@ export default function RegistrationsAdmin() {
         </div>
       </div>
 
+      {/* View mode toggle — All Registrations vs grouped By Group (routine_name) */}
+      <div className="flex items-center gap-2 bg-slate-900 border border-slate-700 rounded-xl p-1 w-fit">
+        <button
+          type="button"
+          onClick={() => setViewMode('all')}
+          className={cn(
+            'flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-colors',
+            viewMode === 'all'
+              ? 'bg-[#2E75B6] text-white shadow-sm'
+              : 'text-slate-400 hover:text-white'
+          )}
+        >
+          <List className="w-3.5 h-3.5" />
+          All Registrations
+          <span className={cn(
+            'ml-1 rounded-full px-1.5 py-0.5 text-[10px] font-bold tabular-nums',
+            viewMode === 'all' ? 'bg-white/20 text-white' : 'bg-slate-800 text-slate-400'
+          )}>
+            {filtered.length}
+          </span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setViewMode('groups')}
+          className={cn(
+            'flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-colors',
+            viewMode === 'groups'
+              ? 'bg-[#2E75B6] text-white shadow-sm'
+              : 'text-slate-400 hover:text-white'
+          )}
+        >
+          <Users className="w-3.5 h-3.5" />
+          By Group
+          <span className={cn(
+            'ml-1 rounded-full px-1.5 py-0.5 text-[10px] font-bold tabular-nums',
+            viewMode === 'groups' ? 'bg-white/20 text-white' : 'bg-slate-800 text-slate-400'
+          )}>
+            {groups.length}
+          </span>
+        </button>
+      </div>
+
       {/* Registration cards (mobile-first, no horizontal scroll needed) */}
       {loading ? (
         <div className="flex items-center justify-center py-20">
@@ -882,6 +1324,87 @@ export default function RegistrationsAdmin() {
         <div className="text-center py-16">
           <ClipboardList className="w-10 h-10 text-slate-600 mx-auto mb-3" />
           <p className="text-slate-400">No registrations match your filters.</p>
+        </div>
+      ) : viewMode === 'groups' ? (
+        <div className="space-y-5">
+          {groups.map((g) => {
+            const isMultiDancer = g.rows.length > 1;
+            // Display an indicator of the entry type family (e.g. Duo/Trio) so
+            // Nick can spot groups where dancers disagree on their group_size.
+            const entryTypes = Array.from(new Set(g.rows.map((r) => entryType(r.group_size))));
+            const entryTypeBadge = entryTypes.join(' · ');
+            return (
+              <div
+                key={g.key}
+                className="bg-slate-900 border border-slate-700 rounded-xl overflow-hidden"
+              >
+                {/* Group header */}
+                <div className="flex items-start gap-3 px-4 py-3 border-b border-slate-800 bg-slate-900/60">
+                  <div className={cn(
+                    'w-8 h-8 rounded-lg flex items-center justify-center shrink-0',
+                    isMultiDancer ? 'bg-[#2E75B6]/20 text-[#7EB8E8]' : 'bg-slate-800 text-slate-400'
+                  )}>
+                    {isMultiDancer ? <Users className="w-4 h-4" /> : <ClipboardList className="w-4 h-4" />}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-white text-sm leading-tight truncate">
+                      {g.routineName}
+                    </p>
+                    <p className="text-[11px] text-slate-400 mt-0.5 truncate">
+                      {g.rows.length} registration{g.rows.length === 1 ? '' : 's'} · {entryTypeBadge} · ${g.totalFee.toFixed(2)} total
+                    </p>
+                    {g.hasLinkCodeMismatch && (
+                      <p className="text-[11px] text-amber-400 mt-1 flex items-center gap-1">
+                        <AlertTriangle className="w-3 h-3" />
+                        Group link codes don't match — verify with dancers.
+                      </p>
+                    )}
+                  </div>
+                  <div className="shrink-0 text-right">
+                    <p className="text-sm font-bold text-white tabular-nums">${g.totalFee.toFixed(0)}</p>
+                    <p className="text-[10px] text-slate-500">total fees</p>
+                  </div>
+                </div>
+
+                {/* Group body: each dancer */}
+                <div className="divide-y divide-slate-800">
+                  {g.rows.map((r) => {
+                    const cfg = statusCfg(r.status);
+                    const sc = syncCfg(r.scoring_app_sync_status ?? 'pending');
+                    const SyncIcon = sc.icon;
+                    return (
+                      <button
+                        key={r.id}
+                        type="button"
+                        onClick={() => setDetail(r)}
+                        className="w-full text-left flex items-center gap-3 px-4 py-2.5 hover:bg-slate-800/60 transition-colors"
+                      >
+                        <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${cfg.dot}`} />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-white truncate">{r.contestant_name}</p>
+                          <p className="text-[11px] text-slate-400 truncate">
+                            {r.studio_name} · {r.category}
+                          </p>
+                        </div>
+                        <div className="shrink-0 text-right flex items-center gap-2">
+                          <span className={cn(
+                            'inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full',
+                            sc.color, sc.bg
+                          )}>
+                            <SyncIcon className="w-2.5 h-2.5" />
+                            {sc.label}
+                          </span>
+                          <span className="text-xs font-semibold text-white tabular-nums w-12 text-right">
+                            ${Number(r.total_fee).toFixed(0)}
+                          </span>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
         </div>
       ) : (
         <div className="space-y-3">
@@ -1020,9 +1543,11 @@ export default function RegistrationsAdmin() {
       {/* Full detail dialog */}
       <DetailDialog
         row={detail}
+        allRows={rows}
         onClose={() => setDetail(null)}
         onStatusChange={setStatus}
         onSyncComplete={handleSyncComplete}
+        onOpenRelated={(r) => setDetail(r)}
       />
 
       {/* Delete confirmation dialog */}

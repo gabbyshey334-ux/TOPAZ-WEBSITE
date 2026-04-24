@@ -2,7 +2,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
 // ─── Config ──────────────────────────────────────────────────────────────────
-const FROM_EMAIL = 'TOPAZ 2.0 <onboarding@resend.dev>';
+const FROM_EMAIL = 'TOPAZ 2.0 <noreply@dancetopaz.com>';
 const ADMIN_EMAIL = 'topaz2.0@yahoo.com';
 const BATCH_SIZE = 50;
 const BATCH_DELAY_MS = 1100; // Resend free tier: ~2 req/sec. Wait >1s between batches.

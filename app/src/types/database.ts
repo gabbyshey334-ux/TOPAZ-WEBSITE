@@ -51,6 +51,7 @@ export type Database = {
           studio_name: string;
           teacher_name: string;
           routine_name: string;
+          group_link_code: string;
           phone: string;
           email: string;
           years_of_training: string;
@@ -86,6 +87,9 @@ export type Database = {
           scoring_app_contestant_id: string | null;
           scoring_app_synced_at: string | null;
           scoring_app_sync_error: string | null;
+          // Confirmation email tracking
+          confirmation_email_sent_at: string | null;
+          confirmation_email_error: string | null;
         };
         Insert: {
           id?: string;
@@ -97,6 +101,7 @@ export type Database = {
           studio_name: string;
           teacher_name: string;
           routine_name: string;
+          group_link_code?: string;
           phone: string;
           email: string;
           years_of_training: string;
@@ -127,6 +132,8 @@ export type Database = {
           scoring_app_contestant_id?: string | null;
           scoring_app_synced_at?: string | null;
           scoring_app_sync_error?: string | null;
+          confirmation_email_sent_at?: string | null;
+          confirmation_email_error?: string | null;
         };
         Update: {
           id?: string;
@@ -138,6 +145,7 @@ export type Database = {
           studio_name?: string;
           teacher_name?: string;
           routine_name?: string;
+          group_link_code?: string;
           phone?: string;
           email?: string;
           years_of_training?: string;
@@ -168,6 +176,8 @@ export type Database = {
           scoring_app_contestant_id?: string | null;
           scoring_app_synced_at?: string | null;
           scoring_app_sync_error?: string | null;
+          confirmation_email_sent_at?: string | null;
+          confirmation_email_error?: string | null;
         };
         Relationships: [];
       };

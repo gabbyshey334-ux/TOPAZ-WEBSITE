@@ -2,7 +2,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 
 const COMPETITION_DATE = 'August 22, 2026';
 const COMPETITION_LOCATION = 'Seaside Convention Center — 415 1st Ave, Seaside, OR 97138';
-const FROM_EMAIL = 'TOPAZ 2.0 <onboarding@resend.dev>';
+const FROM_EMAIL = 'TOPAZ 2.0 <noreply@dancetopaz.com>';
 
 interface WelcomePayload {
   to: string;

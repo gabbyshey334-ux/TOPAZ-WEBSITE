@@ -1,7 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 
 const ADMIN_EMAIL = 'topaz2.0@yahoo.com';
-const FROM_EMAIL = 'TOPAZ 2.0 <onboarding@resend.dev>';
+const FROM_EMAIL = 'TOPAZ 2.0 <noreply@dancetopaz.com>';
 
 interface OrderItem {
   product_id: string;

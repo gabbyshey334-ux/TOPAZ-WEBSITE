@@ -308,6 +308,9 @@ export default function CompetitionRegistrationForm() {
       if (!teacherName.trim()) return 'Teacher / instructor name is required.';
       if (!routineName.trim()) return 'Routine name is required.';
       if (!groupSize) return 'Select entry type.';
+      if (!groupSize.startsWith('Solo') && !groupLinkCode.trim()) {
+        return 'Group Link Code is required for group entries. Create a short unique code and share it with everyone in your group.';
+      }
       if (!phone.trim()) return 'Phone number is required.';
       if (!email.trim() || !email.includes('@')) return 'A valid email address is required.';
       if (!yearsTraining.trim()) return 'Years of training is required.';
@@ -430,8 +433,8 @@ export default function CompetitionRegistrationForm() {
       teacher_name: teacherName.trim(),
       routine_name: routineName.trim(),
       group_link_code: groupSize.startsWith('Solo')
-        ? null
-        : (groupLinkCode.trim().toLowerCase() || null),
+        ? ''
+        : groupLinkCode.trim().toLowerCase(),
       phone: phone.trim(),
       email: email.trim().toLowerCase(),
       years_of_training: yearsTraining.trim(),
@@ -741,7 +744,7 @@ export default function CompetitionRegistrationForm() {
                   </div>
 
                   <div>
-                    <FormLabel>Group Link Code (Optional)</FormLabel>
+                    <FormLabel>Group Link Code (Required) *</FormLabel>
                     <FormInput
                       value={groupLinkCode}
                       onChange={(e) => setGroupLinkCode(e.target.value)}
@@ -750,7 +753,7 @@ export default function CompetitionRegistrationForm() {
                       autoCapitalize="characters"
                     />
                     <p className="text-xs font-medium text-gray-400 mt-2 ml-2 leading-relaxed">
-                      Create a short code and share it with your group. Everyone must enter the same code. We'll store it in lowercase.
+                      Create a short unique code (e.g. SMITH2026) and share it with every dancer in your group. All members must enter the exact same code. This ensures your group is linked correctly even if routine names are similar.
                     </p>
                   </div>
                 </div>

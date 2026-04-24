@@ -89,7 +89,7 @@ Deno.serve(async (req: Request) => {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      from: 'TOPAZ 2.0 Website <onboarding@resend.dev>',
+      from: 'TOPAZ 2.0 Website <noreply@dancetopaz.com>',
       to: [TO_EMAIL],
       subject: 'New Contact Message — TOPAZ 2.0 Website',
       html,

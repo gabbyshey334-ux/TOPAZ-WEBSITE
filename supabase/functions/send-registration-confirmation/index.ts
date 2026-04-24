@@ -1,22 +1,56 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { createClient } from 'jsr:@supabase/supabase-js@2';
 
 const COMPETITION_DATE = 'August 22, 2026';
 const COMPETITION_LOCATION = '415 1st Ave, Seaside, OR 97138 (Seaside Convention Center)';
-const FROM_EMAIL = 'TOPAZ 2.0 <onboarding@resend.dev>';
+const FROM_EMAIL = 'TOPAZ 2.0 <noreply@dancetopaz.com>';
 const FROM_NAME = 'TOPAZ 2.0 Dance Competition';
 
 interface RegistrationEmailPayload {
-  to: string;
-  contestant_name: string;
-  category: string;
-  group_size: string;
-  total_fee: number;
+  // Either pass a registrationId and the function will load the row server-side
+  // (preferred — allows manual "Resend" from admin), or pass the explicit fields.
+  registrationId?: string;
+  to?: string;
+  contestant_name?: string;
+  category?: string;
+  group_size?: string;
+  total_fee?: number;
   studio_name?: string;
   teacher_name?: string;
   routine_name?: string;
   song_title?: string;
   artist_name?: string;
   music_delivery_method?: string;
+}
+
+// Build a service-role client used to write back email status to the
+// registrations row. Returns null if the required env vars are missing.
+function getServiceClient() {
+  const url = Deno.env.get('SUPABASE_URL');
+  const key = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+  if (!url || !key) return null;
+  return createClient(url, key);
+}
+
+async function markEmailSent(registrationId: string) {
+  const client = getServiceClient();
+  if (!client) return;
+  await client
+    .from('registrations')
+    .update({
+      confirmation_email_sent_at: new Date().toISOString(),
+      confirmation_email_error: null,
+    })
+    .eq('id', registrationId);
+}
+
+async function markEmailFailed(registrationId: string, err: string) {
+  const client = getServiceClient();
+  if (!client) return;
+  await client
+    .from('registrations')
+    .update({ confirmation_email_error: err.slice(0, 500) })
+    .eq('id', registrationId);
 }
 
 Deno.serve(async (req: Request) => {
@@ -49,7 +83,42 @@ Deno.serve(async (req: Request) => {
     });
   }
 
-  const { to, contestant_name, category, group_size, total_fee, studio_name, teacher_name, routine_name, song_title, artist_name, music_delivery_method } = payload;
+  let { to, contestant_name, category, group_size, total_fee, studio_name, teacher_name, routine_name, song_title, artist_name, music_delivery_method } = payload;
+  const registrationId = payload.registrationId;
+
+  // If only a registrationId was provided, load the fields from the DB.
+  // This is the path used by the admin "Resend Confirmation Email" button.
+  if (registrationId && (!to || !contestant_name)) {
+    const client = getServiceClient();
+    if (!client) {
+      return new Response(JSON.stringify({ error: 'SUPABASE_SERVICE_ROLE_KEY not configured' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+      });
+    }
+    const { data: reg, error: regErr } = await client
+      .from('registrations')
+      .select('email, contestant_name, category, group_size, total_fee, studio_name, teacher_name, routine_name, song_title, artist_name, music_delivery_method')
+      .eq('id', registrationId)
+      .single();
+    if (regErr || !reg) {
+      return new Response(JSON.stringify({ error: `Registration not found: ${regErr?.message}` }), {
+        status: 404,
+        headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+      });
+    }
+    to = reg.email as string;
+    contestant_name = reg.contestant_name as string;
+    category = reg.category as string;
+    group_size = reg.group_size as string;
+    total_fee = Number(reg.total_fee);
+    studio_name = (reg.studio_name as string | null) ?? undefined;
+    teacher_name = (reg.teacher_name as string | null) ?? undefined;
+    routine_name = (reg.routine_name as string | null) ?? undefined;
+    song_title = (reg.song_title as string | null) ?? undefined;
+    artist_name = (reg.artist_name as string | null) ?? undefined;
+    music_delivery_method = (reg.music_delivery_method as string | null) ?? undefined;
+  }
 
   if (!to || !contestant_name) {
     return new Response(JSON.stringify({ error: 'Missing required fields: to, contestant_name' }), {
@@ -178,6 +247,7 @@ Registration deadline: July 30, 2026, 12:00 AM. No exceptions.
       if (!response.ok) {
         const errBody = await response.text();
         console.error('[send-registration-confirmation] Resend API error:', response.status, errBody);
+        if (registrationId) await markEmailFailed(registrationId, `Resend ${response.status}: ${errBody}`);
         return new Response(JSON.stringify({ error: 'Email delivery failed', details: errBody }), {
           status: 502,
           headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
@@ -186,22 +256,27 @@ Registration deadline: July 30, 2026, 12:00 AM. No exceptions.
 
       const result = await response.json();
       console.log('[send-registration-confirmation] Email sent via Resend:', result.id);
+      if (registrationId) await markEmailSent(registrationId);
       return new Response(JSON.stringify({ success: true, id: result.id }), {
         status: 200,
         headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
       });
     } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
       console.error('[send-registration-confirmation] Unexpected error:', err);
-      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+      if (registrationId) await markEmailFailed(registrationId, msg);
+      return new Response(JSON.stringify({ error: 'Internal server error', details: msg }), {
         status: 500,
         headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
       });
     }
   }
 
-  // No email provider configured — log and return success so registration is not blocked
-  console.warn('[send-registration-confirmation] No RESEND_API_KEY set. Email not sent. To: ' + to + ', Contestant: ' + contestant_name);
-  return new Response(JSON.stringify({ success: true, warning: 'No email provider configured. Set RESEND_API_KEY in Supabase edge function secrets.' }), {
+  // No email provider configured — log, mark on DB, and return success so registration is not blocked
+  const missingProviderMsg = 'No email provider configured (RESEND_API_KEY not set on Supabase).';
+  console.warn('[send-registration-confirmation] ' + missingProviderMsg + ' To: ' + to + ', Contestant: ' + contestant_name);
+  if (registrationId) await markEmailFailed(registrationId, missingProviderMsg);
+  return new Response(JSON.stringify({ success: true, warning: missingProviderMsg }), {
     status: 200,
     headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
   });
