@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, type SyntheticEvent } from 'react';
-import { X, ChevronDown, Clock, Sparkles, Images, Lock, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { X, Clock, Sparkles, Images, Lock, Eye, EyeOff, Loader2 } from 'lucide-react';
 import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
 import { supabase } from '@/lib/supabase';
 import { parseVideoUrl } from '@/lib/videoEmbed';
@@ -12,7 +12,6 @@ type GalleryEra = 'history' | 'topaz20';
 type GalleryImageRow = Database['public']['Tables']['gallery_images']['Row'];
 type GalleryVideoRow = Database['public']['Tables']['gallery_videos']['Row'];
 
-const PHOTOS_PER_PAGE = 8;
 const SESSION_KEY = 'topaz_gallery_unlocked';
 
 function historyImageOnError(e: SyntheticEvent<HTMLImageElement>) {
@@ -184,7 +183,7 @@ function GalleryPhotoItem({
         aria-hidden={needsLock}
       />
       {!needsLock && caption && (
-        <p className="mt-3 px-1 text-sm font-medium text-gray-700 line-clamp-2 leading-snug">
+        <p className="mt-3 mx-1 rounded-md bg-black/70 text-sm text-white/80 text-center px-2 py-1 truncate">
           {caption}
         </p>
       )}
@@ -297,8 +296,7 @@ function GalleryVideoItem({
 const Gallery = () => {
   const [galleryEra, setGalleryEra] = useState<GalleryEra>('history');
   const [activeTab, setActiveTab] = useState<'photos' | 'videos'>('photos');
-  const [photoLimit, setPhotoLimit] = useState(PHOTOS_PER_PAGE);
-  const [lightboxImage, setLightboxImage] = useState<{ src: string; alt: string } | null>(null);
+  const [lightboxImage, setLightboxImage] = useState<{ src: string; alt: string; caption: string } | null>(null);
 
   const [historyImages, setHistoryImages] = useState<GalleryImageRow[]>([]);
   const [topaz2Images, setTopaz2Images] = useState<GalleryImageRow[]>([]);
@@ -315,7 +313,6 @@ const Gallery = () => {
 
   useEffect(() => {
     setActiveTab('photos');
-    setPhotoLimit(PHOTOS_PER_PAGE);
   }, [galleryEra]);
 
   // Check if a gallery password has been configured (server-side, no hash exposed)
@@ -378,8 +375,6 @@ const Gallery = () => {
   }, []);
 
   const currentPhotoRows = galleryEra === 'history' ? historyImages : topaz2Images;
-  const visiblePhotos = currentPhotoRows.slice(0, photoLimit);
-  const hasMorePhotos = currentPhotoRows.length > photoLimit;
   const currentVideos = galleryEra === 'history' ? historyVideos : topaz2Videos;
 
   // Any protected content in the current view?
@@ -519,10 +514,10 @@ const Gallery = () => {
             <>
               {mediaLoading ? (
                 <p className="py-20 text-center text-gray-400">Loading…</p>
-              ) : visiblePhotos.length > 0 ? (
+              ) : currentPhotoRows.length > 0 ? (
                 <ResponsiveMasonry columnsCountBreakPoints={{ 350: 1, 750: 2, 900: 3, 1200: 4 }}>
                   <Masonry gutter="28px">
-                    {visiblePhotos.map((photo) => (
+                    {currentPhotoRows.map((photo) => (
                       <GalleryPhotoItem
                         key={photo.id}
                         photo={photo}
@@ -532,6 +527,7 @@ const Gallery = () => {
                           setLightboxImage({
                             src: photo.url,
                             alt: photo.caption || photo.filename || '',
+                            caption: photo.caption?.trim() || '',
                           })
                         }
                         onRequestUnlock={requestUnlock}
@@ -543,19 +539,6 @@ const Gallery = () => {
                 <div className="py-20 text-center text-gray-400">
                   <Images className="mx-auto mb-4 h-12 w-12 opacity-30" />
                   <p className="text-lg font-medium">No photos in this category yet.</p>
-                </div>
-              )}
-
-              {!mediaLoading && hasMorePhotos && (
-                <div className="mt-12 flex justify-center">
-                  <button
-                    type="button"
-                    onClick={() => setPhotoLimit((prev) => prev + PHOTOS_PER_PAGE)}
-                    className="inline-flex items-center gap-2 rounded-xl border-2 border-[#2E75B6] px-8 py-4 font-bold text-[#2E75B6] transition-all duration-200 hover:bg-[#2E75B6] hover:text-white"
-                  >
-                    <ChevronDown className="h-5 w-5" />
-                    Load More Photos ({currentPhotoRows.length - photoLimit} remaining)
-                  </button>
                 </div>
               )}
             </>
@@ -600,7 +583,7 @@ const Gallery = () => {
               ) : topaz2Images.length > 0 ? (
                 <ResponsiveMasonry columnsCountBreakPoints={{ 350: 1, 750: 2, 900: 3, 1200: 4 }}>
                   <Masonry gutter="28px">
-                    {visiblePhotos.map((photo) => (
+                    {currentPhotoRows.map((photo) => (
                       <GalleryPhotoItem
                         key={photo.id}
                         photo={photo}
@@ -610,6 +593,7 @@ const Gallery = () => {
                           setLightboxImage({
                             src: photo.url,
                             alt: photo.caption || photo.filename || '',
+                            caption: photo.caption?.trim() || '',
                           })
                         }
                         onRequestUnlock={requestUnlock}
@@ -629,18 +613,6 @@ const Gallery = () => {
                   <p className="mt-4 max-w-md text-gray-600">
                     Season photos will appear here after events. Check back for highlights from the new competition era.
                   </p>
-                </div>
-              )}
-              {!mediaLoading && galleryEra === 'topaz20' && topaz2Images.length > photoLimit && (
-                <div className="mt-12 flex justify-center">
-                  <button
-                    type="button"
-                    onClick={() => setPhotoLimit((prev) => prev + PHOTOS_PER_PAGE)}
-                    className="inline-flex items-center gap-2 rounded-xl border-2 border-[#2E75B6] px-8 py-4 font-bold text-[#2E75B6] transition-all duration-200 hover:bg-[#2E75B6] hover:text-white"
-                  >
-                    <ChevronDown className="h-5 w-5" />
-                    Load More Photos ({topaz2Images.length - photoLimit} remaining)
-                  </button>
                 </div>
               )}
             </>
@@ -697,13 +669,22 @@ const Gallery = () => {
           >
             <X className="w-6 h-6" />
           </button>
-          <img
-            src={lightboxImage.src}
-            alt={lightboxImage.alt}
-            className="max-w-full max-h-[90vh] min-h-[120px] object-contain rounded-lg"
+          <div
+            className="flex max-h-[95vh] max-w-full flex-col items-center gap-3"
             onClick={(e) => e.stopPropagation()}
-            onError={historyImageOnError}
-          />
+          >
+            <img
+              src={lightboxImage.src}
+              alt={lightboxImage.alt}
+              className="max-w-full max-h-[85vh] min-h-[120px] object-contain rounded-lg"
+              onError={historyImageOnError}
+            />
+            {lightboxImage.caption && (
+              <p className="max-w-[min(90vw,640px)] text-sm text-white/80 text-center px-2 py-1 truncate">
+                {lightboxImage.caption}
+              </p>
+            )}
+          </div>
         </div>
       )}
 
