@@ -232,6 +232,7 @@ export default function CompetitionRegistrationForm() {
   const [ageDivision, setAgeDivision] = useState('');
   const [abilityLevel, setAbilityLevel] = useState('');
   const [groupSize, setGroupSize] = useState('');
+  const [groupLinkCode, setGroupLinkCode] = useState('');
   const [songTitle, setSongTitle] = useState('');
   const [artistName, setArtistName] = useState('');
   const [musicDeliveryMethod, setMusicDeliveryMethod] = useState<'usb' | 'upload'>('usb');
@@ -294,6 +295,7 @@ export default function CompetitionRegistrationForm() {
       if (!studioName.trim()) return 'Studio name is required.';
       if (!teacherName.trim()) return 'Teacher / instructor name is required.';
       if (!routineName.trim()) return 'Routine name is required.';
+      if (!groupSize) return 'Select entry type.';
       if (!phone.trim()) return 'Phone number is required.';
       if (!email.trim() || !email.includes('@')) return 'A valid email address is required.';
       if (!yearsTraining.trim()) return 'Years of training is required.';
@@ -308,7 +310,6 @@ export default function CompetitionRegistrationForm() {
     if (s === 3) {
       if (!ageDivision) return 'Select an age division.';
       if (!abilityLevel) return 'Select an ability level.';
-      if (!groupSize) return 'Select group size.';
       if (!songTitle.trim()) return 'Song title is required.';
       if (!artistName.trim()) return 'Artist / composer name is required.';
       if (musicDeliveryMethod === 'upload' && !musicFile) {
@@ -416,6 +417,9 @@ export default function CompetitionRegistrationForm() {
       studio_name: studioName.trim(),
       teacher_name: teacherName.trim(),
       routine_name: routineName.trim(),
+      group_link_code: groupSize.startsWith('Solo')
+        ? null
+        : (groupLinkCode.trim().toLowerCase() || null),
       phone: phone.trim(),
       email: email.trim().toLowerCase(),
       years_of_training: yearsTraining.trim(),
@@ -464,6 +468,7 @@ export default function CompetitionRegistrationForm() {
       try {
         await supabase.functions.invoke('send-registration-confirmation', {
           body: {
+            registrationId,
             to: row.email,
             contestant_name: row.contestant_name,
             studio_name: row.studio_name,
@@ -675,8 +680,69 @@ export default function CompetitionRegistrationForm() {
               <div className="sm:col-span-2">
                 <FormLabel>Name of routine *</FormLabel>
                 <FormInput value={routineName} onChange={(e) => setRoutineName(e.target.value)} placeholder="E.g. Shadow Dance" />
-                <p className="text-xs font-medium text-gray-400 mt-2 ml-2">For duo/trio/group entries, you will list additional names in Step 4.</p>
+                <p className="text-xs font-medium text-gray-400 mt-2 ml-2">
+                  For duo/trio/group entries: every dancer must enter the <span className="font-bold text-gray-600">exact same Routine Name</span> so we can link your entries together.
+                </p>
               </div>
+
+              {/* Entry type & time limits (moved to Step 1 so groups coordinate link codes early) */}
+              <div className="sm:col-span-2">
+                <FormLabel>Entry type & time limits *</FormLabel>
+                <RadioGroup
+                  value={groupSize}
+                  onValueChange={(v) => {
+                    setGroupSize(v);
+                    syncParticipantsToGroupSize(v);
+                    if (!v.startsWith('Solo')) setSoloSignatureConfirmed(false);
+                    if (v.startsWith('Solo')) setGroupLinkCode('');
+                  }}
+                  className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4"
+                >
+                  {GROUP_SIZES.map((d) => (
+                    <label key={d} className="flex items-start gap-4 rounded-2xl border-2 border-gray-100 p-4 cursor-pointer transition-all hover:bg-gray-50 has-[:checked]:border-[#2E75B6] has-[:checked]:bg-[#2E75B6]/5">
+                      <RadioGroupItem value={d} className="w-5 h-5 mt-0.5 shrink-0" />
+                      <span className="font-bold text-gray-800 text-sm leading-tight">{d}</span>
+                    </label>
+                  ))}
+                </RadioGroup>
+              </div>
+
+              {/* Group linking info + optional Group Link Code (non-solo only) */}
+              {groupSize && !groupSize.startsWith('Solo') && (
+                <div className="sm:col-span-2 space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
+                  <div className="flex items-start gap-4 rounded-2xl border-2 border-[#2E75B6]/20 bg-[#2E75B6]/5 p-5 sm:p-6">
+                    <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shrink-0 shadow-sm">
+                      <Info className="w-5 h-5 text-[#2E75B6]" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-bold text-sm uppercase tracking-widest text-[#2E75B6] mb-2">Linking your group</p>
+                      <p className="text-sm text-gray-700 leading-relaxed">
+                        Each dancer in your group registers separately. Use the <strong className="text-[#0a0a0a]">exact same Routine Name</strong> for
+                        {' '}everyone in your group so we can link your entries together.
+                      </p>
+                      {routineName.trim() && (
+                        <p className="text-xs font-medium text-gray-500 mt-3 leading-snug">
+                          Your current routine name: <span className="font-bold text-gray-800">"{routineName.trim()}"</span> — share this spelling with every teammate.
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div>
+                    <FormLabel>Group Link Code (Optional)</FormLabel>
+                    <FormInput
+                      value={groupLinkCode}
+                      onChange={(e) => setGroupLinkCode(e.target.value)}
+                      placeholder="e.g. SMITH2026"
+                      maxLength={64}
+                      autoCapitalize="characters"
+                    />
+                    <p className="text-xs font-medium text-gray-400 mt-2 ml-2 leading-relaxed">
+                      Create a short code and share it with your group. Everyone must enter the same code. We'll store it in lowercase.
+                    </p>
+                  </div>
+                </div>
+              )}
 
               {dancerIsMinor && (
                 <div className="sm:col-span-2 bg-[#fafafa] rounded-2xl p-6 sm:p-8 border border-gray-100">
@@ -789,7 +855,7 @@ export default function CompetitionRegistrationForm() {
           </div>
         )}
 
-        {/* ── STEP 3 — Division, level, group size + music ─────────────────── */}
+        {/* ── STEP 3 — Age division, ability level + music ─────────────────── */}
         {step === 3 && (
           <div className="animate-in fade-in slide-in-from-right-4 duration-500">
             <div className="mb-10 pb-6 border-b border-gray-100">
@@ -826,27 +892,6 @@ export default function CompetitionRegistrationForm() {
                     ))}
                   </RadioGroup>
                 </div>
-              </div>
-
-              {/* Group size */}
-              <div>
-                <FormLabel>Entry type & time limits *</FormLabel>
-                <RadioGroup
-                  value={groupSize}
-                  onValueChange={(v) => {
-                    setGroupSize(v);
-                    syncParticipantsToGroupSize(v);
-                    if (!v.startsWith('Solo')) setSoloSignatureConfirmed(false);
-                  }}
-                  className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4"
-                >
-                  {GROUP_SIZES.map((d) => (
-                    <label key={d} className="flex items-start gap-4 rounded-2xl border-2 border-gray-100 p-4 cursor-pointer transition-all hover:bg-gray-50 has-[:checked]:border-[#2E75B6] has-[:checked]:bg-[#2E75B6]/5">
-                      <RadioGroupItem value={d} className="w-5 h-5 mt-0.5 shrink-0" />
-                      <span className="font-bold text-gray-800 text-sm leading-tight">{d}</span>
-                    </label>
-                  ))}
-                </RadioGroup>
               </div>
 
               <div className="pt-10 border-t border-gray-100">
@@ -936,7 +981,7 @@ export default function CompetitionRegistrationForm() {
                   <div className="absolute top-0 right-0 w-48 h-48 bg-[#2E75B6]/20 rounded-full blur-[60px] pointer-events-none" />
                   <p className="font-bold text-[#2E75B6] text-xs uppercase tracking-widest mb-4 relative z-10">Entry fee calculation</p>
                   <p className="text-4xl font-black text-white relative z-10 mb-2">${totalFee.toFixed(2)}</p>
-                  <p className="text-sm text-gray-400 font-medium relative z-10">{feeBreakdown || 'Select entry type in step 3.'}</p>
+                  <p className="text-sm text-gray-400 font-medium relative z-10">{feeBreakdown || 'Select entry type in step 1.'}</p>
                 </div>
 
                 {/* Payment method */}
