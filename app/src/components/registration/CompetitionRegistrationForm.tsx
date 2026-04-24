@@ -203,6 +203,18 @@ export default function CompetitionRegistrationForm() {
   } | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  // Used to keep the viewport anchored on the form whenever we advance,
+  // go back, or surface a validation error. We scroll the form container
+  // into view (respecting `scroll-mt-24` for the sticky navbar) instead
+  // of `window.scrollTo(0,0)`, which would scroll the user up past the
+  // page hero and hide the form.
+  const formRef = useRef<HTMLDivElement>(null);
+
+  function scrollFormIntoView() {
+    const el = formRef.current;
+    if (!el) return;
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 
   // ── Step 1: Personal info ────────────────────────────────────────────────
   const [contestantName, setContestantName] = useState('');
@@ -346,24 +358,24 @@ export default function CompetitionRegistrationForm() {
     const err = validateStep(step);
     setError(err);
     if (err) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      scrollFormIntoView();
       return;
     }
     setStep((x) => Math.min(5, x + 1));
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    scrollFormIntoView();
   }
 
   function back() {
     setError(null);
     setStep((x) => Math.max(1, x - 1));
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    scrollFormIntoView();
   }
 
   async function submit() {
     const err = validateStep(5);
     setError(err);
     if (err) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      scrollFormIntoView();
       return;
     }
     setSubmitting(true);
@@ -585,7 +597,7 @@ export default function CompetitionRegistrationForm() {
   const steps = ['Info', 'Category', 'Division', 'Payment', 'Review'];
 
   return (
-    <div className="max-w-4xl mx-auto space-y-12">
+    <div ref={formRef} className="max-w-4xl mx-auto space-y-12 scroll-mt-24">
       {/* Premium Step Indicator */}
       <div className="relative pt-6 pb-12">
         <div className="absolute top-10 left-[10%] right-[10%] h-1 bg-gray-100 rounded-full" />
