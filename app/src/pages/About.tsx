@@ -1,15 +1,21 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Star, Award, Heart, Sparkles, Quote } from 'lucide-react';
 import TextSection from '../components/TextSection';
 import TeamSection from '../components/TeamSection';
+import { supabase } from '@/lib/supabase';
 
 gsap.registerPlugin(ScrollTrigger);
 
 const BASE = import.meta.env.BASE_URL;
 
+// Hardcoded fallbacks — used when the matching `site_content` row is missing
+// or empty so the About page never renders blank slots during transition.
+// Admin-managed slots (`about_image_1` .. `about_image_3`) override these
+// when the Content tab in the admin uploads a new image. Non-managed assets
+// (Ric portrait, team photo, hero background fallback) stay hardcoded.
 const ABOUT_IMAGES = {
   patBobStripedPants: `${BASE}images/gallery/topaz-legacy-photo-img284.jpg`,
   continuingDreamDuo: `${BASE}images/about/Screenshot_20260401_140745.jpg`,
@@ -18,6 +24,17 @@ const ABOUT_IMAGES = {
   ricPortrait: `${BASE}about/ric-heath.png`,
   meetTheTeam: `${BASE}about/meet-the-team.jpg`,
 } as const;
+
+// Maps `site_content` keys to their hardcoded fallback so we can resolve
+// each managed slot in one place.
+const ABOUT_IMAGE_KEYS = ['about_image_1', 'about_image_2', 'about_image_3'] as const;
+type AboutImageKey = typeof ABOUT_IMAGE_KEYS[number];
+
+const ABOUT_IMAGE_FALLBACKS: Record<AboutImageKey, string> = {
+  about_image_1: ABOUT_IMAGES.patBobStripedPants,
+  about_image_2: ABOUT_IMAGES.continuingDreamDuo,
+  about_image_3: ABOUT_IMAGES.colorfulTrio,
+};
 
 const ABOUT_US_CONTENT =
   "Topaz has proudly been at the forefront of theatrical arts competitions since 1972. Throughout the years and across numerous cities, we've built a vibrant community of countless studios and thousands of contestants who form our extended Topaz family. Many of the dedicated teachers who now inspire students were once competitors in our events, showcasing the lasting impact of our competitions. Join us in the love for the arts and the journey of growth that it fosters!";
@@ -42,6 +59,36 @@ const About = () => {
   const heroRef = useRef<HTMLElement>(null);
   const storyRef = useRef<HTMLDivElement>(null);
   const quoteRef = useRef<HTMLDivElement>(null);
+
+  const [siteContent, setSiteContent] = useState<Record<string, string | null>>({});
+
+  // Resolve each managed about-page photo: prefer the `site_content` row,
+  // fall back to the hardcoded path so nothing breaks while the DB row is
+  // empty, missing, or still loading.
+  const resolveAboutImage = (key: AboutImageKey): string => {
+    const v = siteContent[key];
+    return v && v.trim() ? v : ABOUT_IMAGE_FALLBACKS[key];
+  };
+  const aboutImage1 = resolveAboutImage('about_image_1');
+  const aboutImage2 = resolveAboutImage('about_image_2');
+  const aboutImage3 = resolveAboutImage('about_image_3');
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await supabase
+        .from('site_content')
+        .select('key, value')
+        .in('key', ABOUT_IMAGE_KEYS as unknown as string[]);
+      if (cancelled || error) return;
+      const map: Record<string, string | null> = {};
+      for (const row of (data as { key: string; value: string | null }[] | null) ?? []) {
+        map[row.key] = row.value;
+      }
+      setSiteContent(map);
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   useEffect(() => {
     const section = heroRef.current;
@@ -162,7 +209,7 @@ const About = () => {
         background="black"
         heading="About Us"
         alignment="left"
-        imageSrc={ABOUT_IMAGES.patBobStripedPants}
+        imageSrc={aboutImage1}
         imageFallbackSrc={ABOUT_IMAGES.aboutUsFallback}
         imageAlt="Pat and Bob Heath dancing — striped dance pants and performance wear"
         imageObjectFit="contain"
@@ -235,7 +282,7 @@ const About = () => {
               <div className="story-animate order-2 lg:order-1">
                 <div className="relative rounded-[2rem] overflow-hidden shadow-2xl">
               <img
-                src={ABOUT_IMAGES.continuingDreamDuo}
+                src={aboutImage2}
                 alt="Vintage black and white duo — man in military-style hat with woman"
                 loading="lazy"
                 className="w-full h-auto object-contain"
@@ -279,7 +326,7 @@ const About = () => {
           <div className="relative max-w-5xl mx-auto">
             <div className="overflow-hidden rounded-[2.5rem] border border-gray-200 bg-white shadow-2xl">
               <img
-                src={ABOUT_IMAGES.colorfulTrio}
+                src={aboutImage3}
                 alt="TOPAZ performers in colorful green and pink costumes on stage"
                 loading="lazy"
                 className="w-full h-auto object-contain max-h-[min(80vh,800px)] mx-auto block"

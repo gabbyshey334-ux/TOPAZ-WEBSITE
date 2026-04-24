@@ -36,6 +36,19 @@ const HERO_IMAGE_LABELS: Record<HeroImageKey, string> = {
   hero_image_4: 'Hero Image 4 — Bottom Right (Tall)',
 };
 
+const ABOUT_IMAGE_KEYS = [
+  'about_image_1',
+  'about_image_2',
+  'about_image_3',
+] as const;
+type AboutImageKey = typeof ABOUT_IMAGE_KEYS[number];
+
+const ABOUT_IMAGE_LABELS: Record<AboutImageKey, string> = {
+  about_image_1: 'About Image 1 — "About Us" Section',
+  about_image_2: 'About Image 2 — "Continuing the Dream"',
+  about_image_3: 'About Image 3 — Heritage Gallery',
+};
+
 const HERO_VIDEO_KEY = 'hero_video_url';
 const BUCKET = 'gallery-media';
 
@@ -61,15 +74,23 @@ async function upsertSiteContent(key: string, value: string) {
     .upsert({ key, value }, { onConflict: 'key' });
 }
 
-// ── Hero Image Card ──────────────────────────────────────────────────────────
-function HeroImageCard({
-  slot,
+// ── Site Image Card ──────────────────────────────────────────────────────────
+// Generic image-slot upload card used by both Hero Photos (homepage) and
+// About Page Photos. Identical UX/upload pipeline; only the storage path
+// prefix, the `site_content` row key, the visible label, and the success
+// message differ per usage.
+function SiteImageCard({
   imageKey,
+  label,
+  storagePathPrefix,
+  successMessage,
   currentUrl,
   onReplaced,
 }: {
-  slot: number;
-  imageKey: HeroImageKey;
+  imageKey: string;
+  label: string;
+  storagePathPrefix: string;
+  successMessage: string;
   currentUrl: string | null;
   onReplaced: (newUrl: string) => void;
 }) {
@@ -94,7 +115,7 @@ function HeroImageCard({
     }
 
     setUploading(true);
-    const path = `homepage/hero-${slot}-${crypto.randomUUID()}-${sanitizeFilename(file.name)}`;
+    const path = `${storagePathPrefix}-${crypto.randomUUID()}-${sanitizeFilename(file.name)}`;
     const { error: upErr } = await supabase.storage
       .from(BUCKET)
       .upload(path, file, { cacheControl: '3600', upsert: false });
@@ -110,7 +131,7 @@ function HeroImageCard({
     const { error: dbErr } = await upsertSiteContent(imageKey, publicUrl);
     if (dbErr) {
       setUploading(false);
-      setError(`Saved the file, but failed to update homepage: ${dbErr.message}`);
+      setError(`Saved the file, but failed to update site: ${dbErr.message}`);
       return;
     }
 
@@ -124,7 +145,7 @@ function HeroImageCard({
     }
 
     setUploading(false);
-    setFlash('Updated! Refresh the homepage to see the change.');
+    setFlash(successMessage);
     setTimeout(() => setFlash(null), 4000);
     onReplaced(publicUrl);
   }
@@ -140,12 +161,12 @@ function HeroImageCard({
           'transition-all',
           uploading ? 'cursor-wait' : 'cursor-pointer hover:brightness-75',
         )}
-        aria-label={`Replace ${HERO_IMAGE_LABELS[imageKey]}`}
+        aria-label={`Replace ${label}`}
       >
         {currentUrl ? (
           <img
             src={currentUrl}
-            alt={HERO_IMAGE_LABELS[imageKey]}
+            alt={label}
             className="w-full h-full object-cover"
           />
         ) : (
@@ -170,7 +191,7 @@ function HeroImageCard({
           ) : (
             <>
               <Upload className="w-6 h-6" />
-              <span className="text-xs font-bold uppercase tracking-wider">Click to Replace</span>
+              <span className="text-xs font-bold uppercase tracking-wider">Change Photo</span>
             </>
           )}
         </div>
@@ -189,7 +210,7 @@ function HeroImageCard({
       />
 
       <div className="p-3 border-t border-slate-700 space-y-1.5">
-        <p className="text-xs font-bold text-white">{HERO_IMAGE_LABELS[imageKey]}</p>
+        <p className="text-xs font-bold text-white">{label}</p>
         <p className="text-[10px] text-slate-500 font-mono truncate" title={currentUrl ?? ''}>
           {currentUrl ?? 'No URL set'}
         </p>
@@ -476,10 +497,10 @@ export default function ContentTab() {
         <div>
           <h2 className="text-2xl font-bold text-white flex items-center gap-2">
             <FileEdit className="w-5 h-5 text-[#2E75B6]" />
-            Homepage Content
+            Site Content
           </h2>
           <p className="text-sm text-slate-400 mt-0.5">
-            Swap the four hero photos and the background video shown on the homepage. Changes go live instantly.
+            Swap the homepage hero photos and video, and the photos that appear on the About page. Changes go live instantly.
           </p>
         </div>
         <Button
@@ -504,16 +525,16 @@ export default function ContentTab() {
         </div>
       )}
 
-      {/* ── Hero Photos ─────────────────────────────────────────────────── */}
+      {/* ── Homepage Photos ─────────────────────────────────────────────── */}
       <section className="rounded-2xl border border-slate-700 bg-slate-900/30 p-5 sm:p-6 space-y-4">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 bg-[#2E75B6]/20 rounded-lg flex items-center justify-center shrink-0">
             <ImageIcon className="w-4 h-4 text-[#7EB8E8]" />
           </div>
           <div>
-            <h3 className="font-bold text-white text-base">Hero Photos</h3>
+            <h3 className="font-bold text-white text-base">Homepage Photos</h3>
             <p className="text-xs text-slate-400">
-              Click any photo to replace it with an image from your device.
+              The four hero photos shown in the masonry grid on the homepage. Click any photo to replace it.
             </p>
           </div>
         </div>
@@ -525,10 +546,47 @@ export default function ContentTab() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {HERO_IMAGE_KEYS.map((key, i) => (
-              <HeroImageCard
+              <SiteImageCard
                 key={key}
-                slot={i + 1}
                 imageKey={key}
+                label={HERO_IMAGE_LABELS[key]}
+                storagePathPrefix={`homepage/hero-${i + 1}`}
+                successMessage="Updated! Refresh the homepage to see the change."
+                currentUrl={content[key] ?? null}
+                onReplaced={(newUrl) => updateLocal(key, newUrl)}
+              />
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* ── About Page Photos ───────────────────────────────────────────── */}
+      <section className="rounded-2xl border border-slate-700 bg-slate-900/30 p-5 sm:p-6 space-y-4">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 bg-[#2E75B6]/20 rounded-lg flex items-center justify-center shrink-0">
+            <ImageIcon className="w-4 h-4 text-[#7EB8E8]" />
+          </div>
+          <div>
+            <h3 className="font-bold text-white text-base">About Page Photos</h3>
+            <p className="text-xs text-slate-400">
+              The three feature photos on the public About page. Click any photo to replace it.
+            </p>
+          </div>
+        </div>
+
+        {loading && Object.keys(content).length === 0 ? (
+          <div className="flex items-center gap-2 text-slate-400 py-8">
+            <Loader2 className="w-4 h-4 animate-spin" /> Loading photos…
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {ABOUT_IMAGE_KEYS.map((key, i) => (
+              <SiteImageCard
+                key={key}
+                imageKey={key}
+                label={ABOUT_IMAGE_LABELS[key]}
+                storagePathPrefix={`about/about-${i + 1}`}
+                successMessage="Updated! Refresh the About page to see the change."
                 currentUrl={content[key] ?? null}
                 onReplaced={(newUrl) => updateLocal(key, newUrl)}
               />
