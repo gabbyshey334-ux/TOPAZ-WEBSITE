@@ -4,9 +4,13 @@ import type { Database } from '@/types/database';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { Progress } from '@/components/ui/progress';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   AlertCircle,
-  CheckCircle2,
+  ChevronDown,
   FileEdit,
   ImageIcon,
   Link as LinkIcon,
@@ -17,46 +21,17 @@ import {
   Video,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
+import { SITE_CONTENT_DEFAULTS, type SiteContentMediaKey } from '@/constants/siteContentDefaults';
 
 type SiteContentRow = Database['public']['Tables']['site_content']['Row'];
 
-// ── Keys we manage on this tab ───────────────────────────────────────────────
-const HERO_IMAGE_KEYS = [
-  'hero_image_1',
-  'hero_image_2',
-  'hero_image_3',
-  'hero_image_4',
-] as const;
-type HeroImageKey = typeof HERO_IMAGE_KEYS[number];
-
-const HERO_IMAGE_LABELS: Record<HeroImageKey, string> = {
-  hero_image_1: 'Hero Image 1 — Top Left (Tall)',
-  hero_image_2: 'Hero Image 2 — Top Right (Square)',
-  hero_image_3: 'Hero Image 3 — Bottom Left (Square)',
-  hero_image_4: 'Hero Image 4 — Bottom Right (Tall)',
-};
-
-const ABOUT_IMAGE_KEYS = [
-  'about_image_1',
-  'about_image_2',
-  'about_image_3',
-] as const;
-type AboutImageKey = typeof ABOUT_IMAGE_KEYS[number];
-
-const ABOUT_IMAGE_LABELS: Record<AboutImageKey, string> = {
-  about_image_1: 'About Image 1 — "About Us" Section',
-  about_image_2: 'About Image 2 — "Continuing the Dream"',
-  about_image_3: 'About Image 3 — Heritage Gallery',
-};
-
 const HERO_VIDEO_KEY = 'hero_video_url';
 const BUCKET = 'gallery-media';
+const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
+const MAX_VIDEO_BYTES = 100 * 1024 * 1024;
+const IMAGE_ACCEPT = 'image/jpeg,image/png,image/webp,image/gif,.jpg,.jpeg,.png,.webp,.gif';
 
-// Accept anything an <img>/<video> can actually render
-const MAX_IMAGE_BYTES = 10 * 1024 * 1024; // 10 MB
-const MAX_VIDEO_BYTES = 100 * 1024 * 1024; // 100 MB
-
-// ── Helpers ──────────────────────────────────────────────────────────────────
 function sanitizeFilename(name: string): string {
   return name.replace(/[^\w.-]+/g, '_');
 }
@@ -69,74 +44,116 @@ function storagePathFromPublicUrl(url: string, bucket: string): string | null {
 }
 
 async function upsertSiteContent(key: string, value: string) {
-  return supabase
-    .from('site_content')
-    .upsert({ key, value }, { onConflict: 'key' });
+  return supabase.from('site_content').upsert({ key, value }, { onConflict: 'key' });
 }
 
-// ── Site Image Card ──────────────────────────────────────────────────────────
-// Generic image-slot upload card used by both Hero Photos (homepage) and
-// About Page Photos. Identical UX/upload pipeline; only the storage path
-// prefix, the `site_content` row key, the visible label, and the success
-// message differ per usage.
-function SiteImageCard({
+function defaultUrlForKey(key: string): string {
+  const d = SITE_CONTENT_DEFAULTS[key as SiteContentMediaKey];
+  return d ?? '';
+}
+
+// ── Managed image slot ───────────────────────────────────────────────────────
+function ManagedImageSlot({
   imageKey,
   label,
   storagePathPrefix,
-  successMessage,
   currentUrl,
   onReplaced,
+  thumbClassName,
+  hidePhotoToggle,
 }: {
   imageKey: string;
   label: string;
   storagePathPrefix: string;
-  successMessage: string;
   currentUrl: string | null;
   onReplaced: (newUrl: string) => void;
+  thumbClassName?: string;
+  hidePhotoToggle?: {
+    storageKey: string;
+    currentRaw: string | null;
+    onSaved: (value: string) => void;
+  };
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [flash, setFlash] = useState<string | null>(null);
+  const [progress, setProgress] = useState(0);
+  const [visibilitySaving, setVisibilitySaving] = useState(false);
+  const progressTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const photoHiddenOnSite =
+    hidePhotoToggle &&
+    String(hidePhotoToggle.currentRaw ?? 'true').toLowerCase() === 'false';
+
+  const displayUrl = currentUrl?.trim() ? currentUrl : defaultUrlForKey(imageKey);
+
+  const stopProgressAnim = () => {
+    if (progressTimerRef.current) {
+      clearInterval(progressTimerRef.current);
+      progressTimerRef.current = null;
+    }
+  };
+
+  const startProgressAnim = () => {
+    stopProgressAnim();
+    setProgress(6);
+    progressTimerRef.current = setInterval(() => {
+      setProgress((p) => (p >= 90 ? 90 : p + 4 + Math.random() * 8));
+    }, 160);
+  };
 
   async function handleFile(file: File) {
-    setError(null);
-    setFlash(null);
-
-    if (!file.type.startsWith('image/')) {
-      setError('Please choose an image file (JPG, PNG, WebP, etc.).');
+    const allowed =
+      /^image\/(jpeg|png|webp|gif)$/i.test(file.type) ||
+      /\.(jpe?g|png|webp|gif)$/i.test(file.name);
+    if (!allowed) {
+      toast.error('Please use JPG, PNG, WebP, or GIF.');
       return;
     }
     if (file.size > MAX_IMAGE_BYTES) {
-      setError(
-        `Image is too large (${(file.size / 1024 / 1024).toFixed(1)} MB). Max is 10 MB.`
+      toast.error(
+        `File is too large (${(file.size / 1024 / 1024).toFixed(1)} MB). Maximum size is 10 MB.`,
       );
       return;
     }
 
     setUploading(true);
+    startProgressAnim();
     const path = `${storagePathPrefix}-${crypto.randomUUID()}-${sanitizeFilename(file.name)}`;
     const { error: upErr } = await supabase.storage
       .from(BUCKET)
       .upload(path, file, { cacheControl: '3600', upsert: false });
 
     if (upErr) {
+      stopProgressAnim();
+      setProgress(0);
       setUploading(false);
-      setError(`Upload failed: ${upErr.message}`);
+      toast.error(`Upload failed: ${upErr.message}`, {
+        action: {
+          label: 'Retry',
+          onClick: () => inputRef.current?.click(),
+        },
+      });
       return;
     }
 
-    const { data: { publicUrl } } = supabase.storage.from(BUCKET).getPublicUrl(path);
-
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from(BUCKET).getPublicUrl(path);
     const { error: dbErr } = await upsertSiteContent(imageKey, publicUrl);
+
     if (dbErr) {
+      stopProgressAnim();
+      setProgress(0);
       setUploading(false);
-      setError(`Saved the file, but failed to update site: ${dbErr.message}`);
+      toast.error(`Could not save URL: ${dbErr.message}`, {
+        action: {
+          label: 'Retry',
+          onClick: () => inputRef.current?.click(),
+        },
+      });
       return;
     }
 
-    // Best-effort cleanup of the previous image if it was in the gallery-media bucket.
-    // Never fail the flow if cleanup errors — the new image is already live.
     if (currentUrl) {
       const oldPath = storagePathFromPublicUrl(currentUrl, BUCKET);
       if (oldPath) {
@@ -144,95 +161,114 @@ function SiteImageCard({
       }
     }
 
-    setUploading(false);
-    setFlash(successMessage);
-    setTimeout(() => setFlash(null), 4000);
+    stopProgressAnim();
+    setProgress(100);
+    setTimeout(() => {
+      setProgress(0);
+      setUploading(false);
+    }, 450);
     onReplaced(publicUrl);
+    toast.success('Photo updated successfully');
   }
 
+  useEffect(() => () => stopProgressAnim(), []);
+
   return (
-    <div className="rounded-xl border border-slate-700 bg-slate-900/60 overflow-hidden flex flex-col">
-      <button
-        type="button"
-        onClick={() => inputRef.current?.click()}
-        disabled={uploading}
+    <div className="flex flex-col gap-3 rounded-xl border border-slate-700 bg-slate-900/60 p-4 sm:flex-row sm:items-start">
+      <div
         className={cn(
-          'group relative aspect-square bg-black flex items-center justify-center overflow-hidden',
-          'transition-all',
-          uploading ? 'cursor-wait' : 'cursor-pointer hover:brightness-75',
+          'w-[200px] shrink-0 overflow-hidden rounded-lg bg-black ring-1 ring-white/10',
+          thumbClassName ?? 'aspect-square',
         )}
-        aria-label={`Replace ${label}`}
       >
-        {currentUrl ? (
+        {displayUrl ? (
           <img
-            src={currentUrl}
-            alt={label}
-            className="w-full h-full object-cover"
+            src={displayUrl}
+            alt=""
+            className="h-full w-full object-cover"
           />
         ) : (
-          <div className="flex flex-col items-center gap-2 text-slate-500">
-            <ImageIcon className="w-10 h-10" />
-            <span className="text-xs">No image set</span>
+          <div className="flex aspect-square w-[200px] items-center justify-center text-slate-500">
+            <ImageIcon className="h-10 w-10" />
           </div>
         )}
-
-        {/* Hover / upload overlay */}
-        <div
-          className={cn(
-            'absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center gap-2 text-white transition-opacity',
-            uploading ? 'opacity-100' : 'opacity-0 group-hover:opacity-100',
+      </div>
+      <div className="min-w-0 flex-1 space-y-2">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="text-xs font-bold text-white">{label}</p>
+          {hidePhotoToggle && (
+            <div className="flex items-center gap-2 shrink-0">
+              <Label
+                htmlFor={`hide-photo-${hidePhotoToggle.storageKey}`}
+                className="cursor-pointer text-[11px] font-medium text-slate-400"
+              >
+                Hide this photo
+              </Label>
+              <Switch
+                id={`hide-photo-${hidePhotoToggle.storageKey}`}
+                checked={!!photoHiddenOnSite}
+                disabled={visibilitySaving}
+                onCheckedChange={async (hide) => {
+                  setVisibilitySaving(true);
+                  const val = hide ? 'false' : 'true';
+                  const { error } = await upsertSiteContent(hidePhotoToggle.storageKey, val);
+                  setVisibilitySaving(false);
+                  if (error) {
+                    toast.error(`Could not update visibility: ${error.message}`);
+                    return;
+                  }
+                  hidePhotoToggle.onSaved(val);
+                  toast.success(hide ? 'Photo hidden on public About page' : 'Photo visible on public About page');
+                }}
+                className="data-[state=checked]:bg-amber-600"
+              />
+            </div>
           )}
+        </div>
+        <p className="break-all font-mono text-[10px] text-slate-500">{displayUrl || '—'}</p>
+        <input
+          ref={inputRef}
+          type="file"
+          accept={IMAGE_ACCEPT}
+          className="sr-only"
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            e.target.value = '';
+            if (f) void handleFile(f);
+          }}
+        />
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          disabled={uploading}
+          className="border-slate-600 text-slate-200 hover:bg-slate-800"
+          onClick={() => inputRef.current?.click()}
         >
           {uploading ? (
             <>
-              <Loader2 className="w-6 h-6 animate-spin" />
-              <span className="text-xs font-bold uppercase tracking-wider">Uploading…</span>
+              <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
+              Uploading…
             </>
           ) : (
             <>
-              <Upload className="w-6 h-6" />
-              <span className="text-xs font-bold uppercase tracking-wider">Change Photo</span>
+              <Upload className="mr-2 h-3.5 w-3.5" />
+              Change Photo
             </>
           )}
-        </div>
-      </button>
-
-      <input
-        ref={inputRef}
-        type="file"
-        accept="image/*"
-        className="sr-only"
-        onChange={(e) => {
-          const f = e.target.files?.[0];
-          e.target.value = ''; // allow re-selecting the same file
-          if (f) handleFile(f);
-        }}
-      />
-
-      <div className="p-3 border-t border-slate-700 space-y-1.5">
-        <p className="text-xs font-bold text-white">{label}</p>
-        <p className="text-[10px] text-slate-500 font-mono truncate" title={currentUrl ?? ''}>
-          {currentUrl ?? 'No URL set'}
-        </p>
-        {error && (
-          <p className="text-xs text-red-400 flex items-start gap-1.5">
-            <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
-            {error}
-          </p>
-        )}
-        {flash && (
-          <p className="text-xs text-emerald-400 flex items-start gap-1.5">
-            <CheckCircle2 className="w-3.5 h-3.5 shrink-0 mt-0.5" />
-            {flash}
-          </p>
+        </Button>
+        {uploading && (
+          <div className="pt-1">
+            <Progress value={progress} className="h-2 bg-slate-800 [&>[data-slot=progress-indicator]]:bg-[#2E75B6]" />
+          </div>
         )}
       </div>
     </div>
   );
 }
 
-// ── Hero Video Card ──────────────────────────────────────────────────────────
-function HeroVideoCard({
+// ── Hero background video ────────────────────────────────────────────────────
+function ManagedHeroVideoSlot({
   currentUrl,
   onUpdated,
 }: {
@@ -242,168 +278,158 @@ function HeroVideoCard({
   const [urlDraft, setUrlDraft] = useState(currentUrl ?? '');
   const [savingUrl, setSavingUrl] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [flash, setFlash] = useState<string | null>(null);
+  const [progress, setProgress] = useState(0);
   const fileRef = useRef<HTMLInputElement>(null);
+  const progressTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
-    // Keep draft in sync if parent refetches
     setUrlDraft(currentUrl ?? '');
   }, [currentUrl]);
 
+  const stopProgressAnim = () => {
+    if (progressTimerRef.current) {
+      clearInterval(progressTimerRef.current);
+      progressTimerRef.current = null;
+    }
+  };
+
+  const startProgressAnim = () => {
+    stopProgressAnim();
+    setProgress(5);
+    progressTimerRef.current = setInterval(() => {
+      setProgress((p) => (p >= 88 ? 88 : p + 3 + Math.random() * 6));
+    }, 200);
+  };
+
+  useEffect(() => () => stopProgressAnim(), []);
+
   async function saveUrl() {
-    setError(null);
-    setFlash(null);
     const trimmed = urlDraft.trim();
     if (!trimmed) {
-      setError('Enter a video URL or upload a file.');
+      toast.error('Enter a video URL or upload a file.');
       return;
     }
     try {
+      // eslint-disable-next-line no-new
       new URL(trimmed);
     } catch {
-      setError('That doesn\'t look like a valid URL.');
+      toast.error('That does not look like a valid URL.');
       return;
     }
-
     setSavingUrl(true);
     const { error: dbErr } = await upsertSiteContent(HERO_VIDEO_KEY, trimmed);
     setSavingUrl(false);
-
     if (dbErr) {
-      setError(`Failed to save: ${dbErr.message}`);
+      toast.error(`Failed to save: ${dbErr.message}`);
       return;
     }
-    setFlash('Homepage video URL updated. Refresh the homepage to see it.');
-    setTimeout(() => setFlash(null), 4000);
     onUpdated(trimmed);
+    toast.success('Video URL updated successfully');
   }
 
   async function handleFile(file: File) {
-    setError(null);
-    setFlash(null);
-
     if (!file.type.startsWith('video/')) {
-      setError('Please choose a video file (MP4, WebM, MOV, etc.).');
+      toast.error('Please choose a video file (MP4, WebM, MOV, etc.).');
       return;
     }
     if (file.size > MAX_VIDEO_BYTES) {
-      setError(
-        `Video is too large (${(file.size / 1024 / 1024).toFixed(1)} MB). Max is 100 MB. ` +
-        'Tip: upload to YouTube/Vimeo and paste the link instead.'
+      toast.error(
+        `Video is too large (${(file.size / 1024 / 1024).toFixed(1)} MB). Max is 100 MB. Try a link instead.`,
       );
       return;
     }
-
     setUploading(true);
-    setUploadProgress('Uploading video…');
+    startProgressAnim();
     const path = `homepage/hero-video-${crypto.randomUUID()}-${sanitizeFilename(file.name)}`;
     const { error: upErr } = await supabase.storage
       .from(BUCKET)
       .upload(path, file, { cacheControl: '3600', upsert: false });
-
     if (upErr) {
+      stopProgressAnim();
+      setProgress(0);
       setUploading(false);
-      setUploadProgress('');
-      setError(`Upload failed: ${upErr.message}`);
+      toast.error(`Upload failed: ${upErr.message}`, {
+        action: { label: 'Retry', onClick: () => fileRef.current?.click() },
+      });
       return;
     }
-
-    setUploadProgress('Saving…');
-    const { data: { publicUrl } } = supabase.storage.from(BUCKET).getPublicUrl(path);
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from(BUCKET).getPublicUrl(path);
     const { error: dbErr } = await upsertSiteContent(HERO_VIDEO_KEY, publicUrl);
-
     if (dbErr) {
+      stopProgressAnim();
+      setProgress(0);
       setUploading(false);
-      setUploadProgress('');
-      setError(`Saved the file, but failed to update homepage: ${dbErr.message}`);
+      toast.error(`Saved file but could not update site: ${dbErr.message}`, {
+        action: { label: 'Retry', onClick: () => fileRef.current?.click() },
+      });
       return;
     }
-
-    // Best-effort cleanup of the previous video if it was in this bucket
     if (currentUrl) {
       const oldPath = storagePathFromPublicUrl(currentUrl, BUCKET);
-      if (oldPath) {
-        await supabase.storage.from(BUCKET).remove([oldPath]).catch(() => {});
-      }
+      if (oldPath) await supabase.storage.from(BUCKET).remove([oldPath]).catch(() => {});
     }
-
-    setUploading(false);
-    setUploadProgress('');
+    stopProgressAnim();
+    setProgress(100);
+    setTimeout(() => {
+      setProgress(0);
+      setUploading(false);
+    }, 500);
     setUrlDraft(publicUrl);
-    setFlash('Homepage video replaced. Refresh the homepage to see it.');
-    setTimeout(() => setFlash(null), 4000);
     onUpdated(publicUrl);
+    toast.success('Video updated successfully');
   }
+
+  const previewSrc = currentUrl?.trim() ? currentUrl.trim() : defaultUrlForKey(HERO_VIDEO_KEY);
 
   return (
     <div className="rounded-xl border border-slate-700 bg-slate-900/60 overflow-hidden">
       <div className="relative aspect-video bg-black flex items-center justify-center overflow-hidden">
-        {currentUrl ? (
+        {previewSrc ? (
           <video
-            key={currentUrl /* force reload on URL change */}
-            src={currentUrl}
+            key={previewSrc}
+            src={previewSrc}
             controls
             muted
             playsInline
-            className="w-full h-full object-contain"
+            className="h-full w-full object-contain"
           />
         ) : (
-          <div className="flex flex-col items-center gap-2 text-slate-500">
-            <Video className="w-10 h-10" />
-            <span className="text-xs">No video set</span>
-          </div>
+          <Video className="h-10 w-10 text-slate-500" />
         )}
       </div>
-
-      <div className="p-5 space-y-5 border-t border-slate-700">
-        {/* URL editor */}
+      <div className="space-y-4 border-t border-slate-700 p-5">
         <div className="space-y-2">
-          <Label className="text-slate-300 text-sm flex items-center gap-2">
-            <LinkIcon className="w-3.5 h-3.5" />
+          <Label className="flex items-center gap-2 text-sm text-slate-300">
+            <LinkIcon className="h-3.5 w-3.5" />
             Video URL
           </Label>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Input
               value={urlDraft}
               onChange={(e) => setUrlDraft(e.target.value)}
               placeholder="https://…"
               disabled={savingUrl || uploading}
-              className="bg-slate-950 border-slate-600 text-white font-mono text-xs"
+              className="min-w-0 flex-1 bg-slate-950 font-mono text-xs text-white border-slate-600"
             />
             <Button
               type="button"
-              onClick={saveUrl}
-              disabled={
-                savingUrl || uploading || urlDraft.trim() === (currentUrl ?? '').trim() || !urlDraft.trim()
-              }
-              className="bg-[#2E75B6] hover:bg-[#1F4E78] text-white shrink-0 gap-2"
+              onClick={() => void saveUrl()}
+              disabled={savingUrl || uploading || urlDraft.trim() === (currentUrl ?? '').trim() || !urlDraft.trim()}
+              className="shrink-0 gap-2 bg-[#2E75B6] text-white hover:bg-[#1F4E78]"
             >
-              {savingUrl ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-              Save
+              {savingUrl ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+              Save URL
             </Button>
           </div>
-          <p className="text-xs text-slate-500">
-            Paste a direct video URL (MP4, WebM) or a link to a hosted file.
-          </p>
         </div>
-
         <div className="relative flex items-center gap-3">
-          <div className="flex-1 h-px bg-slate-700" />
+          <div className="h-px flex-1 bg-slate-700" />
           <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">or</span>
-          <div className="flex-1 h-px bg-slate-700" />
+          <div className="h-px flex-1 bg-slate-700" />
         </div>
-
-        {/* File uploader */}
-        <div className="space-y-2">
-          <Label className="text-slate-300 text-sm flex items-center gap-2">
-            <Upload className="w-3.5 h-3.5" />
-            Upload video file
-            <span className="text-[10px] uppercase tracking-wider font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-full px-2 py-0.5 ml-1">
-              Max 100MB
-            </span>
-          </Label>
+        <div>
           <input
             ref={fileRef}
             type="file"
@@ -412,64 +438,233 @@ function HeroVideoCard({
             onChange={(e) => {
               const f = e.target.files?.[0];
               e.target.value = '';
-              if (f) handleFile(f);
+              if (f) void handleFile(f);
             }}
           />
-          <button
+          <Button
             type="button"
-            onClick={() => fileRef.current?.click()}
+            variant="outline"
             disabled={uploading || savingUrl}
-            className={cn(
-              'w-full flex items-center gap-3 border-2 border-dashed rounded-xl px-4 py-3 transition-colors',
-              uploading
-                ? 'border-[#2E75B6] bg-[#2E75B6]/10 cursor-wait'
-                : 'border-slate-600 hover:border-[#2E75B6] hover:bg-slate-800/50',
-            )}
+            className="w-full border-dashed border-slate-600 text-slate-200 hover:bg-slate-800"
+            onClick={() => fileRef.current?.click()}
           >
             {uploading ? (
               <>
-                <Loader2 className="w-5 h-5 text-[#7EB8E8] animate-spin shrink-0" />
-                <span className="text-sm text-[#7EB8E8]">{uploadProgress || 'Uploading…'}</span>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Uploading video…
               </>
             ) : (
               <>
-                <Video className="w-5 h-5 text-slate-400 shrink-0" />
-                <span className="text-sm text-slate-400">Click to select a video file…</span>
+                <Upload className="mr-2 h-4 w-4" />
+                Upload video file (max 100 MB)
               </>
             )}
-          </button>
-          <p className="text-xs text-slate-500">
-            For videos larger than 100 MB, upload to YouTube and paste the link above.
-          </p>
+          </Button>
         </div>
-
-        {error && (
-          <div className="flex items-start gap-2 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2">
-            <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
-            <p className="text-xs text-red-300 leading-relaxed">{error}</p>
-          </div>
-        )}
-        {flash && (
-          <div className="flex items-start gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2">
-            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-            <p className="text-xs text-emerald-300 leading-relaxed">{flash}</p>
-          </div>
+        {uploading && (
+          <Progress value={progress} className="h-2 bg-slate-800 [&>[data-slot=progress-indicator]]:bg-[#2E75B6]" />
         )}
       </div>
     </div>
   );
 }
 
-// ── Main Content Tab ─────────────────────────────────────────────────────────
+type PageSection = {
+  id: string;
+  pageTitle: string;
+  groups: {
+    groupTitle: string;
+    slots: {
+      key: string;
+      label: string;
+      storagePrefix: string;
+      thumbClassName?: string;
+      siteVisibilityKey?: string;
+    }[];
+    videoSlot?: { key: typeof HERO_VIDEO_KEY; label: string };
+  }[];
+};
+
+const PAGE_SECTIONS: PageSection[] = [
+  {
+    id: 'home',
+    pageTitle: 'Homepage',
+    groups: [
+      {
+        groupTitle: 'Hero photos (masonry grid)',
+        slots: [
+          { key: 'hero_image_1', label: 'Hero photo 1 — top left (tall)', storagePrefix: 'homepage/hero-1' },
+          { key: 'hero_image_2', label: 'Hero photo 2 — top right', storagePrefix: 'homepage/hero-2' },
+          { key: 'hero_image_3', label: 'Hero photo 3 — bottom left', storagePrefix: 'homepage/hero-3' },
+          { key: 'hero_image_4', label: 'Hero photo 4 — bottom right (tall)', storagePrefix: 'homepage/hero-4' },
+        ],
+        videoSlot: { key: HERO_VIDEO_KEY, label: 'Hero background video (behind logo)' },
+      },
+      {
+        groupTitle: 'Official banner & hero emblem',
+        slots: [
+          {
+            key: 'home_official_banner',
+            label: 'TOPAZ 2.0 official banner (wide strip)',
+            storagePrefix: 'homepage/topaz-official-banner',
+            thumbClassName: 'aspect-[2/1]',
+          },
+          {
+            key: 'home_hero_emblem',
+            label: 'Hero emblem (theater masks over video)',
+            storagePrefix: 'homepage/hero-emblem',
+          },
+        ],
+      },
+      {
+        groupTitle: '“What’s coming” promo cards',
+        slots: [
+          { key: 'home_promo_masterclass', label: 'Master classes card image', storagePrefix: 'homepage/promo-masterclass' },
+          { key: 'home_promo_sponsors', label: 'Sponsors card image', storagePrefix: 'homepage/promo-sponsors' },
+          { key: 'home_promo_panel', label: 'Panel & judges card image', storagePrefix: 'homepage/promo-panel' },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'about',
+    pageTitle: 'About page',
+    groups: [
+      {
+        groupTitle: 'Hero & About Us',
+        slots: [
+          { key: 'about_hero_background', label: 'About hero background', storagePrefix: 'about/hero-bg' },
+          { key: 'about_image_1', label: 'About Us section (main photo)', storagePrefix: 'about/about-1' },
+          { key: 'about_us_fallback', label: 'About Us — fallback if main fails', storagePrefix: 'about/about-us-fallback' },
+        ],
+      },
+      {
+        groupTitle: 'Story, Ric Heath, Continuing the Dream',
+        slots: [
+          { key: 'about_ric_portrait', label: 'Ric Heath portrait', storagePrefix: 'about/ric-portrait' },
+          { key: 'about_image_2', label: 'Continuing the Dream (B&W duo)', storagePrefix: 'about/about-2' },
+        ],
+      },
+      {
+        groupTitle: 'About page photos',
+        slots: [
+          {
+            key: 'about_image_3',
+            label: 'About Page — Performers on Stage (Early Years)',
+            storagePrefix: 'about/about-3',
+            thumbClassName: 'aspect-[4/3]',
+            siteVisibilityKey: 'about_performers_visible',
+          },
+        ],
+      },
+      {
+        groupTitle: 'Meet the team',
+        slots: [{ key: 'about_team_photo', label: 'Meet the Team — group photo', storagePrefix: 'about/team-photo' }],
+      },
+    ],
+  },
+  {
+    id: 'schedule',
+    pageTitle: 'Schedule / events',
+    groups: [
+      {
+        groupTitle: 'Schedule page',
+        slots: [
+          { key: 'schedule_hero_background', label: 'Hero background', storagePrefix: 'schedule/hero-bg' },
+          { key: 'schedule_event_card_image', label: 'Featured competition card image', storagePrefix: 'schedule/event-card' },
+          {
+            key: 'schedule_card_error_fallback',
+            label: 'Competition card error fallback',
+            storagePrefix: 'schedule/card-fallback',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'rules',
+    pageTitle: 'Rules page',
+    groups: [
+      {
+        groupTitle: 'Rules page',
+        slots: [
+          { key: 'rules_hero_background', label: 'Hero background', storagePrefix: 'rules/hero-bg' },
+          { key: 'rules_cta_background', label: 'Download CTA section background', storagePrefix: 'rules/cta-bg' },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'contact',
+    pageTitle: 'Contact page',
+    groups: [
+      {
+        groupTitle: 'Contact page',
+        slots: [{ key: 'contact_hero_background', label: 'Hero background', storagePrefix: 'contact/hero-bg' }],
+      },
+    ],
+  },
+  {
+    id: 'gallery',
+    pageTitle: 'Gallery page',
+    groups: [
+      {
+        groupTitle: 'Gallery hero',
+        slots: [{ key: 'gallery_hero_background', label: 'Hero background', storagePrefix: 'gallery/hero-bg' }],
+      },
+    ],
+  },
+  {
+    id: 'shop',
+    pageTitle: 'Shop page',
+    groups: [
+      {
+        groupTitle: 'Shop hero',
+        slots: [{ key: 'shop_hero_background', label: 'Hero background', storagePrefix: 'shop/hero-bg' }],
+      },
+    ],
+  },
+  {
+    id: 'registration',
+    pageTitle: 'Registration page',
+    groups: [
+      {
+        groupTitle: 'Registration hero',
+        slots: [
+          {
+            key: 'registration_hero_background',
+            label: 'Hero background',
+            storagePrefix: 'registration/hero-bg',
+          },
+        ],
+      },
+    ],
+  },
+];
+
+function countSlots(section: PageSection): number {
+  let n = 0;
+  for (const g of section.groups) {
+    n += g.slots.length;
+    if (g.videoSlot) n += 1;
+  }
+  return n;
+}
+
+// ── Main tab ─────────────────────────────────────────────────────────────────
 export default function ContentTab() {
   const [content, setContent] = useState<Record<string, string | null>>({});
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [openPage, setOpenPage] = useState<Record<string, boolean>>({});
 
   const load = useCallback(async () => {
     setLoading(true);
     setLoadError(null);
-    const { data, error } = await supabase.from('site_content').select('*');
+    const { data, error } = await supabase
+      .from('site_content')
+      .select('key, value, updated_at')
+      .order('key');
     if (error) {
       setLoadError(error.message);
       setLoading(false);
@@ -484,142 +679,123 @@ export default function ContentTab() {
   }, []);
 
   useEffect(() => {
-    load();
+    void load();
   }, [load]);
 
-  function updateLocal(key: string, value: string) {
+  const updateLocal = useCallback((key: string, value: string) => {
     setContent((prev) => ({ ...prev, [key]: value }));
-  }
+  }, []);
 
   return (
     <div className="space-y-6">
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-            <FileEdit className="w-5 h-5 text-[#2E75B6]" />
-            Site Content
+          <h2 className="flex items-center gap-2 text-2xl font-bold text-white">
+            <FileEdit className="h-5 w-5 text-[#2E75B6]" />
+            Site images &amp; media
           </h2>
-          <p className="text-sm text-slate-400 mt-0.5">
-            Swap the homepage hero photos and video, and the photos that appear on the About page. Changes go live instantly.
+          <p className="mt-0.5 text-sm text-slate-400">
+            One place to change photos and the homepage hero video. Public pages read from the same keys with built-in
+            fallbacks.
           </p>
         </div>
         <Button
           size="sm"
           variant="outline"
-          onClick={load}
+          onClick={() => void load()}
           disabled={loading}
-          className="border-slate-600 text-slate-300 hover:bg-slate-800 shrink-0"
+          className="shrink-0 border-slate-600 text-slate-300 hover:bg-slate-800"
           title="Reload from database"
         >
-          {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+          {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
         </Button>
       </div>
 
       {loadError && (
         <div className="flex items-start gap-3 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3">
-          <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
+          <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-red-400" />
           <div>
-            <p className="text-sm font-bold text-red-300">Failed to load homepage content</p>
-            <p className="text-xs text-red-400/80 mt-0.5">{loadError}</p>
+            <p className="text-sm font-bold text-red-300">Failed to load site content</p>
+            <p className="mt-0.5 text-xs text-red-400/80">{loadError}</p>
           </div>
         </div>
       )}
 
-      {/* ── Homepage Photos ─────────────────────────────────────────────── */}
-      <section className="rounded-2xl border border-slate-700 bg-slate-900/30 p-5 sm:p-6 space-y-4">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 bg-[#2E75B6]/20 rounded-lg flex items-center justify-center shrink-0">
-            <ImageIcon className="w-4 h-4 text-[#7EB8E8]" />
-          </div>
-          <div>
-            <h3 className="font-bold text-white text-base">Homepage Photos</h3>
-            <p className="text-xs text-slate-400">
-              The four hero photos shown in the masonry grid on the homepage. Click any photo to replace it.
-            </p>
-          </div>
+      {loading ? (
+        <div className="space-y-4 rounded-2xl border border-slate-700 bg-slate-900/30 p-6">
+          <Skeleton className="h-8 w-64 bg-slate-800" />
+          <Skeleton className="h-32 w-full bg-slate-800" />
+          <Skeleton className="h-32 w-full bg-slate-800" />
+          <Skeleton className="h-32 w-full bg-slate-800" />
         </div>
-
-        {loading && Object.keys(content).length === 0 ? (
-          <div className="flex items-center gap-2 text-slate-400 py-8">
-            <Loader2 className="w-4 h-4 animate-spin" /> Loading photos…
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {HERO_IMAGE_KEYS.map((key, i) => (
-              <SiteImageCard
-                key={key}
-                imageKey={key}
-                label={HERO_IMAGE_LABELS[key]}
-                storagePathPrefix={`homepage/hero-${i + 1}`}
-                successMessage="Updated! Refresh the homepage to see the change."
-                currentUrl={content[key] ?? null}
-                onReplaced={(newUrl) => updateLocal(key, newUrl)}
-              />
-            ))}
-          </div>
-        )}
-      </section>
-
-      {/* ── About Page Photos ───────────────────────────────────────────── */}
-      <section className="rounded-2xl border border-slate-700 bg-slate-900/30 p-5 sm:p-6 space-y-4">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 bg-[#2E75B6]/20 rounded-lg flex items-center justify-center shrink-0">
-            <ImageIcon className="w-4 h-4 text-[#7EB8E8]" />
-          </div>
-          <div>
-            <h3 className="font-bold text-white text-base">About Page Photos</h3>
-            <p className="text-xs text-slate-400">
-              The three feature photos on the public About page. Click any photo to replace it.
-            </p>
-          </div>
+      ) : (
+        <div className="space-y-3">
+          {PAGE_SECTIONS.map((section) => {
+            const total = countSlots(section);
+            const isOpen = openPage[section.id] ?? false;
+            return (
+              <Collapsible
+                key={section.id}
+                open={isOpen}
+                onOpenChange={(o) => setOpenPage((prev) => ({ ...prev, [section.id]: o }))}
+                className="rounded-2xl border border-slate-700 bg-slate-900/30"
+              >
+                <CollapsibleTrigger className="flex w-full items-center justify-between gap-3 px-4 py-4 text-left hover:bg-slate-800/40 sm:px-5">
+                  <span className="font-bold text-white">
+                    <span className="mr-2">📄</span>
+                    {section.pageTitle}{' '}
+                    <span className="ml-2 font-mono text-xs font-normal text-slate-500">
+                      — {total} {total === 1 ? 'item' : 'items'}
+                    </span>
+                  </span>
+                  <ChevronDown
+                    className={cn('h-5 w-5 shrink-0 text-slate-400 transition-transform', isOpen && 'rotate-180')}
+                  />
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <div className="space-y-8 border-t border-slate-700 px-4 py-6 sm:px-6">
+                    {section.groups.map((group) => (
+                      <div key={group.groupTitle} className="space-y-4">
+                        <h4 className="text-xs font-bold uppercase tracking-widest text-[#7EB8E8]">
+                          {group.groupTitle}
+                        </h4>
+                        <div className="flex flex-col gap-4">
+                          {group.slots.map((slot) => (
+                            <ManagedImageSlot
+                              key={slot.key}
+                              imageKey={slot.key}
+                              label={slot.label}
+                              storagePathPrefix={slot.storagePrefix}
+                              thumbClassName={slot.thumbClassName}
+                              currentUrl={content[slot.key] ?? null}
+                              onReplaced={(url) => updateLocal(slot.key, url)}
+                              hidePhotoToggle={
+                                slot.siteVisibilityKey
+                                  ? {
+                                      storageKey: slot.siteVisibilityKey,
+                                      currentRaw: content[slot.siteVisibilityKey] ?? null,
+                                      onSaved: (value) => updateLocal(slot.siteVisibilityKey!, value),
+                                    }
+                                  : undefined
+                              }
+                            />
+                          ))}
+                          {group.videoSlot && (
+                            <ManagedHeroVideoSlot
+                              currentUrl={content[group.videoSlot.key] ?? null}
+                              onUpdated={(v) => updateLocal(group.videoSlot!.key, v)}
+                            />
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
+            );
+          })}
         </div>
-
-        {loading && Object.keys(content).length === 0 ? (
-          <div className="flex items-center gap-2 text-slate-400 py-8">
-            <Loader2 className="w-4 h-4 animate-spin" /> Loading photos…
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {ABOUT_IMAGE_KEYS.map((key, i) => (
-              <SiteImageCard
-                key={key}
-                imageKey={key}
-                label={ABOUT_IMAGE_LABELS[key]}
-                storagePathPrefix={`about/about-${i + 1}`}
-                successMessage="Updated! Refresh the About page to see the change."
-                currentUrl={content[key] ?? null}
-                onReplaced={(newUrl) => updateLocal(key, newUrl)}
-              />
-            ))}
-          </div>
-        )}
-      </section>
-
-      {/* ── Hero Video ──────────────────────────────────────────────────── */}
-      <section className="rounded-2xl border border-slate-700 bg-slate-900/30 p-5 sm:p-6 space-y-4">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 bg-[#2E75B6]/20 rounded-lg flex items-center justify-center shrink-0">
-            <Video className="w-4 h-4 text-[#7EB8E8]" />
-          </div>
-          <div>
-            <h3 className="font-bold text-white text-base">Hero Background Video</h3>
-            <p className="text-xs text-slate-400">
-              This video plays behind the TOPAZ 2.0 logo at the top of the homepage.
-            </p>
-          </div>
-        </div>
-
-        {loading && Object.keys(content).length === 0 ? (
-          <div className="flex items-center gap-2 text-slate-400 py-8">
-            <Loader2 className="w-4 h-4 animate-spin" /> Loading video…
-          </div>
-        ) : (
-          <HeroVideoCard
-            currentUrl={content[HERO_VIDEO_KEY] ?? null}
-            onUpdated={(v) => updateLocal(HERO_VIDEO_KEY, v)}
-          />
-        )}
-      </section>
+      )}
     </div>
   );
 }

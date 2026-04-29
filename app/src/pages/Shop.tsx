@@ -3,6 +3,7 @@ import { ShoppingBag, ImageOff, CheckCircle2, XCircle } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useCart } from '@/contexts/CartContext';
 import type { Database } from '@/types/database';
+import { rowsToSiteContentMap, siteContentUrl } from '@/constants/siteContentDefaults';
 
 type Product = Database['public']['Tables']['products']['Row'];
 
@@ -162,7 +163,22 @@ const Shop = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [paymentBanner, setPaymentBanner] = useState<'success' | 'cancelled' | null>(null);
+  const [siteContent, setSiteContent] = useState<Record<string, string | null>>({});
   const { count, openCart, clearCart } = useCart();
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase.from('site_content').select('key, value').order('key');
+      if (cancelled) return;
+      setSiteContent(rowsToSiteContentMap(data as { key: string; value: string | null }[] | null));
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const shopHeroBg = siteContentUrl(siteContent, 'shop_hero_background');
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -203,7 +219,7 @@ const Shop = () => {
       <section className="relative flex min-h-[70vh] items-center overflow-hidden bg-[#0a0a0a] sm:min-h-[78vh]">
         <div className="absolute inset-0 opacity-20">
           <img
-            src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1600&h=900&fit=crop"
+            src={shopHeroBg}
             className="h-full w-full object-cover grayscale"
             alt=""
           />

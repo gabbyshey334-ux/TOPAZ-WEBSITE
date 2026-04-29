@@ -13,6 +13,8 @@ import {
 } from 'lucide-react';
 import ContactForm from '../components/ContactForm';
 import { TikTokIcon } from '../components/icons/TikTokIcon';
+import { supabase } from '@/lib/supabase';
+import { rowsToSiteContentMap, siteContentUrl } from '@/constants/siteContentDefaults';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -22,6 +24,21 @@ const Contact = () => {
   const infoRef = useRef<HTMLDivElement>(null);
   const faqRef = useRef<HTMLDivElement>(null);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [siteContent, setSiteContent] = useState<Record<string, string | null>>({});
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase.from('site_content').select('key, value').order('key');
+      if (cancelled) return;
+      setSiteContent(rowsToSiteContentMap(data as { key: string; value: string | null }[] | null));
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const contactHeroBg = siteContentUrl(siteContent, 'contact_hero_background');
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -194,7 +211,7 @@ const Contact = () => {
       >
         <div className="absolute inset-0 opacity-20">
           <img 
-            src="https://images.unsplash.com/photo-1423666639041-f56000c27a9a?w=1600&h=900&fit=crop" 
+            src={contactHeroBg}
             className="w-full h-full object-cover grayscale"
             alt=""
           />

@@ -6,35 +6,15 @@ import { ArrowRight, Star, Award, Heart, Sparkles, Quote } from 'lucide-react';
 import TextSection from '../components/TextSection';
 import TeamSection from '../components/TeamSection';
 import { supabase } from '@/lib/supabase';
+import { rowsToSiteContentMap, siteContentUrl } from '@/constants/siteContentDefaults';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const BASE = import.meta.env.BASE_URL;
-
-// Hardcoded fallbacks — used when the matching `site_content` row is missing
-// or empty so the About page never renders blank slots during transition.
-// Admin-managed slots (`about_image_1` .. `about_image_3`) override these
-// when the Content tab in the admin uploads a new image. Non-managed assets
-// (Ric portrait, team photo, hero background fallback) stay hardcoded.
-const ABOUT_IMAGES = {
-  patBobStripedPants: `${BASE}images/gallery/topaz-legacy-photo-img284.jpg`,
-  continuingDreamDuo: `${BASE}images/about/Screenshot_20260401_140745.jpg`,
-  colorfulTrio: `${BASE}images/gallery/history/stage-colorful-trio-vegas.jpg`,
-  aboutUsFallback: `${BASE}about/about-us.jpg`,
-  ricPortrait: `${BASE}about/ric-heath.png`,
-  meetTheTeam: `${BASE}about/meet-the-team.jpg`,
-} as const;
-
-// Maps `site_content` keys to their hardcoded fallback so we can resolve
-// each managed slot in one place.
-const ABOUT_IMAGE_KEYS = ['about_image_1', 'about_image_2', 'about_image_3'] as const;
-type AboutImageKey = typeof ABOUT_IMAGE_KEYS[number];
-
-const ABOUT_IMAGE_FALLBACKS: Record<AboutImageKey, string> = {
-  about_image_1: ABOUT_IMAGES.patBobStripedPants,
-  about_image_2: ABOUT_IMAGES.continuingDreamDuo,
-  about_image_3: ABOUT_IMAGES.colorfulTrio,
-};
+const TEAM_MEMBERS = [
+  { role: 'Vice President' },
+  { role: 'Founder' },
+  { role: 'President' },
+];
 
 const ABOUT_US_CONTENT =
   "Topaz has proudly been at the forefront of theatrical arts competitions since 1972. Throughout the years and across numerous cities, we've built a vibrant community of countless studios and thousands of contestants who form our extended Topaz family. Many of the dedicated teachers who now inspire students were once competitors in our events, showcasing the lasting impact of our competitions. Join us in the love for the arts and the journey of growth that it fosters!";
@@ -49,12 +29,6 @@ const TRIBUTE_TEXT = "Though we mourn the loss of Bob in 2023, Pat remains passi
 const RIC_MENTION =
   "Ric Heath, alongside his brother Randy, helps guide TOPAZ forward—honoring the foundation Pat and Bob built and the community they inspired.";
 
-const TEAM_MEMBERS = [
-  { role: 'Vice President' },
-  { role: 'Founder' },
-  { role: 'President' },
-];
-
 const About = () => {
   const heroRef = useRef<HTMLElement>(null);
   const storyRef = useRef<HTMLDivElement>(null);
@@ -62,16 +36,18 @@ const About = () => {
 
   const [siteContent, setSiteContent] = useState<Record<string, string | null>>({});
 
-  // Resolve each managed about-page photo: prefer the `site_content` row,
-  // fall back to the hardcoded path so nothing breaks while the DB row is
-  // empty, missing, or still loading.
-  const resolveAboutImage = (key: AboutImageKey): string => {
-    const v = siteContent[key];
-    return v && v.trim() ? v : ABOUT_IMAGE_FALLBACKS[key];
-  };
-  const aboutImage1 = resolveAboutImage('about_image_1');
-  const aboutImage2 = resolveAboutImage('about_image_2');
-  const aboutImage3 = resolveAboutImage('about_image_3');
+  const aboutHeroBg = siteContentUrl(siteContent, 'about_hero_background');
+  const aboutImage1 = siteContentUrl(siteContent, 'about_image_1');
+  const aboutImage2 = siteContentUrl(siteContent, 'about_image_2');
+  const aboutImage3 = siteContentUrl(siteContent, 'about_image_3');
+  const performersVisible = (() => {
+    const v = siteContent['about_performers_visible'];
+    if (v == null || String(v).trim() === '') return true;
+    return String(v).toLowerCase() === 'true';
+  })();
+  const aboutUsFallback = siteContentUrl(siteContent, 'about_us_fallback');
+  const ricPortrait = siteContentUrl(siteContent, 'about_ric_portrait');
+  const teamPhoto = siteContentUrl(siteContent, 'about_team_photo');
 
   useEffect(() => {
     let cancelled = false;
@@ -79,15 +55,13 @@ const About = () => {
       const { data, error } = await supabase
         .from('site_content')
         .select('key, value')
-        .in('key', ABOUT_IMAGE_KEYS as unknown as string[]);
+        .order('key');
       if (cancelled || error) return;
-      const map: Record<string, string | null> = {};
-      for (const row of (data as { key: string; value: string | null }[] | null) ?? []) {
-        map[row.key] = row.value;
-      }
-      setSiteContent(map);
+      setSiteContent(rowsToSiteContentMap(data as { key: string; value: string | null }[] | null));
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
@@ -112,7 +86,6 @@ const About = () => {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // Story section animations
       const storyElements = storyRef.current?.querySelectorAll('.story-animate');
       if (storyElements) {
         gsap.fromTo(
@@ -132,7 +105,6 @@ const About = () => {
         );
       }
 
-      // Quote animation
       if (quoteRef.current) {
         gsap.fromTo(
           quoteRef.current,
@@ -155,22 +127,19 @@ const About = () => {
 
   return (
     <div className="bg-white">
-      {/* PREMIUM HERO SECTION */}
       <section
         ref={heroRef}
         className="relative min-h-screen overflow-hidden flex items-center"
       >
-        {/* Background with overlay */}
         <div className="absolute inset-0">
-          <img 
-            src="https://images.unsplash.com/photo-1518834107812-67b0b7c58434?w=1600&h=900&fit=crop" 
+          <img
+            src={aboutHeroBg}
             className="w-full h-full object-cover grayscale"
             alt=""
           />
           <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a]/90 via-[#0a0a0a]/70 to-[#0a0a0a]/90" />
         </div>
 
-        {/* Animated accent */}
         <div className="absolute inset-0 bg-gradient-to-r from-[#2E75B6]/20 via-transparent to-[#2E75B6]/20" />
 
         <div className="relative z-10 px-4 sm:px-6 max-w-5xl mx-auto text-center">
@@ -180,23 +149,22 @@ const About = () => {
               Established 1972
             </span>
           </div>
-          
+
           <h1
             id="about-hero-heading"
             className="hero-animate font-display font-black text-5xl sm:text-6xl md:text-7xl lg:text-[9rem] text-white leading-[0.85] tracking-tighter uppercase mb-8"
           >
             About <span className="text-[#2E75B6] italic">Us</span>
           </h1>
-          
+
           <div className="hero-animate w-32 h-1 bg-gradient-to-r from-transparent via-[#2E75B6] to-transparent mx-auto rounded-full mb-8" />
-          
+
           <p className="hero-animate text-white/70 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed">
-            Over five decades of nurturing talent, building community, and creating 
-            unforgettable moments in theatrical arts.
+            Over five decades of nurturing talent, building community, and creating unforgettable moments in
+            theatrical arts.
           </p>
         </div>
 
-        {/* Scroll indicator */}
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2">
           <div className="w-6 h-10 rounded-full border-2 border-white/30 flex items-start justify-center p-2">
             <div className="w-1.5 h-2.5 bg-white/50 rounded-full animate-bounce" />
@@ -204,30 +172,26 @@ const About = () => {
         </div>
       </section>
 
-      {/* ABOUT US SECTION — Premium Layout */}
       <TextSection
         background="black"
         heading="About Us"
         alignment="left"
         imageSrc={aboutImage1}
-        imageFallbackSrc={ABOUT_IMAGES.aboutUsFallback}
+        imageFallbackSrc={aboutUsFallback}
         imageAlt="Pat and Bob Heath dancing — striped dance pants and performance wear"
         imageObjectFit="contain"
         stackImageFirst
         content={ABOUT_US_CONTENT}
       />
 
-      {/* OUR STORY SECTION — Premium Narrative Design */}
       <section
         ref={storyRef}
         className="relative bg-gradient-to-b from-[#fcfcfc] to-white py-24 lg:py-32 overflow-hidden"
       >
-        {/* Background decoration */}
         <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-[#2E75B6]/5 to-transparent pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-[#2E75B6]/5 rounded-full blur-[120px] pointer-events-none" />
 
         <div className="relative w-full px-4 sm:px-6 lg:px-12 max-w-7xl mx-auto">
-          {/* Our Story — text only (Position 2 photo is only in Continuing the Dream below) */}
           <div className="max-w-3xl">
             <div className="story-animate">
               <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#2E75B6]/10 text-[#2E75B6] text-sm font-bold uppercase tracking-wider mb-6">
@@ -239,31 +203,24 @@ const About = () => {
               </h2>
             </div>
 
-            <p className="story-animate text-xl leading-relaxed text-gray-600 font-medium mb-8">
-              {OUR_STORY_PART_A}
-            </p>
+            <p className="story-animate text-xl leading-relaxed text-gray-600 font-medium mb-8">{OUR_STORY_PART_A}</p>
 
             <div
               ref={quoteRef}
               className="story-animate relative bg-gradient-to-br from-[#2E75B6]/10 to-[#1F4E78]/10 rounded-[2rem] p-8 border border-[#2E75B6]/20 mb-8"
             >
               <Quote className="absolute top-6 left-6 w-8 h-8 text-[#2E75B6]/30" />
-              <p className="relative pl-12 text-lg italic text-gray-700 leading-relaxed">
-                {LEGACY_QUOTE}
-              </p>
+              <p className="relative pl-12 text-lg italic text-gray-700 leading-relaxed">{LEGACY_QUOTE}</p>
             </div>
           </div>
 
-          {/* Ric Heath — single placement beside copy that names him */}
           <div className="mt-16 grid grid-cols-1 gap-10 lg:grid-cols-2 lg:items-center lg:gap-16">
-            <p className="story-animate text-xl leading-relaxed text-gray-600 font-medium lg:pr-4">
-              {RIC_MENTION}
-            </p>
+            <p className="story-animate text-xl leading-relaxed text-gray-600 font-medium lg:pr-4">{RIC_MENTION}</p>
             <figure className="story-animate mx-auto w-full max-w-md lg:max-w-none">
               <div className="overflow-hidden rounded-[2rem] border border-gray-200 bg-white shadow-xl">
                 <div className="aspect-[3/4] bg-gradient-to-br from-gray-100 to-gray-50">
                   <img
-                    src={ABOUT_IMAGES.ricPortrait}
+                    src={ricPortrait}
                     alt="Ric Heath"
                     loading="lazy"
                     className="h-full w-full object-contain"
@@ -276,17 +233,16 @@ const About = () => {
             </figure>
           </div>
 
-          {/* Next Generation — Position 2: B&W military-hat duo only */}
           <div className="mt-20 lg:mt-32">
             <div className="grid lg:grid-cols-2 gap-12 items-center">
               <div className="story-animate order-2 lg:order-1">
                 <div className="relative rounded-[2rem] overflow-hidden shadow-2xl">
-              <img
-                src={aboutImage2}
-                alt="Vintage black and white duo — man in military-style hat with woman"
-                loading="lazy"
-                className="w-full h-auto object-contain"
-              />
+                  <img
+                    src={aboutImage2}
+                    alt="Vintage black and white duo — man in military-style hat with woman"
+                    loading="lazy"
+                    className="w-full h-auto object-contain"
+                  />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
                 </div>
               </div>
@@ -300,7 +256,6 @@ const About = () => {
                   Continuing the <span className="text-[#2E75B6] italic">Dream</span>
                 </h3>
 
-                {/* Tribute card */}
                 <div className="bg-gradient-to-r from-gray-50 to-white rounded-2xl p-6 border-l-4 border-[#2E75B6]">
                   <p className="text-gray-600 italic">{TRIBUTE_TEXT}</p>
                 </div>
@@ -310,51 +265,52 @@ const About = () => {
         </div>
       </section>
 
-      {/* HERITAGE GALLERY SECTION */}
-      <section className="relative bg-gray-50 py-24 lg:py-32 border-y border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12 lg:mb-16">
-            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#2E75B6]/10 text-[#2E75B6] text-sm font-bold uppercase tracking-wider mb-4">
-              <Award className="w-4 h-4" />
-              Through The Years
-            </span>
-            <h2 className="font-display font-black text-3xl md:text-4xl lg:text-5xl text-gray-900 tracking-tight">
-              TOPAZ <span className="text-[#2E75B6] italic">Heritage</span>
-            </h2>
-          </div>
-
-          <div className="relative max-w-5xl mx-auto">
-            <div className="overflow-hidden rounded-[2.5rem] border border-gray-200 bg-white shadow-2xl">
-              <img
-                src={aboutImage3}
-                alt="TOPAZ performers in colorful green and pink costumes on stage"
-                loading="lazy"
-                className="w-full h-auto object-contain max-h-[min(80vh,800px)] mx-auto block"
-              />
+      {performersVisible && (
+        <section className="relative bg-gray-50 py-24 lg:py-32 border-y border-gray-100">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12 lg:mb-16">
+              <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#2E75B6]/10 text-[#2E75B6] text-sm font-bold uppercase tracking-wider mb-4">
+                <Award className="w-4 h-4" />
+                Through The Years
+              </span>
+              <h2 className="font-display font-black text-3xl md:text-4xl lg:text-5xl text-gray-900 tracking-tight">
+                TOPAZ <span className="text-[#2E75B6] italic">Heritage</span>
+              </h2>
             </div>
-            
-            {/* Floating caption */}
-            <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-white rounded-full shadow-xl px-6 py-3 border border-gray-100">
-              <p className="font-display font-bold text-gray-900 whitespace-nowrap">Performers on Stage — Early Years</p>
+
+            <div className="relative max-w-5xl mx-auto">
+              <div className="overflow-hidden rounded-[2.5rem] border border-gray-200 bg-gray-900 shadow-2xl">
+                <div className="flex h-72 w-full items-start justify-center overflow-hidden bg-gray-900">
+                  <img
+                    src={aboutImage3}
+                    alt="TOPAZ performers in colorful green and pink costumes on stage"
+                    loading="lazy"
+                    className="h-full w-full object-cover object-top bg-gray-900"
+                  />
+                </div>
+              </div>
+
+              <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-white rounded-full shadow-xl px-6 py-3 border border-gray-100">
+                <p className="font-display font-bold text-gray-900 whitespace-nowrap">
+                  Performers on Stage — Early Years
+                </p>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
-      {/* TEAM SECTION */}
       <TeamSection
         background="black"
         heading="Meet The Team"
-        teamImageSrc={ABOUT_IMAGES.meetTheTeam}
+        teamImageSrc={teamPhoto}
         teamImageAlt="TOPAZ team with banner"
         members={TEAM_MEMBERS}
       />
 
-      {/* FINAL CTA */}
       <section className="relative bg-gradient-to-br from-[#0F2847] via-[#1F4E78] to-[#2E75B6] py-24 lg:py-32 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-t from-[#0F2847]/90 via-transparent to-[#1F4E78]/80" aria-hidden />
 
-        {/* Floating orbs */}
         <div className="absolute top-10 left-10 w-40 h-40 bg-white/5 rounded-full blur-[60px]" />
         <div className="absolute bottom-10 right-10 w-60 h-60 bg-[#2E75B6]/30 rounded-full blur-[80px]" />
 
@@ -363,8 +319,7 @@ const About = () => {
             Be Part of the <span className="text-[#7EB8E8] italic">Legacy</span>
           </h2>
           <p className="text-white/80 text-lg md:text-xl mb-10 max-w-2xl mx-auto leading-relaxed">
-            Join thousands of dancers who have made TOPAZ their home. 
-            Experience the magic of theatrical arts competition.
+            Join thousands of dancers who have made TOPAZ their home. Experience the magic of theatrical arts competition.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <Link

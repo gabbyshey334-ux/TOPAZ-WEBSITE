@@ -15,17 +15,25 @@ interface HeroSectionProps {
    * loaded from the `site_content` table so admins can swap it without code.
    */
   videoUrl?: string | null;
+  /** Optional hero emblem (theater masks) URL from `site_content.home_hero_emblem`. */
+  emblemSrc?: string | null;
 }
 
-const HeroSection = ({ videoUrl }: HeroSectionProps = {}) => {
+const HeroSection = ({ videoUrl, emblemSrc }: HeroSectionProps = {}) => {
   const activeVideoUrl = videoUrl && videoUrl.trim() ? videoUrl : DEFAULT_SHOWREEL_VIDEO_URL;
+  const resolvedEmblem =
+    emblemSrc && emblemSrc.trim() ? emblemSrc.trim() : MASK_LOGO;
   const sectionRef = useRef<HTMLElement>(null);
   const logoRef = useRef<HTMLImageElement>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const taglineRef = useRef<HTMLParagraphElement>(null);
   const underlineRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [logoSrc, setLogoSrc] = useState(MASK_LOGO);
+  const [logoSrc, setLogoSrc] = useState(resolvedEmblem);
+
+  useEffect(() => {
+    setLogoSrc(resolvedEmblem);
+  }, [resolvedEmblem]);
 
   useEffect(() => {
     const ctx = gsap.context(() => {

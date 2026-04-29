@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Calendar, MapPin, Clock, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -14,6 +14,8 @@ export interface CompetitionCardProps {
   status: 'open' | 'closed' | 'coming';
   description?: string;
   image?: string;
+  /** Shown if `image` fails to load (e.g. from `site_content.schedule_card_error_fallback`). */
+  imageErrorFallback?: string;
   address?: string;
   time?: string;
   subtitle?: string;
@@ -48,9 +50,22 @@ const CompetitionCard = ({
   subtitle,
   time,
   image,
+  imageErrorFallback,
 }: CompetitionCardProps) => {
-  const [imgError, setImgError] = useState(false);
-  const imgSrc = image && !imgError ? image : FALLBACK_EVENT_IMAGE;
+  const [imgTier, setImgTier] = useState(0);
+  const candidates = useMemo(() => {
+    const raw = [image, imageErrorFallback, FALLBACK_EVENT_IMAGE].filter(
+      (u): u is string => Boolean(u && u.trim()),
+    );
+    return [...new Set(raw)];
+  }, [image, imageErrorFallback]);
+
+  useEffect(() => {
+    setImgTier(0);
+  }, [candidates]);
+
+  const imgSrc =
+    candidates[Math.min(imgTier, Math.max(0, candidates.length - 1))] ?? FALLBACK_EVENT_IMAGE;
   const statusStyle = statusConfig[status];
 
   const contentBlock = (
@@ -151,7 +166,9 @@ const CompetitionCard = ({
                 src={imgSrc}
                 alt={name}
                 className="absolute inset-0 h-full w-full object-cover object-center"
-                onError={() => setImgError(true)}
+                onError={() =>
+                  setImgTier((t) => Math.min(t + 1, Math.max(0, candidates.length - 1)))
+                }
               />
               <div className="absolute inset-0 bg-gradient-to-r from-black/10 via-transparent to-transparent" />
               {/* Status on image for mobile only */}

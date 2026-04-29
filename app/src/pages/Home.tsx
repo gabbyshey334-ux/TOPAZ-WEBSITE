@@ -1,4 +1,4 @@
-import { useEffect, useRef, useLayoutEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { format, parseISO } from 'date-fns';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -22,6 +22,7 @@ import type { LucideIcon } from 'lucide-react';
 import { useActiveEvent } from '@/hooks/useActiveEvent';
 import { supabase } from '@/lib/supabase';
 import type { Database } from '@/types/database';
+import { rowsToSiteContentMap, siteContentUrl } from '@/constants/siteContentDefaults';
 
 type TestimonialRow = Database['public']['Tables']['testimonials']['Row'];
 type InstructorRow = Database['public']['Tables']['instructors']['Row'];
@@ -29,10 +30,6 @@ type InstructorRow = Database['public']['Tables']['instructors']['Row'];
 // Register GSAP plugin
 gsap.registerPlugin(ScrollTrigger);
 
-const BASE = import.meta.env.BASE_URL;
-const TOPAZ_OFFICIAL_BANNER = `${BASE}images/homepage/topaz-2-0-banner.png`;
-
-/** Exactly two legacy feature cards (deduped by id when rendering). */
 const LEGACY_FEATURE_CARDS: {
   id: string;
   icon: LucideIcon;
@@ -58,71 +55,29 @@ const LEGACY_FEATURE_CARDS: {
   },
 ];
 
-const promoCards = [
+/** Heritage grid keys + copy (URLs come from `site_content` via `siteContentUrl`). */
+const HERITAGE_GRID = [
   {
-    id: 1,
-    title: 'MASTER CLASSES',
-    subtitle: 'COMING SOON',
-    description: 'Learn from industry professionals',
-    bg: 'from-violet-600/90 via-purple-700/90 to-indigo-900/90',
-    accent: '#8B5CF6',
-    image: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=800&h=600&fit=crop',
-    icon: Sparkles,
-  },
-  {
-    id: 2,
-    title: 'SPONSORS',
-    subtitle: 'COMING SOON',
-    description: 'Partner with excellence',
-    bg: 'from-[#2E75B6]/90 via-[#1F4E78]/90 to-[#0F2847]/90',
-    accent: '#2E75B6',
-    image: 'https://images.unsplash.com/photo-1547153760-18fc86324498?w=800&h=600&fit=crop',
-    icon: Trophy,
-  },
-  {
-    id: 3,
-    title: 'PANEL & JUDGES',
-    subtitle: 'COMING SOON',
-    description: 'Expert adjudication panel',
-    bg: 'from-amber-600/90 via-orange-700/90 to-red-900/90',
-    accent: '#F59E0B',
-    image: 'https://images.unsplash.com/photo-1518834107812-67b0b7c58434?w=800&h=600&fit=crop',
-    icon: Heart,
-  },
-] as const;
-
-/**
- * Fallback URLs for the 4 homepage "heritage" photos, used when the
- * `site_content` rows haven't loaded yet (or are missing). The admin
- * "Content" tab writes overrides into the `site_content` table keyed by
- * `hero_image_1` .. `hero_image_4` and `hero_video_url`.
- */
-const LEGACY_HERITAGE_FALLBACKS = [
-  {
-    key: 'hero_image_1',
-    src: `${BASE}images/homepage/boy-tuxedo-trophy.png`,
+    key: 'hero_image_1' as const,
     alt: 'Vintage TOPAZ competition — young dancer in tuxedo with trophy',
-    aspect: 'tall',
+    aspect: 'tall' as const,
   },
   {
-    key: 'hero_image_2',
-    src: `${BASE}images/homepage/duo-trophy.png`,
+    key: 'hero_image_2' as const,
     alt: 'Vintage TOPAZ competition — duo with trophy',
-    aspect: 'square',
+    aspect: 'square' as const,
   },
   {
-    key: 'hero_image_3',
-    src: `${BASE}images/homepage/group-dancers-trophy.png`,
+    key: 'hero_image_3' as const,
     alt: 'Vintage TOPAZ competition — group of dancers with trophy',
-    aspect: 'square',
+    aspect: 'square' as const,
   },
   {
-    key: 'hero_image_4',
-    src: `${BASE}images/homepage/newspaper-1975.png`,
+    key: 'hero_image_4' as const,
     alt: '1975 newspaper clipping featuring TOPAZ',
-    aspect: 'tall',
+    aspect: 'tall' as const,
   },
-] as const;
+];
 
 const Home = () => {
   const { event: activeEvent, loading: eventLoading } = useActiveEvent();
@@ -148,15 +103,54 @@ const Home = () => {
   const [judges, setJudges] = useState<InstructorRow[]>([]);
   const [siteContent, setSiteContent] = useState<Record<string, string | null>>({});
 
-  // Resolve each heritage photo URL from site_content first, falling back to
-  // the hardcoded public path so the homepage always renders something even
-  // if the DB request fails or is slow.
-  const heritagePhotos = LEGACY_HERITAGE_FALLBACKS.map((p) => ({
-    src: siteContent[p.key] && siteContent[p.key]!.trim() ? siteContent[p.key]! : p.src,
+  const heritagePhotos = HERITAGE_GRID.map((p) => ({
+    src: siteContentUrl(siteContent, p.key),
     alt: p.alt,
     aspect: p.aspect,
   }));
-  const heroVideoUrl = siteContent['hero_video_url'] ?? null;
+  const heroVideoRaw = siteContent['hero_video_url'];
+  const heroVideoUrl =
+    heroVideoRaw && heroVideoRaw.trim() ? heroVideoRaw.trim() : null;
+
+  const promoCards = useMemo(
+    () =>
+      [
+        {
+          id: 1,
+          title: 'MASTER CLASSES',
+          subtitle: 'COMING SOON',
+          description: 'Learn from industry professionals',
+          bg: 'from-violet-600/90 via-purple-700/90 to-indigo-900/90',
+          accent: '#8B5CF6',
+          image: siteContentUrl(siteContent, 'home_promo_masterclass'),
+          icon: Sparkles,
+        },
+        {
+          id: 2,
+          title: 'SPONSORS',
+          subtitle: 'COMING SOON',
+          description: 'Partner with excellence',
+          bg: 'from-[#2E75B6]/90 via-[#1F4E78]/90 to-[#0F2847]/90',
+          accent: '#2E75B6',
+          image: siteContentUrl(siteContent, 'home_promo_sponsors'),
+          icon: Trophy,
+        },
+        {
+          id: 3,
+          title: 'PANEL & JUDGES',
+          subtitle: 'COMING SOON',
+          description: 'Expert adjudication panel',
+          bg: 'from-amber-600/90 via-orange-700/90 to-red-900/90',
+          accent: '#F59E0B',
+          image: siteContentUrl(siteContent, 'home_promo_panel'),
+          icon: Heart,
+        },
+      ] as const,
+    [siteContent],
+  );
+
+  const officialBannerSrc = siteContentUrl(siteContent, 'home_official_banner');
+  const heroEmblemSrc = siteContentUrl(siteContent, 'home_hero_emblem');
 
   useEffect(() => {
     let cancelled = false;
@@ -182,11 +176,7 @@ const Home = () => {
       setMasterclassInstructors(instructors.filter((x) => x.type === 'masterclass'));
       setJudges(instructors.filter((x) => x.type === 'judge'));
 
-      const map: Record<string, string | null> = {};
-      for (const row of (c.data as { key: string; value: string | null }[] | null) ?? []) {
-        map[row.key] = row.value;
-      }
-      setSiteContent(map);
+      setSiteContent(rowsToSiteContentMap(c.data as { key: string; value: string | null }[] | null));
     })();
     return () => { cancelled = true; };
   }, []);
@@ -323,7 +313,7 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-white selection:bg-[#2E75B6] selection:text-white">
-      <HeroSection videoUrl={heroVideoUrl} />
+      <HeroSection videoUrl={heroVideoUrl} emblemSrc={heroEmblemSrc} />
 
       {/* Heritage Photos - Masonry Layout */}
       <section
@@ -574,7 +564,7 @@ const Home = () => {
       <section className="bg-white py-10 sm:py-14">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <img
-            src={TOPAZ_OFFICIAL_BANNER}
+            src={officialBannerSrc}
             alt="TOPAZ 2.0 Dance and Performing Arts Competition banner"
             className="w-full h-auto object-contain"
           />

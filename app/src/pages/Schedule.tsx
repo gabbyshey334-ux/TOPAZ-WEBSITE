@@ -6,6 +6,8 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Search, ChevronDown, Calendar } from 'lucide-react';
 import CompetitionCard, { type CompetitionCardProps } from '../components/CompetitionCard';
 import { useActiveEvent } from '@/hooks/useActiveEvent';
+import { supabase } from '@/lib/supabase';
+import { rowsToSiteContentMap, siteContentUrl } from '@/constants/siteContentDefaults';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -13,9 +15,26 @@ const Schedule = () => {
   const { event: activeEvent, loading: eventLoading } = useActiveEvent();
   const heroRef = useRef<HTMLDivElement>(null);
   const upcomingRef = useRef<HTMLDivElement>(null);
+  const [siteContent, setSiteContent] = useState<Record<string, string | null>>({});
   const [filter, setFilter] = useState<'all' | 'open' | 'upcoming' | 'past'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [showPast, setShowPast] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase.from('site_content').select('key, value').order('key');
+      if (cancelled) return;
+      setSiteContent(rowsToSiteContentMap(data as { key: string; value: string | null }[] | null));
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const scheduleHeroBg = siteContentUrl(siteContent, 'schedule_hero_background');
+  const eventCardImage = siteContentUrl(siteContent, 'schedule_event_card_image');
+  const cardErrorFallback = siteContentUrl(siteContent, 'schedule_card_error_fallback');
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -74,7 +93,8 @@ const Schedule = () => {
           description:
             activeEvent.description ??
             'Event time: 8:00 AM – 12:00 PM. Registration opens April 1, 2026. Deadline: July 30, 2026, 12:00 AM.',
-          image: `${import.meta.env.BASE_URL}images/events/trophy-gold.jpg`,
+          image: eventCardImage,
+          imageErrorFallback: cardErrorFallback,
         },
       ];
     }
@@ -91,10 +111,11 @@ const Schedule = () => {
         status: 'open' as const,
         description:
           'Event time: 8:00 AM – 12:00 PM. Registration opens April 1, 2026. Deadline: July 30, 2026, 12:00 AM.',
-        image: `${import.meta.env.BASE_URL}images/events/trophy-gold.jpg`,
+        image: eventCardImage,
+        imageErrorFallback: cardErrorFallback,
       },
     ];
-  }, [activeEvent, eventLoading]);
+  }, [activeEvent, eventLoading, eventCardImage, cardErrorFallback]);
 
   const pastCompetitions: CompetitionCardProps[] = [];
 
@@ -126,7 +147,7 @@ const Schedule = () => {
         {/* Background visual */}
         <div className="absolute inset-0 opacity-20">
           <img 
-            src="https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=1600&h=900&fit=crop" 
+            src={scheduleHeroBg}
             className="w-full h-full object-cover"
             alt=""
           />

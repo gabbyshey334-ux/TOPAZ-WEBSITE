@@ -18,15 +18,32 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import CompetitionRegistrationForm from '@/components/registration/CompetitionRegistrationForm';
+import { supabase } from '@/lib/supabase';
+import { rowsToSiteContentMap, siteContentUrl } from '@/constants/siteContentDefaults';
 
 gsap.registerPlugin(ScrollTrigger);
 
 const Registration = () => {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
-  
+  const [siteContent, setSiteContent] = useState<Record<string, string | null>>({});
+
   const heroRef = useRef<HTMLDivElement>(null);
   const stepsRef = useRef<HTMLDivElement>(null);
   const infoRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase.from('site_content').select('key, value').order('key');
+      if (cancelled) return;
+      setSiteContent(rowsToSiteContentMap(data as { key: string; value: string | null }[] | null));
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const registrationHeroBg = siteContentUrl(siteContent, 'registration_hero_background');
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -128,7 +145,10 @@ const Registration = () => {
       <section ref={heroRef} className="relative bg-[#0a0a0a] min-h-screen flex items-center pt-20 overflow-hidden">
         {/* Modern Background */}
         <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1547153760-18fc86324498?q=80&w=2000&auto=format&fit=crop')] bg-cover bg-center opacity-30" />
+          <div
+            className="absolute inset-0 bg-cover bg-center opacity-30"
+            style={{ backgroundImage: `url(${registrationHeroBg})` }}
+          />
           <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a] via-[#0a0a0a]/80 to-[#0a0a0a]" />
           {/* Decorative glow */}
           <div className="absolute top-1/4 -right-1/4 w-1/2 h-1/2 bg-[#2E75B6]/20 rounded-full blur-[120px] pointer-events-none" />

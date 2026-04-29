@@ -4,6 +4,7 @@ import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
 import { supabase } from '@/lib/supabase';
 import { parseVideoUrl } from '@/lib/videoEmbed';
 import type { Database } from '@/types/database';
+import { rowsToSiteContentMap, siteContentUrl } from '@/constants/siteContentDefaults';
 
 const BASE = import.meta.env.BASE_URL;
 const FALLBACK_HISTORY_IMG = `${BASE}images/gallery/history/founders-duo-striped-pants.jpg`;
@@ -310,6 +311,21 @@ const Gallery = () => {
   );
   const [passwordConfigured, setPasswordConfigured] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [siteContent, setSiteContent] = useState<Record<string, string | null>>({});
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase.from('site_content').select('key, value').order('key');
+      if (cancelled) return;
+      setSiteContent(rowsToSiteContentMap(data as { key: string; value: string | null }[] | null));
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const galleryHeroBg = siteContentUrl(siteContent, 'gallery_hero_background');
 
   useEffect(() => {
     setActiveTab('photos');
@@ -397,7 +413,7 @@ const Gallery = () => {
       <section className="relative bg-[#0a0a0a] min-h-screen overflow-hidden flex items-center">
         <div className="absolute inset-0 opacity-20">
           <img
-            src="https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=1600&h=900&fit=crop"
+            src={galleryHeroBg}
             className="w-full h-full object-cover grayscale"
             alt=""
           />

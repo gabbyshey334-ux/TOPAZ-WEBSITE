@@ -24,6 +24,8 @@ import {
   Info,
   Medal,
 } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
+import { rowsToSiteContentMap, siteContentUrl } from '@/constants/siteContentDefaults';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -220,6 +222,7 @@ const OTHER_RULES = [
 
 const Rules = () => {
   const [activeTab, setActiveTab] = useState('categories');
+  const [siteContent, setSiteContent] = useState<Record<string, string | null>>({});
   const heroRef = useRef<HTMLDivElement>(null);
   const categoriesRef = useRef<HTMLDivElement>(null);
   const ageRef = useRef<HTMLDivElement>(null);
@@ -238,6 +241,21 @@ const Rules = () => {
     { id: 'medal', label: 'Medal Program' },
     { id: 'general', label: 'Other Rules' },
   ] as const;
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase.from('site_content').select('key, value').order('key');
+      if (cancelled) return;
+      setSiteContent(rowsToSiteContentMap(data as { key: string; value: string | null }[] | null));
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const rulesHeroBg = siteContentUrl(siteContent, 'rules_hero_background');
+  const rulesCtaBg = siteContentUrl(siteContent, 'rules_cta_background');
 
   const scrollToSection = (sectionId: string) => {
     setActiveTab(sectionId);
@@ -321,7 +339,7 @@ const Rules = () => {
       >
         <div className="absolute inset-0 opacity-30">
           <img
-            src="https://images.unsplash.com/photo-1518834107812-67b0b7c58434?w=1600&h=900&fit=crop"
+            src={rulesHeroBg}
             className="w-full h-full object-cover grayscale mix-blend-overlay"
             alt=""
           />
@@ -780,7 +798,10 @@ const Rules = () => {
 
       {/* Final CTA */}
       <section id="download" className="py-24 lg:py-32 bg-[#2E75B6] relative overflow-hidden">
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1547153760-18fc86324498?w=1600&h=900&fit=crop')] opacity-10 bg-cover bg-center mix-blend-overlay" />
+        <div
+          className="absolute inset-0 opacity-10 bg-cover bg-center mix-blend-overlay"
+          style={{ backgroundImage: `url(${rulesCtaBg})` }}
+        />
         <div className="w-full px-4 sm:px-6 lg:px-12 max-w-4xl mx-auto text-center relative z-10">
           <h2 className="font-display font-black text-4xl sm:text-5xl lg:text-6xl text-white mb-6 uppercase leading-[1.1]">
             Need a <span className="italic font-light">Physical Copy</span>?
