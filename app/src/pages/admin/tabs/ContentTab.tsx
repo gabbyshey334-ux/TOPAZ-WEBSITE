@@ -4,12 +4,14 @@ import type { Database } from '@/types/database';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Progress } from '@/components/ui/progress';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   AlertCircle,
+  AlignLeft,
   ChevronDown,
   FileEdit,
   ImageIcon,
@@ -45,6 +47,87 @@ function storagePathFromPublicUrl(url: string, bucket: string): string | null {
 
 async function upsertSiteContent(key: string, value: string) {
   return supabase.from('site_content').upsert({ key, value }, { onConflict: 'key' });
+}
+
+const TEXT_CONTENT_FIELDS = [
+  { key: 'home_hero_title', label: 'Homepage — Hero Title', multiline: false as const },
+  { key: 'home_hero_subtitle', label: 'Homepage — Hero Subtitle', multiline: false as const },
+  { key: 'home_event_date', label: 'Homepage — Event Date', multiline: false as const },
+  { key: 'home_event_location', label: 'Homepage — Event Location', multiline: false as const },
+  { key: 'about_our_story_text', label: 'About — Our Story (body)', multiline: true as const },
+  { key: 'about_us_text', label: 'About — About Us (body)', multiline: true as const },
+  { key: 'contact_phone', label: 'Contact — Phone', multiline: false as const },
+  { key: 'contact_email', label: 'Contact — Email', multiline: false as const },
+  { key: 'rules_ballet_note', label: 'Rules — Ballet note (amber callout)', multiline: false as const },
+  { key: 'rules_general_note', label: 'Rules — General note (amber banner)', multiline: true as const },
+  { key: 'schedule_event_description', label: 'Schedule — Event description', multiline: true as const },
+] as const;
+
+function ManagedTextField({
+  fieldKey,
+  label,
+  multiline,
+  savedValue,
+  onSaved,
+}: {
+  fieldKey: string;
+  label: string;
+  multiline: boolean;
+  savedValue: string | null | undefined;
+  onSaved: (v: string) => void;
+}) {
+  const [draft, setDraft] = useState(savedValue ?? '');
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    setDraft(savedValue ?? '');
+  }, [savedValue]);
+
+  async function save() {
+    setSaving(true);
+    const { error } = await upsertSiteContent(fieldKey, draft);
+    setSaving(false);
+    if (error) {
+      toast.error(`Failed to save: ${error.message}`);
+      return;
+    }
+    onSaved(draft);
+    toast.success('Text updated — changes are live');
+  }
+
+  const unchanged = draft === (savedValue ?? '');
+
+  return (
+    <div className="space-y-3 rounded-xl border border-slate-700 bg-slate-900/60 p-4">
+      <Label className="text-sm font-bold text-white">{label}</Label>
+      <p className="font-mono text-[10px] text-slate-500">{fieldKey}</p>
+      {multiline ? (
+        <Textarea
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          disabled={saving}
+          rows={fieldKey === 'schedule_event_description' ? 5 : 6}
+          className="min-h-[120px] bg-slate-950 font-mono text-sm text-white border-slate-600"
+        />
+      ) : (
+        <Input
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          disabled={saving}
+          className="bg-slate-950 font-mono text-sm text-white border-slate-600"
+        />
+      )}
+      <Button
+        type="button"
+        onClick={() => void save()}
+        disabled={saving || unchanged}
+        className="gap-2 bg-[#2E75B6] text-white hover:bg-[#1F4E78]"
+      >
+        {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+        Save
+      </Button>
+    </div>
+  );
 }
 
 function defaultUrlForKey(key: string): string {
@@ -657,6 +740,7 @@ export default function ContentTab() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [openPage, setOpenPage] = useState<Record<string, boolean>>({});
+  const [openTextSection, setOpenTextSection] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -794,6 +878,49 @@ export default function ContentTab() {
               </Collapsible>
             );
           })}
+          <Collapsible
+            open={openTextSection}
+            onOpenChange={setOpenTextSection}
+            className="rounded-2xl border border-slate-700 bg-slate-900/30"
+          >
+            <CollapsibleTrigger className="flex w-full items-center justify-between gap-3 px-4 py-4 text-left hover:bg-slate-800/40 sm:px-5">
+              <span className="font-bold text-white">
+                <span className="mr-2 inline-flex align-middle">
+                  <AlignLeft className="inline h-5 w-5 text-[#2E75B6]" />
+                </span>
+                Text &amp; Content{' '}
+                <span className="ml-2 font-mono text-xs font-normal text-slate-500">
+                  — {TEXT_CONTENT_FIELDS.length} fields
+                </span>
+              </span>
+              <ChevronDown
+                className={cn(
+                  'h-5 w-5 shrink-0 text-slate-400 transition-transform',
+                  openTextSection && 'rotate-180',
+                )}
+              />
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <div className="space-y-4 border-t border-slate-700 px-4 py-6 sm:px-6">
+                <p className="text-sm text-slate-400">
+                  Edit public page copy. Empty optional fields stay hidden on the site where applicable; other keys use
+                  built-in fallbacks when blank.
+                </p>
+                <div className="flex flex-col gap-4">
+                  {TEXT_CONTENT_FIELDS.map((field) => (
+                    <ManagedTextField
+                      key={field.key}
+                      fieldKey={field.key}
+                      label={field.label}
+                      multiline={field.multiline}
+                      savedValue={content[field.key] ?? null}
+                      onSaved={(v) => updateLocal(field.key, v)}
+                    />
+                  ))}
+                </div>
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
         </div>
       )}
     </div>

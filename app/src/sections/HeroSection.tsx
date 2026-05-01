@@ -1,6 +1,7 @@
 import { useRef, useEffect, useState } from 'react';
 import { gsap } from 'gsap';
 import { ChevronDown } from 'lucide-react';
+import { SITE_CONTENT_TEXT_DEFAULTS } from '@/constants/siteContentDefaults';
 
 // Fallback used when the DB value for `hero_video_url` is missing or not yet loaded.
 const DEFAULT_SHOWREEL_VIDEO_URL = 'https://video.wixstatic.com/video/187f75_27990c00a54e450aa41497ecc3f40b68/480p/mp4/file.mp4';
@@ -17,9 +18,21 @@ interface HeroSectionProps {
   videoUrl?: string | null;
   /** Optional hero emblem (theater masks) URL from `site_content.home_hero_emblem`. */
   emblemSrc?: string | null;
+  /** Main hero heading from `site_content.home_hero_title`. */
+  heroTitle?: string;
+  /** Hero tagline from `site_content.home_hero_subtitle`. */
+  heroSubtitle?: string;
 }
 
-const HeroSection = ({ videoUrl, emblemSrc }: HeroSectionProps = {}) => {
+const HeroSection = ({ videoUrl, emblemSrc, heroTitle, heroSubtitle }: HeroSectionProps = {}) => {
+  const resolvedTitle =
+    heroTitle != null && String(heroTitle).trim()
+      ? String(heroTitle).trim()
+      : SITE_CONTENT_TEXT_DEFAULTS.home_hero_title;
+  const resolvedSubtitle =
+    heroSubtitle != null && String(heroSubtitle).trim()
+      ? String(heroSubtitle).trim()
+      : SITE_CONTENT_TEXT_DEFAULTS.home_hero_subtitle;
   const activeVideoUrl = videoUrl && videoUrl.trim() ? videoUrl : DEFAULT_SHOWREEL_VIDEO_URL;
   const resolvedEmblem =
     emblemSrc && emblemSrc.trim() ? emblemSrc.trim() : MASK_LOGO;
@@ -113,9 +126,9 @@ const HeroSection = ({ videoUrl, emblemSrc }: HeroSectionProps = {}) => {
 
         <h1
           ref={headingRef}
-          className="font-display font-black text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl tracking-tighter text-white leading-[0.9] mb-4"
+          className="font-display font-black text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl tracking-tighter text-white leading-[0.95] mb-4 max-w-[min(100%,56rem)] mx-auto px-2"
         >
-          TOPAZ <span className="text-[#2E75B6] italic">2.0</span>
+          {resolvedTitle}
         </h1>
 
         <div
@@ -125,9 +138,9 @@ const HeroSection = ({ videoUrl, emblemSrc }: HeroSectionProps = {}) => {
 
         <p
           ref={taglineRef}
-          className="font-mono text-xs font-bold uppercase tracking-[0.3em] text-white/80 sm:text-sm"
+          className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-white/80 sm:text-sm max-w-2xl mx-auto px-2"
         >
-          EST. 1972 • EXCELLENCE IN DANCE
+          {resolvedSubtitle}
         </p>
       </div>
 

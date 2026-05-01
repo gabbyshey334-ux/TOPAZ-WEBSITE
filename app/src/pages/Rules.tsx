@@ -256,6 +256,8 @@ const Rules = () => {
 
   const rulesHeroBg = siteContentUrl(siteContent, 'rules_hero_background');
   const rulesCtaBg = siteContentUrl(siteContent, 'rules_cta_background');
+  const rulesBalletNote = (siteContent['rules_ballet_note'] ?? '').trim();
+  const rulesGeneralNote = (siteContent['rules_general_note'] ?? '').trim();
 
   const scrollToSection = (sectionId: string) => {
     setActiveTab(sectionId);
@@ -441,6 +443,12 @@ const Rules = () => {
                   </div>
                   <h4 className="font-display font-black text-xl text-[#0a0a0a] tracking-tight mb-3 group-hover:text-[#2E75B6] transition-colors">{cat.name}</h4>
                   <p className="text-gray-500 leading-relaxed text-sm font-medium">{cat.text}</p>
+                  {cat.name === 'Ballet' && rulesBalletNote ? (
+                    <div className="mt-4 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4">
+                      <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+                      <p className="text-amber-900 font-medium leading-relaxed text-[15px]">{rulesBalletNote}</p>
+                    </div>
+                  ) : null}
                 </div>
               ))}
             </div>
@@ -783,6 +791,19 @@ const Rules = () => {
           </div>
         </div>
       </section>
+
+      {rulesGeneralNote ? (
+        <section className="py-12 bg-amber-50 border-y border-amber-200">
+          <div className="w-full px-4 sm:px-6 lg:px-12 max-w-7xl mx-auto">
+            <div className="flex items-start gap-5 max-w-4xl mx-auto">
+              <AlertTriangle className="w-7 h-7 text-amber-500 shrink-0 mt-0.5" />
+              <p className="text-amber-900 font-medium leading-relaxed text-[15px] whitespace-pre-wrap">
+                {rulesGeneralNote}
+              </p>
+            </div>
+          </div>
+        </section>
+      ) : null}
 
       {/* Cancellation Disclaimer */}
       <section className="py-12 bg-amber-50 border-y border-amber-200">

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import {
@@ -14,7 +14,7 @@ import {
 import ContactForm from '../components/ContactForm';
 import { TikTokIcon } from '../components/icons/TikTokIcon';
 import { supabase } from '@/lib/supabase';
-import { rowsToSiteContentMap, siteContentUrl } from '@/constants/siteContentDefaults';
+import { rowsToSiteContentMap, siteContentText, siteContentUrl } from '@/constants/siteContentDefaults';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -39,6 +39,76 @@ const Contact = () => {
   }, []);
 
   const contactHeroBg = siteContentUrl(siteContent, 'contact_hero_background');
+  const contactEmail = siteContentText(siteContent, 'contact_email');
+  const contactPhone = siteContentText(siteContent, 'contact_phone');
+
+  const contactInfo = useMemo(
+    () => [
+      {
+        icon: Mail,
+        title: 'Email Us',
+        content: contactEmail,
+        action: {
+          label: 'Send Email',
+          href: `mailto:${contactEmail}`,
+        },
+      },
+      {
+        icon: Phone,
+        title: 'Call Us',
+        content: contactPhone,
+        action: {
+          label: 'Call Now',
+          href: `tel:${contactPhone.replace(/\D/g, '')}`,
+        },
+      },
+      {
+        icon: MapPin,
+        title: 'Mail Us',
+        content: 'PO BOX 131\nBANKS, OR 97106',
+        action: {
+          label: 'Get Directions',
+          href: 'https://maps.google.com/?q=PO+BOX+131+BANKS+OR+97106',
+        },
+      },
+    ],
+    [contactEmail, contactPhone],
+  );
+
+  const faqs = useMemo(
+    () => [
+      {
+        question: 'How do I register for a competition?',
+        answer: `Download the registration PDF from our Registration page, complete it, and email it to ${contactEmail}. Registration opens April 1, 2026. Submit before the deadline of July 30, 2026, 12:00 AM. See Registration for full instructions.`,
+      },
+      {
+        question: 'What is the registration deadline?',
+        answer:
+          'For The Return of TOPAZ 2.0 (August 22, 2026), registration closes July 30, 2026, 12:00 AM. There is no late or day-of registration.',
+      },
+      {
+        question: 'Can I compete in multiple categories?',
+        answer:
+          'Yes! Dancers are welcome to compete in multiple categories and divisions. Each entry requires a separate registration fee. Be sure to check the schedule to avoid time conflicts.',
+      },
+      {
+        question: 'What should I bring to the competition?',
+        answer:
+          'Bring your costume, shoes, music backup (USB drive), registration confirmation, water, snacks, and any necessary makeup or hair supplies. Arrive at least 1 hour before your scheduled performance time.',
+      },
+      {
+        question: 'How is the scoring system work?',
+        answer:
+          'Performances are judged on four criteria: Technique (25 points), Creativity & Choreography (25 points), Presentation (25 points), and Appearance & Costume (25 points), for a total of 100 points. Decimals are allowed for precise scoring.',
+      },
+      {
+        question: 'What is the refund policy?',
+        answer:
+          'Full refunds are available up to 30 days before the competition. 50% refunds are available 15-29 days before. No refunds within 14 days of the event, but you may transfer your registration to another dancer.',
+      },
+    ],
+    [contactEmail],
+  );
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -116,36 +186,6 @@ const Contact = () => {
     return () => ctx.revert();
   }, []);
 
-  const contactInfo = [
-    {
-      icon: Mail,
-      title: 'Email Us',
-      content: 'topaz2.0@yahoo.com',
-      action: {
-        label: 'Send Email',
-        href: 'mailto:topaz2.0@yahoo.com',
-      },
-    },
-    {
-      icon: Phone,
-      title: 'Call Us',
-      content: '971-299-4401',
-      action: {
-        label: 'Call Now',
-        href: 'tel:971-299-4401',
-      },
-    },
-    {
-      icon: MapPin,
-      title: 'Mail Us',
-      content: 'PO BOX 131\nBANKS, OR 97106',
-      action: {
-        label: 'Get Directions',
-        href: 'https://maps.google.com/?q=PO+BOX+131+BANKS+OR+97106',
-      },
-    },
-  ];
-
   const socialLinks = [
     {
       icon: Facebook,
@@ -166,39 +206,6 @@ const Contact = () => {
       icon: TikTokIcon,
       href: 'https://www.tiktok.com/@dancetopaz2.0',
       label: 'TikTok',
-    },
-  ];
-
-  const faqs = [
-    {
-      question: 'How do I register for a competition?',
-      answer:
-        'Download the registration PDF from our Registration page, complete it, and email it to topaz2.0@yahoo.com. Registration opens April 1, 2026. Submit before the deadline of July 30, 2026, 12:00 AM. See Registration for full instructions.',
-    },
-    {
-      question: 'What is the registration deadline?',
-      answer:
-        'For The Return of TOPAZ 2.0 (August 22, 2026), registration closes July 30, 2026, 12:00 AM. There is no late or day-of registration.',
-    },
-    {
-      question: 'Can I compete in multiple categories?',
-      answer:
-        'Yes! Dancers are welcome to compete in multiple categories and divisions. Each entry requires a separate registration fee. Be sure to check the schedule to avoid time conflicts.',
-    },
-    {
-      question: 'What should I bring to the competition?',
-      answer:
-        'Bring your costume, shoes, music backup (USB drive), registration confirmation, water, snacks, and any necessary makeup or hair supplies. Arrive at least 1 hour before your scheduled performance time.',
-    },
-    {
-      question: 'How is the scoring system work?',
-      answer:
-        'Performances are judged on four criteria: Technique (25 points), Creativity & Choreography (25 points), Presentation (25 points), and Appearance & Costume (25 points), for a total of 100 points. Decimals are allowed for precise scoring.',
-    },
-    {
-      question: 'What is the refund policy?',
-      answer:
-        'Full refunds are available up to 30 days before the competition. 50% refunds are available 15-29 days before. No refunds within 14 days of the event, but you may transfer your registration to another dancer.',
     },
   ];
 

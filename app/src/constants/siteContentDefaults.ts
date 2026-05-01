@@ -44,6 +44,34 @@ export const SITE_CONTENT_DEFAULTS = {
 
 export type SiteContentMediaKey = keyof typeof SITE_CONTENT_DEFAULTS;
 
+/** Default copy for `site_content` text keys (used when row missing or value is blank). */
+export const SITE_CONTENT_TEXT_DEFAULTS = {
+  home_hero_title: 'The Return of TOPAZ 2.0',
+  home_hero_subtitle: 'Dance and Performing Arts Competition',
+  home_event_date: 'Saturday, August 22, 2026',
+  home_event_location: 'Seaside Convention Center',
+  about_our_story_text:
+    'Pat and Bob Heath were visionaries in the world of theatrical arts, pioneering a competition framework that set a standard for excellence. Their innovative approach not only captured the imagination of audiences but also inspired countless others to adopt and adapt their model. With dedication and passion, their work continues to resonate, proving that great ideas can transcend time and influence generations.',
+  about_us_text:
+    "Topaz has proudly been at the forefront of theatrical arts competitions since 1972. Throughout the years and across numerous cities, we've built a vibrant community of countless studios and thousands of contestants who form our extended Topaz family. Many of the dedicated teachers who now inspire students were once competitors in our events, showcasing the lasting impact of our competitions. Join us in the love for the arts and the journey of growth that it fosters!",
+  contact_phone: '971-299-4401',
+  contact_email: 'topaz2.0@yahoo.com',
+  schedule_event_description:
+    'Event time: 8:00 AM – 12:00 PM. Registration opens April 1, 2026. Deadline: July 30, 2026, 12:00 AM.',
+} as const satisfies Record<string, string>;
+
+export type SiteContentTextKey = keyof typeof SITE_CONTENT_TEXT_DEFAULTS;
+
+export function siteContentText(
+  map: Record<string, string | null | undefined>,
+  key: SiteContentTextKey,
+): string {
+  const raw = map[key as string];
+  const v = raw != null ? String(raw).trim() : '';
+  if (v) return v;
+  return SITE_CONTENT_TEXT_DEFAULTS[key];
+}
+
 export function siteContentUrl(
   map: Record<string, string | null | undefined>,
   key: SiteContentMediaKey,

@@ -6,7 +6,7 @@ import { ArrowRight, Star, Award, Heart, Sparkles, Quote } from 'lucide-react';
 import TextSection from '../components/TextSection';
 import TeamSection from '../components/TeamSection';
 import { supabase } from '@/lib/supabase';
-import { rowsToSiteContentMap, siteContentUrl } from '@/constants/siteContentDefaults';
+import { rowsToSiteContentMap, siteContentText, siteContentUrl } from '@/constants/siteContentDefaults';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -15,12 +15,6 @@ const TEAM_MEMBERS = [
   { role: 'Founder' },
   { role: 'President' },
 ];
-
-const ABOUT_US_CONTENT =
-  "Topaz has proudly been at the forefront of theatrical arts competitions since 1972. Throughout the years and across numerous cities, we've built a vibrant community of countless studios and thousands of contestants who form our extended Topaz family. Many of the dedicated teachers who now inspire students were once competitors in our events, showcasing the lasting impact of our competitions. Join us in the love for the arts and the journey of growth that it fosters!";
-
-const OUR_STORY_PART_A =
-  "Pat and Bob Heath were visionaries in the world of theatrical arts, pioneering a competition framework that set a standard for excellence. Their innovative approach not only captured the imagination of audiences but also inspired countless others to adopt and adapt their model. With dedication and passion, their work continues to resonate, proving that great ideas can transcend time and influence generations.";
 
 const LEGACY_QUOTE = "Topaz alumni have had the incredible opportunity to perform alongside legends like Cher, Michael Jackson, Madonna, and The Pointer Sisters, captivating audiences around the globe.";
 
@@ -35,6 +29,9 @@ const About = () => {
   const quoteRef = useRef<HTMLDivElement>(null);
 
   const [siteContent, setSiteContent] = useState<Record<string, string | null>>({});
+
+  const aboutUsBody = siteContentText(siteContent, 'about_us_text');
+  const ourStoryBody = siteContentText(siteContent, 'about_our_story_text');
 
   const aboutHeroBg = siteContentUrl(siteContent, 'about_hero_background');
   const aboutImage1 = siteContentUrl(siteContent, 'about_image_1');
@@ -181,7 +178,7 @@ const About = () => {
         imageAlt="Pat and Bob Heath dancing — striped dance pants and performance wear"
         imageObjectFit="contain"
         stackImageFirst
-        content={ABOUT_US_CONTENT}
+        content={aboutUsBody}
       />
 
       <section
@@ -203,7 +200,7 @@ const About = () => {
               </h2>
             </div>
 
-            <p className="story-animate text-xl leading-relaxed text-gray-600 font-medium mb-8">{OUR_STORY_PART_A}</p>
+            <p className="story-animate text-xl leading-relaxed text-gray-600 font-medium mb-8">{ourStoryBody}</p>
 
             <div
               ref={quoteRef}

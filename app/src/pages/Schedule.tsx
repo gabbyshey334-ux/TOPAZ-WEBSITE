@@ -7,7 +7,7 @@ import { Search, ChevronDown, Calendar } from 'lucide-react';
 import CompetitionCard, { type CompetitionCardProps } from '../components/CompetitionCard';
 import { useActiveEvent } from '@/hooks/useActiveEvent';
 import { supabase } from '@/lib/supabase';
-import { rowsToSiteContentMap, siteContentUrl } from '@/constants/siteContentDefaults';
+import { rowsToSiteContentMap, siteContentText, siteContentUrl } from '@/constants/siteContentDefaults';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -35,6 +35,7 @@ const Schedule = () => {
   const scheduleHeroBg = siteContentUrl(siteContent, 'schedule_hero_background');
   const eventCardImage = siteContentUrl(siteContent, 'schedule_event_card_image');
   const cardErrorFallback = siteContentUrl(siteContent, 'schedule_card_error_fallback');
+  const scheduleEventDescription = siteContentText(siteContent, 'schedule_event_description');
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -90,9 +91,7 @@ const Schedule = () => {
           address: activeEvent.location,
           registrationDeadline: 'July 30, 2026, 12:00 AM',
           status: 'open' as const,
-          description:
-            activeEvent.description ??
-            'Event time: 8:00 AM – 12:00 PM. Registration opens April 1, 2026. Deadline: July 30, 2026, 12:00 AM.',
+          description: scheduleEventDescription,
           image: eventCardImage,
           imageErrorFallback: cardErrorFallback,
         },
@@ -109,13 +108,12 @@ const Schedule = () => {
         address: '415 1st Ave, Seaside, OR 97138',
         registrationDeadline: 'July 30, 2026, 12:00 AM',
         status: 'open' as const,
-        description:
-          'Event time: 8:00 AM – 12:00 PM. Registration opens April 1, 2026. Deadline: July 30, 2026, 12:00 AM.',
+        description: scheduleEventDescription,
         image: eventCardImage,
         imageErrorFallback: cardErrorFallback,
       },
     ];
-  }, [activeEvent, eventLoading, eventCardImage, cardErrorFallback]);
+  }, [activeEvent, eventLoading, eventCardImage, cardErrorFallback, scheduleEventDescription]);
 
   const pastCompetitions: CompetitionCardProps[] = [];
 

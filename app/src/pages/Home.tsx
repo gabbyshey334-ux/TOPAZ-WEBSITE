@@ -1,5 +1,4 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { format, parseISO } from 'date-fns';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
@@ -19,10 +18,9 @@ import {
 import HeroSection from '../sections/HeroSection';
 import MailingListSection from '../components/MailingListSection';
 import type { LucideIcon } from 'lucide-react';
-import { useActiveEvent } from '@/hooks/useActiveEvent';
 import { supabase } from '@/lib/supabase';
 import type { Database } from '@/types/database';
-import { rowsToSiteContentMap, siteContentUrl } from '@/constants/siteContentDefaults';
+import { rowsToSiteContentMap, siteContentText, siteContentUrl } from '@/constants/siteContentDefaults';
 
 type TestimonialRow = Database['public']['Tables']['testimonials']['Row'];
 type InstructorRow = Database['public']['Tables']['instructors']['Row'];
@@ -80,14 +78,6 @@ const HERITAGE_GRID = [
 ];
 
 const Home = () => {
-  const { event: activeEvent, loading: eventLoading } = useActiveEvent();
-  const tourDateLabel =
-    !eventLoading && activeEvent?.date
-      ? format(parseISO(`${activeEvent.date}T12:00:00`), 'EEEE, MMMM d, yyyy')
-      : 'Saturday, August 22, 2026';
-  const tourLocationLabel =
-    !eventLoading && activeEvent?.location ? activeEvent.location : 'Seaside, OR';
-
   const tourRef = useRef<HTMLDivElement>(null);
   const promoRef = useRef<HTMLDivElement>(null);
   const aboutRef = useRef<HTMLDivElement>(null);
@@ -151,6 +141,8 @@ const Home = () => {
 
   const officialBannerSrc = siteContentUrl(siteContent, 'home_official_banner');
   const heroEmblemSrc = siteContentUrl(siteContent, 'home_hero_emblem');
+  const tourDateLabel = siteContentText(siteContent, 'home_event_date');
+  const tourLocationLabel = siteContentText(siteContent, 'home_event_location');
 
   useEffect(() => {
     let cancelled = false;
@@ -313,7 +305,12 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-white selection:bg-[#2E75B6] selection:text-white">
-      <HeroSection videoUrl={heroVideoUrl} emblemSrc={heroEmblemSrc} />
+      <HeroSection
+        videoUrl={heroVideoUrl}
+        emblemSrc={heroEmblemSrc}
+        heroTitle={siteContentText(siteContent, 'home_hero_title')}
+        heroSubtitle={siteContentText(siteContent, 'home_hero_subtitle')}
+      />
 
       {/* Heritage Photos - Masonry Layout */}
       <section
@@ -643,13 +640,13 @@ const Home = () => {
               <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-full px-6 py-3 border border-white/20">
                 <Calendar className="w-6 h-6 text-[#2E75B6]" />
                 <span className="font-display font-bold text-xl md:text-2xl uppercase tracking-wide">
-                  {eventLoading ? '…' : tourDateLabel}
+                  {tourDateLabel}
                 </span>
               </div>
               <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-full px-6 py-3 border border-white/20">
                 <MapPin className="w-6 h-6 text-[#2E75B6]" />
                 <span className="font-display font-bold text-xl md:text-2xl uppercase tracking-wide">
-                  {eventLoading ? '…' : tourLocationLabel}
+                  {tourLocationLabel}
                 </span>
               </div>
             </div>
