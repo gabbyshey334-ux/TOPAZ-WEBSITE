@@ -15,6 +15,11 @@ function ProductCard({ product }: { product: Product }) {
   const [sizeError, setSizeError] = useState(false);
   const [added, setAdded] = useState(false);
 
+  const displayImage =
+    product.image_url?.trim() ||
+    (Array.isArray(product.image_urls) && product.image_urls[0]?.trim()) ||
+    null;
+
   const sizes = product.sizes_available ?? [];
 
   const handleAddToCart = () => {
@@ -29,7 +34,7 @@ function ProductCard({ product }: { product: Product }) {
       productName: product.name,
       size: selectedSize,
       unitPrice: Number(product.price),
-      imageUrl: product.image_url,
+      imageUrl: displayImage,
     });
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
@@ -39,9 +44,9 @@ function ProductCard({ product }: { product: Product }) {
     <div className="overflow-hidden rounded-xl bg-white shadow-lg transition-all duration-300 hover:shadow-2xl flex flex-col">
       {/* Image */}
       <div className="relative aspect-square overflow-hidden bg-gray-100">
-        {product.image_url ? (
+        {displayImage ? (
           <img
-            src={product.image_url}
+            src={displayImage}
             alt={product.name}
             className="h-full w-full object-cover"
             loading="lazy"
@@ -52,7 +57,7 @@ function ProductCard({ product }: { product: Product }) {
             }}
           />
         ) : null}
-        <div className={`img-fallback ${product.image_url ? 'hidden' : ''} absolute inset-0 flex items-center justify-center`}>
+        <div className={`img-fallback ${displayImage ? 'hidden' : ''} absolute inset-0 flex items-center justify-center`}>
           <ImageOff className="w-12 h-12 text-gray-300" />
         </div>
 
