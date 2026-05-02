@@ -463,11 +463,11 @@ export default function CompetitionRegistrationForm() {
     };
 
     setUploadProgress(60);
-    const { data: insData, error: insErr } = await supabase
-      .from('registrations')
-      .insert(row)
-      .select('id')
-      .single();
+    // Use SECURITY DEFINER RPC: insert().select('id') fails for anon because RETURNING requires
+    // a SELECT RLS policy, and only admins may SELECT registrations.
+    const { data: registrationId, error: insErr } = await supabase.rpc('create_registration', {
+      p_row: row,
+    });
     if (insErr) {
       setError(`Registration failed: ${insErr.message}. Your information has not been lost — please try again.`);
       setSubmitting(false);
@@ -475,8 +475,6 @@ export default function CompetitionRegistrationForm() {
       return;
     }
     setUploadProgress(80);
-
-    const registrationId: string | undefined = insData?.id;
 
     // ── Fire confirmation email (non-blocking) ─────────────────────────────
     void (async () => {
