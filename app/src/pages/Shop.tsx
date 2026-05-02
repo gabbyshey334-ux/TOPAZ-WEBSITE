@@ -360,14 +360,15 @@ const Shop = () => {
           <div className="mb-10 text-center">
             <h2 className="mb-3 font-display text-3xl font-bold text-gray-900">Size Guide</h2>
             <p className="text-gray-500">
-              All measurements are in inches. When in between sizes, we recommend sizing up.
+              Youth-focused sizing — measurements are in inches (chest is around the fullest part of the chest). When in
+              doubt, size up for growing dancers.
             </p>
           </div>
 
           <div className="mb-10">
             <h3 className="mb-4 flex items-center gap-2 text-lg font-bold text-gray-800">
               <span className="inline-block h-6 w-2 rounded-full bg-[#2E75B6]" />
-              T-Shirts
+              T-Shirts (youth)
             </h3>
             <div className="overflow-x-auto rounded-xl border border-gray-200 shadow-sm">
               <table className="w-full text-sm">
@@ -381,11 +382,11 @@ const Shop = () => {
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {[
-                    { size: 'S', chest: '34–36"', length: '27"', sleeve: '32"' },
-                    { size: 'M', chest: '38–40"', length: '28"', sleeve: '33"' },
-                    { size: 'L', chest: '42–44"', length: '29"', sleeve: '34"' },
-                    { size: 'XL', chest: '46–48"', length: '30"', sleeve: '35"' },
-                    { size: 'XXL', chest: '50–52"', length: '31"', sleeve: '36"' },
+                    { size: 'Youth XS (4–5)', chest: '22–24"', length: '16"', sleeve: '12"' },
+                    { size: 'Youth S (6–7)', chest: '24–26"', length: '17"', sleeve: '13"' },
+                    { size: 'Youth M (8)', chest: '26–28"', length: '18½"', sleeve: '14"' },
+                    { size: 'Youth L (10–12)', chest: '28–30"', length: '20"', sleeve: '15"' },
+                    { size: 'Youth XL (14–16)', chest: '30–32"', length: '22"', sleeve: '16"' },
                   ].map((row, i) => (
                     <tr key={row.size} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
                       <td className="px-6 py-3 font-bold text-gray-900">{row.size}</td>
@@ -402,7 +403,7 @@ const Shop = () => {
           <div>
             <h3 className="mb-4 flex items-center gap-2 text-lg font-bold text-gray-800">
               <span className="inline-block h-6 w-2 rounded-full bg-[#2E75B6]" />
-              Hoodies
+              Hoodies (youth)
             </h3>
             <div className="overflow-x-auto rounded-xl border border-gray-200 shadow-sm">
               <table className="w-full text-sm">
@@ -416,11 +417,11 @@ const Shop = () => {
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {[
-                    { size: 'S', chest: '36–38"', length: '26"', sleeve: '33"' },
-                    { size: 'M', chest: '40–42"', length: '27"', sleeve: '34"' },
-                    { size: 'L', chest: '44–46"', length: '28"', sleeve: '35"' },
-                    { size: 'XL', chest: '48–50"', length: '29"', sleeve: '36"' },
-                    { size: 'XXL', chest: '52–54"', length: '30"', sleeve: '37"' },
+                    { size: 'Youth XS (4–5)', chest: '24–26"', length: '17"', sleeve: '24"' },
+                    { size: 'Youth S (6–7)', chest: '26–28"', length: '18"', sleeve: '25"' },
+                    { size: 'Youth M (8)', chest: '28–30"', length: '19½"', sleeve: '26"' },
+                    { size: 'Youth L (10–12)', chest: '30–32"', length: '21"', sleeve: '27"' },
+                    { size: 'Youth XL (14–16)', chest: '32–34"', length: '23"', sleeve: '28"' },
                   ].map((row, i) => (
                     <tr key={row.size} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
                       <td className="px-6 py-3 font-bold text-gray-900">{row.size}</td>
