@@ -4,7 +4,7 @@ import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
 import { supabase } from '@/lib/supabase';
 import { parseVideoUrl } from '@/lib/videoEmbed';
 import type { Database } from '@/types/database';
-import { rowsToSiteContentMap, siteContentUrl } from '@/constants/siteContentDefaults';
+import { rowsToSiteContentMap, siteContentText, siteContentUrl } from '@/constants/siteContentDefaults';
 
 const BASE = import.meta.env.BASE_URL;
 const FALLBACK_HISTORY_IMG = `${BASE}images/gallery/history/founders-duo-striped-pants.jpg`;
@@ -421,9 +421,12 @@ const Gallery = () => {
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto px-6 text-center">
-          <p className="font-mono text-primary font-bold tracking-[0.3em] uppercase mb-6">Memories</p>
+          <p className="font-mono text-primary font-bold tracking-[0.3em] uppercase mb-6">
+            {siteContentText(siteContent, 'gallery_hero_kicker')}
+          </p>
           <h1 className="font-display font-black text-5xl sm:text-6xl lg:text-[8rem] text-white leading-[0.85] tracking-tighter uppercase mb-8">
-            Photo <span className="text-primary italic">Gallery</span>
+            {siteContentText(siteContent, 'gallery_hero_title_prefix')}
+            <span className="text-primary italic">{siteContentText(siteContent, 'gallery_hero_title_accent')}</span>
           </h1>
           <div className="w-24 h-1 bg-primary mx-auto rounded-full" />
         </div>
@@ -442,7 +445,7 @@ const Gallery = () => {
                   : 'text-white/70 hover:text-white hover:bg-white/5'
               }`}
             >
-              TOPAZ HISTORY
+              {siteContentText(siteContent, 'gallery_tab_history')}
             </button>
 
             <button
@@ -454,9 +457,9 @@ const Gallery = () => {
                   : 'text-white/70 hover:text-white hover:bg-white/5'
               }`}
             >
-              TOPAZ 2.0
+              {siteContentText(siteContent, 'gallery_tab_topaz_title')}
               <span className="block text-[10px] font-mono font-normal tracking-widest opacity-80 mt-0.5">
-                New competition era
+                {siteContentText(siteContent, 'gallery_tab_topaz_sub')}
               </span>
             </button>
           </div>

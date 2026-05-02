@@ -18,9 +18,17 @@ export interface TeamSectionProps {
   className?: string;
 }
 
+function parsePipeHeading(heading: string): { main: string; accent: string | null } {
+  const i = heading.indexOf('|');
+  if (i === -1) return { main: heading, accent: null };
+  const main = heading.slice(0, i).trimEnd();
+  const accent = heading.slice(i + 1).trim();
+  return { main, accent: accent || null };
+}
+
 const TeamSection = ({
   background,
-  heading: _heading,
+  heading,
   teamImageSrc,
   teamImageAlt = 'TOPAZ team',
   members,
@@ -32,6 +40,7 @@ const TeamSection = ({
 
   const isBlack = background === 'black';
   const bgClass = isBlack ? 'bg-[#0a0a0a] text-white' : 'bg-[#fcfcfc] text-black border-y border-gray-100';
+  const { main: headingMain, accent: headingAccent } = parsePipeHeading(heading);
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -74,7 +83,10 @@ const TeamSection = ({
           id="team-heading"
           className="font-display font-black text-4xl md:text-6xl lg:text-7xl mb-24 uppercase tracking-tighter"
         >
-          Meet The <span className="text-primary italic underline decoration-4 underline-offset-8">Team</span>
+          {headingMain}
+          {headingAccent ? (
+            <span className="text-primary italic underline decoration-4 underline-offset-8">{headingAccent}</span>
+          ) : null}
         </h2>
 
         {/* PLACEHOLDER - Replace with real team photo */}

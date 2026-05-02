@@ -78,18 +78,26 @@ const Schedule = () => {
   }, []);
 
   const upcomingCompetitions: CompetitionCardProps[] = useMemo(() => {
+    const fbName = siteContentText(siteContent, 'schedule_fallback_event_name');
+    const fbSubtitle = siteContentText(siteContent, 'schedule_fallback_subtitle');
+    const fbDate = siteContentText(siteContent, 'schedule_fallback_date');
+    const fbTime = siteContentText(siteContent, 'schedule_fallback_time');
+    const fbLocation = siteContentText(siteContent, 'schedule_fallback_location');
+    const fbAddress = siteContentText(siteContent, 'schedule_fallback_address');
+    const fbDeadline = siteContentText(siteContent, 'schedule_fallback_deadline');
+
     if (!eventLoading && activeEvent) {
       const dateLabel = format(parseISO(`${activeEvent.date}T12:00:00`), 'EEEE, MMMM d, yyyy');
       return [
         {
           id: activeEvent.id,
           name: activeEvent.name,
-          subtitle: activeEvent.description ?? 'Join us for the return of TOPAZ 2.0',
+          subtitle: activeEvent.description ?? fbSubtitle,
           date: dateLabel,
-          time: '8:00 AM – 12:00 PM',
+          time: fbTime,
           location: activeEvent.location.split(',')[0]?.trim() || activeEvent.location,
           address: activeEvent.location,
-          registrationDeadline: 'July 30, 2026, 12:00 AM',
+          registrationDeadline: fbDeadline,
           status: 'open' as const,
           description: scheduleEventDescription,
           image: eventCardImage,
@@ -100,20 +108,20 @@ const Schedule = () => {
     return [
       {
         id: '1',
-        name: 'The Return of TOPAZ 2.0',
-        subtitle: 'Join us for the return of TOPAZ 2.0',
-        date: 'Saturday, August 22, 2026',
-        time: '8:00 AM – 12:00 PM',
-        location: 'Seaside Convention Center',
-        address: '415 1st Ave, Seaside, OR 97138',
-        registrationDeadline: 'July 30, 2026, 12:00 AM',
+        name: fbName,
+        subtitle: fbSubtitle,
+        date: fbDate,
+        time: fbTime,
+        location: fbLocation,
+        address: fbAddress,
+        registrationDeadline: fbDeadline,
         status: 'open' as const,
         description: scheduleEventDescription,
         image: eventCardImage,
         imageErrorFallback: cardErrorFallback,
       },
     ];
-  }, [activeEvent, eventLoading, eventCardImage, cardErrorFallback, scheduleEventDescription]);
+  }, [activeEvent, eventLoading, eventCardImage, cardErrorFallback, scheduleEventDescription, siteContent]);
 
   const pastCompetitions: CompetitionCardProps[] = [];
 
@@ -154,10 +162,11 @@ const Schedule = () => {
 
         <div className="relative w-full px-4 sm:px-6 lg:px-12 max-w-7xl mx-auto text-center z-10">
           <p className="hero-animate font-mono text-primary font-bold tracking-[0.3em] uppercase mb-6">
-            Season 2026
+            {siteContentText(siteContent, 'schedule_hero_kicker')}
           </p>
           <h1 className="hero-animate font-display font-black text-5xl sm:text-6xl lg:text-8xl text-white mb-8 tracking-tighter uppercase">
-            Competition <span className="text-primary italic">Schedule</span>
+            {siteContentText(siteContent, 'schedule_hero_heading_prefix')}
+            <span className="text-primary italic">{siteContentText(siteContent, 'schedule_hero_heading_accent')}</span>
           </h1>
           <div className="hero-animate w-24 h-1 bg-primary mx-auto rounded-full" />
         </div>
@@ -204,10 +213,10 @@ const Schedule = () => {
         <div className="max-w-7xl mx-auto px-6 lg:px-12">
           <div className="mb-16 text-center lg:text-left">
             <h2 className="text-4xl lg:text-5xl font-black text-gray-900 mb-4">
-              Upcoming Competitions
+              {siteContentText(siteContent, 'schedule_upcoming_heading')}
             </h2>
             <p className="text-lg lg:text-xl text-gray-600 max-w-2xl">
-              Don&apos;t miss your chance to shine on the TOPAZ stage.
+              {siteContentText(siteContent, 'schedule_upcoming_subtitle')}
             </p>
           </div>
 
@@ -282,24 +291,24 @@ const Schedule = () => {
         
         <div className="w-full px-4 sm:px-6 lg:px-12 max-w-4xl mx-auto text-center relative z-10">
           <h2 className="font-display font-black text-4xl lg:text-6xl text-white mb-8 leading-tight tracking-tighter uppercase">
-            Ready to <span className="italic text-secondary">Compete</span>?
+            {siteContentText(siteContent, 'schedule_cta_heading_prefix')}
+            <span className="italic text-secondary">{siteContentText(siteContent, 'schedule_cta_heading_accent')}</span>
           </h2>
           <p className="text-white/80 text-xl mb-12 max-w-2xl mx-auto leading-relaxed">
-            Register early to secure your spot and take advantage of early bird
-            pricing. Join the TOPAZ family today.
+            {siteContentText(siteContent, 'schedule_cta_body')}
           </p>
           <div className="flex flex-wrap justify-center gap-6">
             <Link
               to="/rules"
               className="btn-secondary !bg-white !text-primary !border-none !px-10 !py-4"
             >
-              View Competition Rules
+              {siteContentText(siteContent, 'schedule_cta_rules_btn')}
             </Link>
             <button
-              onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})}
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
               className="btn-secondary !bg-transparent !text-white !border-white/30 hover:!bg-white/10 !px-10 !py-4"
             >
-              Back to Top
+              {siteContentText(siteContent, 'schedule_cta_top_btn')}
             </button>
           </div>
         </div>

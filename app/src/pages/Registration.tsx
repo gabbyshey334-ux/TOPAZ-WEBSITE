@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { 
@@ -19,7 +19,7 @@ import {
 import { Link } from 'react-router-dom';
 import CompetitionRegistrationForm from '@/components/registration/CompetitionRegistrationForm';
 import { supabase } from '@/lib/supabase';
-import { rowsToSiteContentMap, siteContentUrl } from '@/constants/siteContentDefaults';
+import { rowsToSiteContentMap, siteContentText, siteContentUrl, faqListFromSiteContentJson, REGISTRATION_PAGE_FAQ_DEFAULTS } from '@/constants/siteContentDefaults';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -44,6 +44,14 @@ const Registration = () => {
   }, []);
 
   const registrationHeroBg = siteContentUrl(siteContent, 'registration_hero_background');
+  const supportEmail = siteContentText(siteContent, 'contact_email');
+  const supportPhone = siteContentText(siteContent, 'contact_phone');
+  const supportPhoneDigits = supportPhone.replace(/\D/g, '');
+
+  const faqs = useMemo(
+    () => faqListFromSiteContentJson(siteContent, 'registration_faq_json', REGISTRATION_PAGE_FAQ_DEFAULTS),
+    [siteContent],
+  );
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -107,37 +115,6 @@ const Registration = () => {
     return () => ctx.revert();
   }, []);
 
-  const faqs = [
-    {
-      question: 'When does registration open?',
-      answer: 'Registration opens April 1, 2026. All completed forms must be submitted before the deadline of July 30, 2026, 12:00 AM.'
-    },
-    {
-      question: 'Can I register on competition day?',
-      answer: 'No. All registrations must be received before July 30, 2026, 12:00 AM. NO day-of-event registration is accepted. Plan ahead and submit in time.'
-    },
-    {
-      question: 'Can I register multiple entries?',
-      answer: 'Yes. Submit a separate registration form for each routine before the deadline. Fees are per entry or per person as listed in the Entry Fees section and on the official PDF.'
-    },
-    {
-      question: 'What payment methods are accepted?',
-      answer: 'We accept cash, check, credit card, and PayPal. Checks should be made payable to Topaz 2.0 LLC.'
-    },
-    {
-      question: 'Can I make changes after submitting?',
-      answer: 'Yes, please contact us at topaz2.0@yahoo.com before the registration deadline (July 30, 2026, 12:00 AM) to request changes to your entry.'
-    },
-    {
-      question: 'What if I miss the deadline?',
-      answer: 'Registrations are not accepted after the deadline. All entries must be received before July 30, 2026, 12:00 AM. There are no exceptions and no late or day-of-event registration.'
-    },
-    {
-      question: 'Do I need to register for each category separately?',
-      answer: 'Yes, each routine requires a separate registration form for proper scheduling and judging.'
-    }
-  ];
-
   return (
     <div className="min-h-screen bg-[#fafafa]">
       
@@ -158,20 +135,24 @@ const Registration = () => {
         <div className="relative z-10 w-full max-w-7xl mx-auto px-6 py-20 lg:py-32 flex flex-col items-center text-center">
           <div className="hero-animate inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-md mb-8">
             <Sparkles className="w-4 h-4 text-[#2E75B6]" />
-            <span className="text-xs font-bold tracking-widest text-white uppercase">Season 2026</span>
+            <span className="text-xs font-bold tracking-widest text-white uppercase">
+              {siteContentText(siteContent, 'registration_hero_badge')}
+            </span>
           </div>
           
           <h1 className="hero-animate font-display font-black text-5xl sm:text-6xl md:text-8xl lg:text-[9rem] text-white leading-[0.85] tracking-tighter uppercase mb-8">
-            Secure Your <br/>
+            {siteContentText(siteContent, 'registration_hero_title_line1')} <br/>
             <span className="text-[#2E75B6] italic relative inline-block">
-              Spot
+              {siteContentText(siteContent, 'registration_hero_title_accent')}
               <div className="absolute -bottom-2 left-0 right-0 h-2 bg-[#2E75B6]/30 -rotate-2" />
             </span>
           </h1>
           
           <p className="hero-animate text-xl md:text-2xl text-white/70 max-w-2xl font-medium leading-relaxed mb-12">
-            The Return of TOPAZ 2.0 • August 22, 2026
-            <span className="block text-base text-white/50 mt-2 font-normal">Seaside Convention Center</span>
+            {siteContentText(siteContent, 'registration_hero_subtitle')}
+            <span className="block text-base text-white/50 mt-2 font-normal">
+              {siteContentText(siteContent, 'registration_hero_location_line')}
+            </span>
           </p>
 
           <div className="hero-animate flex flex-col sm:flex-row items-center justify-center gap-6">
@@ -183,7 +164,7 @@ const Registration = () => {
               }}
               className="inline-flex items-center justify-center gap-3 px-8 py-4 bg-[#2E75B6] text-white font-bold rounded-full hover:bg-white hover:text-[#0a0a0a] transition-all duration-300 shadow-[0_0_40px_-10px_rgba(46,117,182,0.5)] text-lg w-full sm:w-auto"
             >
-              Register Now
+              {siteContentText(siteContent, 'registration_hero_primary_btn')}
               <ArrowRight className="w-5 h-5" />
             </a>
             <Link
@@ -191,7 +172,7 @@ const Registration = () => {
               className="inline-flex items-center justify-center gap-3 px-8 py-4 bg-white/5 text-white border border-white/10 font-bold rounded-full hover:bg-white/10 transition-all duration-300 text-lg w-full sm:w-auto backdrop-blur-sm"
             >
               <Download className="w-5 h-5" />
-              Download Registration Form
+              {siteContentText(siteContent, 'registration_hero_secondary_btn')}
             </Link>
           </div>
         </div>
@@ -212,11 +193,11 @@ const Registration = () => {
               <Calendar className="w-8 h-8 text-red-500" />
             </div>
             <div>
-              <h3 className="font-display font-black text-xl text-[#0a0a0a] mb-2 uppercase tracking-tight">Registration Window</h3>
-              <p className="text-gray-500 font-medium leading-relaxed">
-                Opens <strong className="text-[#0a0a0a]">April 1, 2026</strong>.<br/>
-                Closes strictly on <strong className="text-red-500">July 30, 2026 at 12:00 AM</strong>.<br/>
-                No exceptions or day-of registrations.
+              <h3 className="font-display font-black text-xl text-[#0a0a0a] mb-2 uppercase tracking-tight">
+                {siteContentText(siteContent, 'registration_alert_window_title')}
+              </h3>
+              <p className="text-gray-500 font-medium leading-relaxed whitespace-pre-line">
+                {siteContentText(siteContent, 'registration_alert_window_body')}
               </p>
             </div>
           </div>
@@ -227,9 +208,11 @@ const Registration = () => {
               <MapPin className="w-8 h-8 text-amber-500" />
             </div>
             <div>
-              <h3 className="font-display font-black text-xl text-[#0a0a0a] mb-2 uppercase tracking-tight">Mailing Address</h3>
+              <h3 className="font-display font-black text-xl text-[#0a0a0a] mb-2 uppercase tracking-tight">
+                {siteContentText(siteContent, 'registration_alert_mail_title')}
+              </h3>
               <p className="text-gray-500 font-medium leading-relaxed">
-                Mailing address is only required for certain competitions. You may leave address fields blank on the form if not applicable.
+                {siteContentText(siteContent, 'registration_alert_mail_body')}
               </p>
             </div>
           </div>
@@ -241,10 +224,11 @@ const Registration = () => {
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center max-w-3xl mx-auto mb-20">
             <h2 className="font-display font-black text-4xl md:text-5xl text-[#0a0a0a] mb-6 uppercase tracking-tighter">
-              Registration <span className="text-[#2E75B6]">Process</span>
+              {siteContentText(siteContent, 'registration_process_heading_main')}
+              <span className="text-[#2E75B6]">{siteContentText(siteContent, 'registration_process_heading_accent')}</span>
             </h2>
             <p className="text-lg text-gray-500 font-medium">
-              Three simple steps to secure your spot on the stage.
+              {siteContentText(siteContent, 'registration_process_subtitle')}
             </p>
           </div>
           
@@ -259,9 +243,11 @@ const Registration = () => {
                 <div className="w-20 h-20 bg-gray-50 rounded-2xl flex items-center justify-center mb-8 group-hover:bg-[#2E75B6] group-hover:text-white transition-colors duration-300 text-[#0a0a0a]">
                   <FileText className="w-10 h-10" />
                 </div>
-                <h3 className="font-display font-black text-2xl text-[#0a0a0a] mb-4 uppercase tracking-tight">Complete Form</h3>
+                <h3 className="font-display font-black text-2xl text-[#0a0a0a] mb-4 uppercase tracking-tight">
+                  {siteContentText(siteContent, 'registration_step1_title')}
+                </h3>
                 <p className="text-gray-500 font-medium leading-relaxed">
-                  Fill out the secure online registration form below, or download the PDF version.
+                  {siteContentText(siteContent, 'registration_step1_body')}
                 </p>
               </div>
             </div>
@@ -273,9 +259,11 @@ const Registration = () => {
                 <div className="w-20 h-20 bg-gray-50 rounded-2xl flex items-center justify-center mb-8 group-hover:bg-[#2E75B6] group-hover:text-white transition-colors duration-300 text-[#0a0a0a]">
                   <Download className="w-10 h-10" />
                 </div>
-                <h3 className="font-display font-black text-2xl text-[#0a0a0a] mb-4 uppercase tracking-tight">Upload Media</h3>
+                <h3 className="font-display font-black text-2xl text-[#0a0a0a] mb-4 uppercase tracking-tight">
+                  {siteContentText(siteContent, 'registration_step2_title')}
+                </h3>
                 <p className="text-gray-500 font-medium leading-relaxed">
-                  Upload your high-quality performance music (MP3) directly through the form.
+                  {siteContentText(siteContent, 'registration_step2_body')}
                 </p>
               </div>
             </div>
@@ -287,9 +275,11 @@ const Registration = () => {
                 <div className="w-20 h-20 bg-gray-50 rounded-2xl flex items-center justify-center mb-8 group-hover:bg-[#2E75B6] group-hover:text-white transition-colors duration-300 text-[#0a0a0a]">
                   <CheckCircle2 className="w-10 h-10" />
                 </div>
-                <h3 className="font-display font-black text-2xl text-[#0a0a0a] mb-4 uppercase tracking-tight">Submit & Pay</h3>
+                <h3 className="font-display font-black text-2xl text-[#0a0a0a] mb-4 uppercase tracking-tight">
+                  {siteContentText(siteContent, 'registration_step3_title')}
+                </h3>
                 <p className="text-gray-500 font-medium leading-relaxed">
-                  Submit your registration and bring your entry fee (Check/Money Order) to the event.
+                  {siteContentText(siteContent, 'registration_step3_body')}
                 </p>
               </div>
             </div>
@@ -450,13 +440,13 @@ const Registration = () => {
               </p>
               
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
-                <a href="mailto:topaz2.0@yahoo.com" className="group flex items-center gap-3 bg-white/5 border border-white/10 px-8 py-4 rounded-full backdrop-blur-sm hover:bg-white hover:text-[#0a0a0a] transition-all duration-300 w-full sm:w-auto">
+                <a href={`mailto:${supportEmail}`} className="group flex items-center gap-3 bg-white/5 border border-white/10 px-8 py-4 rounded-full backdrop-blur-sm hover:bg-white hover:text-[#0a0a0a] transition-all duration-300 w-full sm:w-auto">
                   <Mail className="w-5 h-5 group-hover:text-[#2E75B6] transition-colors" />
-                  <span className="font-bold tracking-wide text-sm">topaz2.0@yahoo.com</span>
+                  <span className="font-bold tracking-wide text-sm">{supportEmail}</span>
                 </a>
-                <a href="tel:971-299-4401" className="group flex items-center gap-3 bg-white/5 border border-white/10 px-8 py-4 rounded-full backdrop-blur-sm hover:bg-white hover:text-[#0a0a0a] transition-all duration-300 w-full sm:w-auto">
+                <a href={`tel:${supportPhoneDigits}`} className="group flex items-center gap-3 bg-white/5 border border-white/10 px-8 py-4 rounded-full backdrop-blur-sm hover:bg-white hover:text-[#0a0a0a] transition-all duration-300 w-full sm:w-auto">
                   <Phone className="w-5 h-5 group-hover:text-[#2E75B6] transition-colors" />
-                  <span className="font-bold tracking-wide text-sm">971-299-4401</span>
+                  <span className="font-bold tracking-wide text-sm">{supportPhone}</span>
                 </a>
               </div>
             </div>

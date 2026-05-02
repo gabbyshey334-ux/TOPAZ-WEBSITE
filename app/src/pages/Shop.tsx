@@ -3,7 +3,7 @@ import { ShoppingBag, ImageOff, CheckCircle2, XCircle } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useCart } from '@/contexts/CartContext';
 import type { Database } from '@/types/database';
-import { rowsToSiteContentMap, siteContentUrl } from '@/constants/siteContentDefaults';
+import { rowsToSiteContentMap, siteContentText, siteContentUrl } from '@/constants/siteContentDefaults';
 
 type Product = Database['public']['Tables']['products']['Row'];
 
@@ -179,6 +179,7 @@ const Shop = () => {
   }, []);
 
   const shopHeroBg = siteContentUrl(siteContent, 'shop_hero_background');
+  const shopEmail = siteContentText(siteContent, 'contact_email');
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -228,16 +229,17 @@ const Shop = () => {
 
         <div className="relative z-10 mx-auto max-w-7xl px-6 py-24 text-center sm:py-28">
           <p className="mb-6 font-mono text-sm font-bold uppercase tracking-[0.3em] text-primary">
-            Official Merchandise
+            {siteContentText(siteContent, 'shop_hero_kicker')}
           </p>
           <h1 className="mb-8 font-display text-5xl font-black uppercase leading-[0.85] tracking-tighter text-white sm:text-6xl lg:text-7xl xl:text-8xl">
-            Explore the <span className="text-primary italic">Collection</span>
+            {siteContentText(siteContent, 'shop_hero_heading_prefix')}
+            <span className="text-primary italic">{siteContentText(siteContent, 'shop_hero_heading_accent')}</span>
           </h1>
           <div className="mx-auto mb-8 h-1 w-24 rounded-full bg-primary" />
           <p className="mx-auto max-w-2xl text-xl text-white/70">
             {availableCount > 0
-              ? 'Order your exclusive TOPAZ 2.0 gear today!'
-              : 'Pre-order your exclusive TOPAZ 2.0 gear — coming soon!'}
+              ? siteContentText(siteContent, 'shop_hero_subtitle_in_stock')
+              : siteContentText(siteContent, 'shop_hero_subtitle_empty')}
           </p>
 
           {count > 0 && (
@@ -295,7 +297,9 @@ const Shop = () => {
       <section className="py-12">
         <div className="mx-auto max-w-7xl px-6">
           <div className="mb-8 flex items-center justify-between flex-wrap gap-4">
-            <h2 className="font-display text-3xl font-bold text-gray-900">Featured Items</h2>
+            <h2 className="font-display text-3xl font-bold text-gray-900">
+              {siteContentText(siteContent, 'shop_featured_heading')}
+            </h2>
             {count > 0 && (
               <button
                 type="button"
@@ -327,15 +331,16 @@ const Shop = () => {
             </div>
           ) : products.length === 0 ? (
             <div className="mx-auto mb-12 max-w-3xl rounded-2xl border-2 border-blue-200 bg-blue-50 p-8 text-center">
-              <h3 className="mb-4 text-2xl font-bold text-blue-900">Online Store Coming Soon!</h3>
+              <h3 className="mb-4 text-2xl font-bold text-blue-900">
+                {siteContentText(siteContent, 'shop_empty_title')}
+              </h3>
               <p className="mb-6 text-lg text-blue-800">
-                Our online merchandise store is currently being set up. For now, you can purchase
-                items at our competitions or pre-order via email.
+                {siteContentText(siteContent, 'shop_empty_body')}
               </p>
               <p className="inline-block rounded-full bg-blue-100 px-4 py-2 text-sm font-semibold text-blue-700">
-                Want to pre-order? Contact us at{' '}
-                <a href="mailto:topaz2.0@yahoo.com" className="underline hover:text-blue-900">
-                  topaz2.0@yahoo.com
+                {siteContentText(siteContent, 'shop_empty_cta_line')}{' '}
+                <a href={`mailto:${shopEmail}`} className="underline hover:text-blue-900">
+                  {shopEmail}
                 </a>
               </p>
             </div>
@@ -432,10 +437,10 @@ const Shop = () => {
           <p className="mt-6 text-center text-sm text-gray-400">
             Questions about sizing? Email us at{' '}
             <a
-              href="mailto:topaz2.0@yahoo.com"
+              href={`mailto:${shopEmail}`}
               className="text-[#2E75B6] underline hover:text-[#1F4E78]"
             >
-              topaz2.0@yahoo.com
+              {shopEmail}
             </a>
           </p>
         </div>
@@ -445,14 +450,14 @@ const Shop = () => {
       <section className="border-t border-gray-100 bg-white py-16">
         <div className="mx-auto max-w-4xl px-6 text-center">
           <h2 className="mb-4 font-display text-3xl font-bold text-gray-900">
-            Questions about merchandise?
+            {siteContentText(siteContent, 'shop_merch_cta_heading')}
           </h2>
-          <p className="mb-8 text-lg text-gray-500">Need help with sizing or bulk orders for your studio?</p>
+          <p className="mb-8 text-lg text-gray-500">{siteContentText(siteContent, 'shop_merch_cta_subtitle')}</p>
           <a
-            href="mailto:topaz2.0@yahoo.com"
+            href={`mailto:${shopEmail}`}
             className="inline-flex items-center gap-2 rounded-xl bg-gray-900 px-8 py-4 font-bold text-white shadow-lg transition-all hover:-translate-y-1 hover:bg-black hover:shadow-xl"
           >
-            Contact Us
+            {siteContentText(siteContent, 'shop_merch_cta_btn')}
           </a>
         </div>
       </section>

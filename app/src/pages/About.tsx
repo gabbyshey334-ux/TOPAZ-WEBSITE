@@ -10,18 +10,7 @@ import { rowsToSiteContentMap, siteContentText, siteContentUrl } from '@/constan
 
 gsap.registerPlugin(ScrollTrigger);
 
-const TEAM_MEMBERS = [
-  { role: 'Vice President' },
-  { role: 'Founder' },
-  { role: 'President' },
-];
-
-const LEGACY_QUOTE = "Topaz alumni have had the incredible opportunity to perform alongside legends like Cher, Michael Jackson, Madonna, and The Pointer Sisters, captivating audiences around the globe.";
-
-const TRIBUTE_TEXT = "Though we mourn the loss of Bob in 2023, Pat remains passionate about Topaz and is currently enjoying her time in Las Vegas.";
-
-const RIC_MENTION =
-  "Ric Heath, alongside his brother Randy, helps guide TOPAZ forward—honoring the foundation Pat and Bob built and the community they inspired.";
+const TEAM_MEMBER_ROLE_KEYS = ['about_team_role_vp', 'about_team_role_founder', 'about_team_role_president'] as const;
 
 const About = () => {
   const heroRef = useRef<HTMLElement>(null);
@@ -32,6 +21,7 @@ const About = () => {
 
   const aboutUsBody = siteContentText(siteContent, 'about_us_text');
   const ourStoryBody = siteContentText(siteContent, 'about_our_story_text');
+  const teamMembers = TEAM_MEMBER_ROLE_KEYS.map((key) => ({ role: siteContentText(siteContent, key) }));
 
   const aboutHeroBg = siteContentUrl(siteContent, 'about_hero_background');
   const aboutImage1 = siteContentUrl(siteContent, 'about_image_1');
@@ -143,7 +133,7 @@ const About = () => {
           <div className="hero-animate inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 mb-8">
             <Star className="w-4 h-4 text-[#2E75B6]" />
             <span className="font-mono text-white/80 font-bold tracking-[0.3em] uppercase text-sm">
-              Established 1972
+              {siteContentText(siteContent, 'about_hero_badge')}
             </span>
           </div>
 
@@ -151,14 +141,14 @@ const About = () => {
             id="about-hero-heading"
             className="hero-animate font-display font-black text-5xl sm:text-6xl md:text-7xl lg:text-[9rem] text-white leading-[0.85] tracking-tighter uppercase mb-8"
           >
-            About <span className="text-[#2E75B6] italic">Us</span>
+            {siteContentText(siteContent, 'about_page_title_main')}
+            <span className="text-[#2E75B6] italic">{siteContentText(siteContent, 'about_page_title_accent')}</span>
           </h1>
 
           <div className="hero-animate w-32 h-1 bg-gradient-to-r from-transparent via-[#2E75B6] to-transparent mx-auto rounded-full mb-8" />
 
           <p className="hero-animate text-white/70 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed">
-            Over five decades of nurturing talent, building community, and creating unforgettable moments in
-            theatrical arts.
+            {siteContentText(siteContent, 'about_hero_subtitle')}
           </p>
         </div>
 
@@ -171,11 +161,11 @@ const About = () => {
 
       <TextSection
         background="black"
-        heading="About Us"
+        heading={siteContentText(siteContent, 'about_about_us_heading')}
         alignment="left"
         imageSrc={aboutImage1}
         imageFallbackSrc={aboutUsFallback}
-        imageAlt="Pat and Bob Heath dancing — striped dance pants and performance wear"
+        imageAlt={siteContentText(siteContent, 'about_about_us_image_alt')}
         imageObjectFit="contain"
         stackImageFirst
         content={aboutUsBody}
@@ -193,10 +183,11 @@ const About = () => {
             <div className="story-animate">
               <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#2E75B6]/10 text-[#2E75B6] text-sm font-bold uppercase tracking-wider mb-6">
                 <Sparkles className="w-4 h-4" />
-                The Founders
+                {siteContentText(siteContent, 'about_story_kicker')}
               </span>
               <h2 className="font-display font-black text-4xl md:text-5xl lg:text-6xl mb-8 leading-tight uppercase tracking-tighter">
-                Our <span className="text-[#2E75B6] italic">Story</span>
+                {siteContentText(siteContent, 'about_story_heading_main')}
+                <span className="text-[#2E75B6] italic">{siteContentText(siteContent, 'about_story_heading_accent')}</span>
               </h2>
             </div>
 
@@ -207,24 +198,30 @@ const About = () => {
               className="story-animate relative bg-gradient-to-br from-[#2E75B6]/10 to-[#1F4E78]/10 rounded-[2rem] p-8 border border-[#2E75B6]/20 mb-8"
             >
               <Quote className="absolute top-6 left-6 w-8 h-8 text-[#2E75B6]/30" />
-              <p className="relative pl-12 text-lg italic text-gray-700 leading-relaxed">{LEGACY_QUOTE}</p>
+              <p className="relative pl-12 text-lg italic text-gray-700 leading-relaxed">
+                {siteContentText(siteContent, 'about_legacy_quote')}
+              </p>
             </div>
           </div>
 
           <div className="mt-16 grid grid-cols-1 gap-10 lg:grid-cols-2 lg:items-center lg:gap-16">
-            <p className="story-animate text-xl leading-relaxed text-gray-600 font-medium lg:pr-4">{RIC_MENTION}</p>
+            <p className="story-animate text-xl leading-relaxed text-gray-600 font-medium lg:pr-4">
+              {siteContentText(siteContent, 'about_ric_blurb')}
+            </p>
             <figure className="story-animate mx-auto w-full max-w-md lg:max-w-none">
               <div className="overflow-hidden rounded-[2rem] border border-gray-200 bg-white shadow-xl">
                 <div className="aspect-[3/4] bg-gradient-to-br from-gray-100 to-gray-50">
                   <img
                     src={ricPortrait}
-                    alt="Ric Heath"
+                    alt={siteContentText(siteContent, 'about_ric_portrait_alt')}
                     loading="lazy"
                     className="h-full w-full object-contain"
                   />
                 </div>
                 <figcaption className="border-t border-gray-100 px-4 py-4 text-center">
-                  <p className="font-display font-black text-xl text-gray-900">Ric Heath</p>
+                  <p className="font-display font-black text-xl text-gray-900">
+                    {siteContentText(siteContent, 'about_ric_name')}
+                  </p>
                 </figcaption>
               </div>
             </figure>
@@ -236,7 +233,7 @@ const About = () => {
                 <div className="relative rounded-[2rem] overflow-hidden shadow-2xl">
                   <img
                     src={aboutImage2}
-                    alt="Vintage black and white duo — man in military-style hat with woman"
+                    alt={siteContentText(siteContent, 'about_image_2_alt')}
                     loading="lazy"
                     className="w-full h-auto object-contain"
                   />
@@ -247,14 +244,15 @@ const About = () => {
               <div className="story-animate order-1 lg:order-2">
                 <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500/10 text-amber-600 text-sm font-bold uppercase tracking-wider mb-6">
                   <Heart className="w-4 h-4" />
-                  The Next Generation
+                  {siteContentText(siteContent, 'about_next_gen_kicker')}
                 </span>
                 <h3 className="font-display font-black text-3xl md:text-4xl text-gray-900 mb-6">
-                  Continuing the <span className="text-[#2E75B6] italic">Dream</span>
+                  {siteContentText(siteContent, 'about_next_gen_heading_main')}
+                  <span className="text-[#2E75B6] italic">{siteContentText(siteContent, 'about_next_gen_heading_accent')}</span>
                 </h3>
 
                 <div className="bg-gradient-to-r from-gray-50 to-white rounded-2xl p-6 border-l-4 border-[#2E75B6]">
-                  <p className="text-gray-600 italic">{TRIBUTE_TEXT}</p>
+                  <p className="text-gray-600 italic">{siteContentText(siteContent, 'about_tribute_text')}</p>
                 </div>
               </div>
             </div>
@@ -268,10 +266,11 @@ const About = () => {
             <div className="text-center mb-12 lg:mb-16">
               <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#2E75B6]/10 text-[#2E75B6] text-sm font-bold uppercase tracking-wider mb-4">
                 <Award className="w-4 h-4" />
-                Through The Years
+                {siteContentText(siteContent, 'about_heritage_kicker')}
               </span>
               <h2 className="font-display font-black text-3xl md:text-4xl lg:text-5xl text-gray-900 tracking-tight">
-                TOPAZ <span className="text-[#2E75B6] italic">Heritage</span>
+                {siteContentText(siteContent, 'about_heritage_heading_main')}
+                <span className="text-[#2E75B6] italic">{siteContentText(siteContent, 'about_heritage_heading_accent')}</span>
               </h2>
             </div>
 
@@ -280,7 +279,7 @@ const About = () => {
                 <div className="flex h-72 w-full items-start justify-center overflow-hidden bg-gray-900">
                   <img
                     src={aboutImage3}
-                    alt="TOPAZ performers in colorful green and pink costumes on stage"
+                    alt={siteContentText(siteContent, 'about_image_3_alt')}
                     loading="lazy"
                     className="h-full w-full object-cover object-top bg-gray-900"
                   />
@@ -289,7 +288,7 @@ const About = () => {
 
               <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-white rounded-full shadow-xl px-6 py-3 border border-gray-100">
                 <p className="font-display font-bold text-gray-900 whitespace-nowrap">
-                  Performers on Stage — Early Years
+                  {siteContentText(siteContent, 'about_heritage_caption')}
                 </p>
               </div>
             </div>
@@ -299,10 +298,10 @@ const About = () => {
 
       <TeamSection
         background="black"
-        heading="Meet The Team"
+        heading={siteContentText(siteContent, 'about_team_heading')}
         teamImageSrc={teamPhoto}
-        teamImageAlt="TOPAZ team with banner"
-        members={TEAM_MEMBERS}
+        teamImageAlt={siteContentText(siteContent, 'about_team_image_alt')}
+        members={teamMembers}
       />
 
       <section className="relative bg-gradient-to-br from-[#0F2847] via-[#1F4E78] to-[#2E75B6] py-24 lg:py-32 overflow-hidden">
@@ -313,24 +312,25 @@ const About = () => {
 
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="font-display font-black text-4xl md:text-5xl lg:text-6xl text-white mb-6 leading-tight">
-            Be Part of the <span className="text-[#7EB8E8] italic">Legacy</span>
+            {siteContentText(siteContent, 'about_cta_heading_prefix')}
+            <span className="text-[#7EB8E8] italic">{siteContentText(siteContent, 'about_cta_heading_accent')}</span>
           </h2>
           <p className="text-white/80 text-lg md:text-xl mb-10 max-w-2xl mx-auto leading-relaxed">
-            Join thousands of dancers who have made TOPAZ their home. Experience the magic of theatrical arts competition.
+            {siteContentText(siteContent, 'about_cta_body')}
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <Link
               to="/registration"
               className="inline-flex items-center gap-3 px-10 py-5 bg-white text-[#2E75B6] font-bold text-sm uppercase tracking-wider rounded-full hover:bg-white/90 transition-all duration-300 hover:scale-105 shadow-2xl"
             >
-              Register Now
+              {siteContentText(siteContent, 'about_cta_register')}
               <ArrowRight className="w-5 h-5" />
             </Link>
             <Link
               to="/gallery"
               className="inline-flex items-center gap-3 px-10 py-5 border-2 border-white/30 text-white font-bold text-sm uppercase tracking-wider rounded-full hover:bg-white/10 hover:border-white/50 transition-all duration-300"
             >
-              View Gallery
+              {siteContentText(siteContent, 'about_cta_gallery')}
             </Link>
           </div>
         </div>

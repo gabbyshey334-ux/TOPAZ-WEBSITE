@@ -25,7 +25,7 @@ import {
   Medal,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
-import { rowsToSiteContentMap, siteContentUrl } from '@/constants/siteContentDefaults';
+import { rowsToSiteContentMap, siteContentText, siteContentUrl } from '@/constants/siteContentDefaults';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -256,7 +256,11 @@ const Rules = () => {
 
   const rulesHeroBg = siteContentUrl(siteContent, 'rules_hero_background');
   const rulesCtaBg = siteContentUrl(siteContent, 'rules_cta_background');
-  const rulesBalletNote = (siteContent['rules_ballet_note'] ?? '').trim();
+  const rulesBalletNote = (() => {
+    const v = siteContent['rules_ballet_note'];
+    if (v === undefined || v === null) return siteContentText(siteContent, 'rules_ballet_note');
+    return v.trim();
+  })();
   const rulesGeneralNote = (siteContent['rules_general_note'] ?? '').trim();
 
   const scrollToSection = (sectionId: string) => {
@@ -353,19 +357,20 @@ const Rules = () => {
           <div className="hero-animate inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 bg-white/5 backdrop-blur-sm mb-8">
             <ShieldCheck className="w-4 h-4 text-[#2E75B6]" />
             <span className="font-mono text-white/80 text-xs font-bold tracking-[0.2em] uppercase">
-              Standards of Excellence
+              {siteContentText(siteContent, 'rules_hero_kicker')}
             </span>
           </div>
           <h1 className="hero-animate font-display font-black text-6xl sm:text-7xl lg:text-[8rem] text-white mb-6 tracking-tighter uppercase leading-[0.85]">
-            Rules & <span className="text-[#2E75B6] italic relative">
-              Regulations
+            {siteContentText(siteContent, 'rules_hero_title_main')}
+            <span className="text-[#2E75B6] italic relative">
+              {siteContentText(siteContent, 'rules_hero_title_accent')}
               <svg className="absolute -bottom-2 left-0 w-full h-3 text-[#2E75B6]/30" viewBox="0 0 100 10" preserveAspectRatio="none">
                 <path d="M0 5 Q 50 10 100 5" stroke="currentColor" strokeWidth="4" fill="transparent" />
               </svg>
             </span>
           </h1>
           <p className="hero-animate text-lg sm:text-xl text-white/60 max-w-2xl mx-auto mb-10 leading-relaxed font-medium">
-            Official TOPAZ 2.0 competition rules—categories, divisions, scoring, and policies ensuring a professional environment.
+            {siteContentText(siteContent, 'rules_hero_lead')}
           </p>
           <div className="hero-animate flex flex-wrap justify-center gap-4">
             <a href={pdfHref} download="TOPAZ_Rules_2026.pdf" className="group relative inline-flex items-center justify-center px-8 py-4 font-bold text-white transition-all duration-200 bg-[#2E75B6] border border-transparent rounded-full hover:bg-transparent hover:border-[#2E75B6] hover:text-[#2E75B6] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#2E75B6]">

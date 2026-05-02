@@ -30,7 +30,7 @@ const NAV: { id: TabId; label: string; shortLabel: string; icon: typeof LayoutDa
   { id: 'registrations',  label: 'Registrations',  shortLabel: 'Regs',   icon: ClipboardList },
   { id: 'gallery',        label: 'Gallery',        shortLabel: 'Gallery', icon: ImageIcon },
   { id: 'events',         label: 'Events',         shortLabel: 'Events', icon: Calendar },
-  { id: 'content',        label: 'Content',        shortLabel: 'Content', icon: FileEdit },
+  { id: 'content', label: 'Website', shortLabel: 'Site', icon: FileEdit },
   { id: 'members',        label: 'Members',        shortLabel: 'Members', icon: Users },
   { id: 'announcements',  label: 'Announcements',  shortLabel: 'News',   icon: Bell },
   { id: 'shop',           label: 'Shop',           shortLabel: 'Shop',   icon: ShoppingBag },

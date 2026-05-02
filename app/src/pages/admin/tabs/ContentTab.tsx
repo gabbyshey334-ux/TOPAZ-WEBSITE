@@ -24,7 +24,14 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import { SITE_CONTENT_DEFAULTS, type SiteContentMediaKey } from '@/constants/siteContentDefaults';
+import {
+  SITE_CONTENT_DEFAULTS,
+  SITE_CONTENT_TEXT_DEFAULTS,
+  CONTACT_PAGE_FAQ_DEFAULTS,
+  REGISTRATION_PAGE_FAQ_DEFAULTS,
+  type SiteContentMediaKey,
+  type SiteContentTextKey,
+} from '@/constants/siteContentDefaults';
 
 type SiteContentRow = Database['public']['Tables']['site_content']['Row'];
 
@@ -49,19 +56,90 @@ async function upsertSiteContent(key: string, value: string) {
   return supabase.from('site_content').upsert({ key, value }, { onConflict: 'key' });
 }
 
-const TEXT_CONTENT_FIELDS = [
-  { key: 'home_hero_title', label: 'Homepage — Hero Title', multiline: false as const },
-  { key: 'home_hero_subtitle', label: 'Homepage — Hero Subtitle', multiline: false as const },
-  { key: 'home_event_date', label: 'Homepage — Event Date', multiline: false as const },
-  { key: 'home_event_location', label: 'Homepage — Event Location', multiline: false as const },
-  { key: 'about_our_story_text', label: 'About — Our Story (body)', multiline: true as const },
-  { key: 'about_us_text', label: 'About — About Us (body)', multiline: true as const },
-  { key: 'contact_phone', label: 'Contact — Phone', multiline: false as const },
-  { key: 'contact_email', label: 'Contact — Email', multiline: false as const },
-  { key: 'rules_ballet_note', label: 'Rules — Ballet note (amber callout)', multiline: false as const },
-  { key: 'rules_general_note', label: 'Rules — General note (amber banner)', multiline: true as const },
-  { key: 'schedule_event_description', label: 'Schedule — Event description', multiline: true as const },
-] as const;
+/** Longer text fields — textarea with extra rows in the editor. */
+const MULTILINE_TEXT_KEYS = new Set<string>([
+  'about_our_story_text',
+  'about_us_text',
+  'about_legacy_quote',
+  'about_tribute_text',
+  'about_ric_blurb',
+  'about_hero_subtitle',
+  'about_cta_body',
+  'footer_tagline',
+  'contact_form_intro',
+  'contact_social_body',
+  'contact_faq_section_intro',
+  'contact_mail_address',
+  'home_legacy_card_1_body',
+  'home_legacy_card_2_body',
+  'home_final_cta_body',
+  'home_testimonials_empty_body',
+  'schedule_event_description',
+  'schedule_cta_body',
+  'rules_general_note',
+  'rules_hero_lead',
+  'shop_empty_body',
+  'registration_alert_window_body',
+  'registration_alert_mail_body',
+  'registration_step1_body',
+  'registration_step2_body',
+  'registration_step3_body',
+]);
+
+function textSectionForKey(key: string): string {
+  if (key === 'contact_phone' || key === 'contact_email') return 'contact_global';
+  if (key.startsWith('footer_')) return 'footer';
+  if (key.startsWith('home_')) return 'home';
+  if (key.startsWith('about_')) return 'about';
+  if (key.startsWith('contact_')) return 'contact_page';
+  if (key.startsWith('schedule_')) return 'schedule';
+  if (key.startsWith('rules_')) return 'rules';
+  if (key.startsWith('shop_')) return 'shop';
+  if (key.startsWith('registration_')) return 'registration';
+  if (key.startsWith('gallery_')) return 'gallery';
+  return 'other';
+}
+
+const TEXT_SECTION_ORDER: { id: string; title: string; hint?: string }[] = [
+  {
+    id: 'contact_global',
+    title: 'Global: phone & email',
+    hint: 'Shown in the footer, contact cards, and linked flows site-wide.',
+  },
+  { id: 'footer', title: 'Footer & social links' },
+  { id: 'home', title: 'Home page copy' },
+  { id: 'about', title: 'About page copy' },
+  { id: 'contact_page', title: 'Contact page copy' },
+  { id: 'schedule', title: 'Schedule page copy' },
+  { id: 'rules', title: 'Rules page copy' },
+  { id: 'shop', title: 'Shop page copy' },
+  { id: 'registration', title: 'Registration page copy' },
+  { id: 'gallery', title: 'Gallery page copy' },
+  { id: 'other', title: 'Other keys' },
+];
+
+function adminLabelForTextKey(key: string): string {
+  return key
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+const FAQ_JSON_EDITORS: {
+  key: 'contact_faq_json' | 'registration_faq_json';
+  title: string;
+  defaultsJson: string;
+}[] = [
+  {
+    key: 'contact_faq_json',
+    title: 'Contact page — FAQ list (JSON)',
+    defaultsJson: JSON.stringify(CONTACT_PAGE_FAQ_DEFAULTS, null, 2),
+  },
+  {
+    key: 'registration_faq_json',
+    title: 'Registration page — FAQ list (JSON)',
+    defaultsJson: JSON.stringify(REGISTRATION_PAGE_FAQ_DEFAULTS, null, 2),
+  },
+];
 
 function ManagedTextField({
   fieldKey,
@@ -106,7 +184,13 @@ function ManagedTextField({
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           disabled={saving}
-          rows={fieldKey === 'schedule_event_description' ? 5 : 6}
+          rows={
+            fieldKey === 'about_us_text' || fieldKey === 'about_our_story_text'
+              ? 10
+              : fieldKey === 'schedule_event_description'
+                ? 5
+                : 8
+          }
           className="min-h-[120px] bg-slate-950 font-mono text-sm text-white border-slate-600"
         />
       ) : (
@@ -126,6 +210,90 @@ function ManagedTextField({
         {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
         Save
       </Button>
+    </div>
+  );
+}
+
+function ManagedFaqJsonField({
+  fieldKey,
+  title,
+  defaultsJson,
+  savedValue,
+  onSaved,
+}: {
+  fieldKey: string;
+  title: string;
+  defaultsJson: string;
+  savedValue: string | null | undefined;
+  onSaved: (v: string) => void;
+}) {
+  const [draft, setDraft] = useState(savedValue ?? '');
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    setDraft(savedValue ?? '');
+  }, [savedValue]);
+
+  async function save() {
+    const trimmed = draft.trim();
+    if (trimmed) {
+      try {
+        JSON.parse(trimmed);
+      } catch {
+        toast.error('Invalid JSON. Fix the syntax, or clear the field to use built-in FAQs.');
+        return;
+      }
+    }
+    setSaving(true);
+    const { error } = await upsertSiteContent(fieldKey, trimmed);
+    setSaving(false);
+    if (error) {
+      toast.error(`Failed to save: ${error.message}`);
+      return;
+    }
+    onSaved(trimmed);
+    toast.success(trimmed ? 'FAQ JSON saved' : 'Cleared — site uses default FAQs');
+  }
+
+  const unchanged = draft === (savedValue ?? '');
+
+  return (
+    <div className="space-y-3 rounded-xl border border-slate-700 bg-slate-900/60 p-4">
+      <Label className="text-sm font-bold text-white">{title}</Label>
+      <p className="font-mono text-[10px] text-slate-500">{fieldKey}</p>
+      <p className="text-xs text-slate-400">
+        Array of objects with <code className="text-slate-300">question</code> and{' '}
+        <code className="text-slate-300">answer</code> strings. Leave empty to use the built-in default list.
+      </p>
+      <Textarea
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        disabled={saving}
+        rows={14}
+        spellCheck={false}
+        className="min-h-[220px] bg-slate-950 font-mono text-xs text-white border-slate-600 leading-relaxed"
+      />
+      <div className="flex flex-wrap gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          disabled={saving}
+          className="border-slate-600 text-slate-200 hover:bg-slate-800"
+          onClick={() => setDraft(defaultsJson)}
+        >
+          Insert default JSON
+        </Button>
+        <Button
+          type="button"
+          onClick={() => void save()}
+          disabled={saving || unchanged}
+          className="gap-2 bg-[#2E75B6] text-white hover:bg-[#1F4E78]"
+        >
+          {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+          Save
+        </Button>
+      </div>
     </div>
   );
 }
@@ -770,17 +938,20 @@ export default function ContentTab() {
     setContent((prev) => ({ ...prev, [key]: value }));
   }, []);
 
+  const allTextFieldKeys = Object.keys(SITE_CONTENT_TEXT_DEFAULTS).sort() as SiteContentTextKey[];
+  const textEditorFieldCount = allTextFieldKeys.length + FAQ_JSON_EDITORS.length;
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h2 className="flex items-center gap-2 text-2xl font-bold text-white">
             <FileEdit className="h-5 w-5 text-[#2E75B6]" />
-            Site images &amp; media
+            Website editor — images &amp; media
           </h2>
           <p className="mt-0.5 text-sm text-slate-400">
-            One place to change photos and the homepage hero video. Public pages read from the same keys with built-in
-            fallbacks.
+            Change photos, hero video, and page backgrounds without touching code. Public pages use these keys with
+            safe fallbacks when a slot is empty.
           </p>
         </div>
         <Button
@@ -888,9 +1059,9 @@ export default function ContentTab() {
                 <span className="mr-2 inline-flex align-middle">
                   <AlignLeft className="inline h-5 w-5 text-[#2E75B6]" />
                 </span>
-                Text &amp; Content{' '}
+                All website text &amp; FAQs{' '}
                 <span className="ml-2 font-mono text-xs font-normal text-slate-500">
-                  — {TEXT_CONTENT_FIELDS.length} fields
+                  — {textEditorFieldCount} fields
                 </span>
               </span>
               <ChevronDown
@@ -901,22 +1072,56 @@ export default function ContentTab() {
               />
             </CollapsibleTrigger>
             <CollapsibleContent>
-              <div className="space-y-4 border-t border-slate-700 px-4 py-6 sm:px-6">
+              <div className="space-y-8 border-t border-slate-700 px-4 py-6 sm:px-6">
                 <p className="text-sm text-slate-400">
-                  Edit public page copy. Empty optional fields stay hidden on the site where applicable; other keys use
-                  built-in fallbacks when blank.
+                  Edit headlines, paragraphs, buttons, footer copy, and contact details. Values are stored in{' '}
+                  <code className="text-slate-300">site_content</code> and go live as soon as you save. Empty values use
+                  the site&apos;s built-in defaults. FAQ pages can optionally use custom JSON lists (see below).
                 </p>
-                <div className="flex flex-col gap-4">
-                  {TEXT_CONTENT_FIELDS.map((field) => (
-                    <ManagedTextField
-                      key={field.key}
-                      fieldKey={field.key}
-                      label={field.label}
-                      multiline={field.multiline}
-                      savedValue={content[field.key] ?? null}
-                      onSaved={(v) => updateLocal(field.key, v)}
-                    />
-                  ))}
+
+                {TEXT_SECTION_ORDER.map((section) => {
+                  const keys = allTextFieldKeys.filter((k) => textSectionForKey(k) === section.id);
+                  if (keys.length === 0) return null;
+                  return (
+                    <div key={section.id} className="space-y-4">
+                      <div>
+                        <h4 className="text-xs font-bold uppercase tracking-widest text-[#7EB8E8]">{section.title}</h4>
+                        {section.hint ? <p className="mt-1 text-xs text-slate-500">{section.hint}</p> : null}
+                      </div>
+                      <div className="flex flex-col gap-4">
+                        {keys.map((fieldKey) => (
+                          <ManagedTextField
+                            key={fieldKey}
+                            fieldKey={fieldKey}
+                            label={adminLabelForTextKey(fieldKey)}
+                            multiline={MULTILINE_TEXT_KEYS.has(fieldKey)}
+                            savedValue={content[fieldKey] ?? null}
+                            onSaved={(v) => updateLocal(fieldKey, v)}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+
+                <div className="space-y-4">
+                  <h4 className="text-xs font-bold uppercase tracking-widest text-[#7EB8E8]">FAQ JSON (advanced)</h4>
+                  <p className="text-xs text-slate-500">
+                    Optional. Leave empty to keep the default questions and answers from the live site. Use valid JSON
+                    only — click &quot;Insert default JSON&quot; as a starting point.
+                  </p>
+                  <div className="flex flex-col gap-4">
+                    {FAQ_JSON_EDITORS.map((faq) => (
+                      <ManagedFaqJsonField
+                        key={faq.key}
+                        fieldKey={faq.key}
+                        title={faq.title}
+                        defaultsJson={faq.defaultsJson}
+                        savedValue={content[faq.key] ?? null}
+                        onSaved={(v) => updateLocal(faq.key, v)}
+                      />
+                    ))}
+                  </div>
                 </div>
               </div>
             </CollapsibleContent>

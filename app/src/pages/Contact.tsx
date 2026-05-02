@@ -14,7 +14,7 @@ import {
 import ContactForm from '../components/ContactForm';
 import { TikTokIcon } from '../components/icons/TikTokIcon';
 import { supabase } from '@/lib/supabase';
-import { rowsToSiteContentMap, siteContentText, siteContentUrl } from '@/constants/siteContentDefaults';
+import { rowsToSiteContentMap, siteContentText, siteContentUrl, faqListFromSiteContentJson, CONTACT_PAGE_FAQ_DEFAULTS } from '@/constants/siteContentDefaults';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -42,72 +42,44 @@ const Contact = () => {
   const contactEmail = siteContentText(siteContent, 'contact_email');
   const contactPhone = siteContentText(siteContent, 'contact_phone');
 
+  const contactMailAddress = siteContentText(siteContent, 'contact_mail_address');
+
   const contactInfo = useMemo(
     () => [
       {
         icon: Mail,
-        title: 'Email Us',
+        title: siteContentText(siteContent, 'contact_card_email_title'),
         content: contactEmail,
         action: {
-          label: 'Send Email',
+          label: siteContentText(siteContent, 'contact_card_email_action'),
           href: `mailto:${contactEmail}`,
         },
       },
       {
         icon: Phone,
-        title: 'Call Us',
+        title: siteContentText(siteContent, 'contact_card_phone_title'),
         content: contactPhone,
         action: {
-          label: 'Call Now',
+          label: siteContentText(siteContent, 'contact_card_phone_action'),
           href: `tel:${contactPhone.replace(/\D/g, '')}`,
         },
       },
       {
         icon: MapPin,
-        title: 'Mail Us',
-        content: 'PO BOX 131\nBANKS, OR 97106',
+        title: siteContentText(siteContent, 'contact_card_mail_title'),
+        content: contactMailAddress,
         action: {
-          label: 'Get Directions',
-          href: 'https://maps.google.com/?q=PO+BOX+131+BANKS+OR+97106',
+          label: siteContentText(siteContent, 'contact_card_mail_action'),
+          href: `https://maps.google.com/?q=${encodeURIComponent(contactMailAddress.replace(/\n/g, ' '))}`,
         },
       },
     ],
-    [contactEmail, contactPhone],
+    [contactEmail, contactPhone, contactMailAddress, siteContent],
   );
 
   const faqs = useMemo(
-    () => [
-      {
-        question: 'How do I register for a competition?',
-        answer: `Download the registration PDF from our Registration page, complete it, and email it to ${contactEmail}. Registration opens April 1, 2026. Submit before the deadline of July 30, 2026, 12:00 AM. See Registration for full instructions.`,
-      },
-      {
-        question: 'What is the registration deadline?',
-        answer:
-          'For The Return of TOPAZ 2.0 (August 22, 2026), registration closes July 30, 2026, 12:00 AM. There is no late or day-of registration.',
-      },
-      {
-        question: 'Can I compete in multiple categories?',
-        answer:
-          'Yes! Dancers are welcome to compete in multiple categories and divisions. Each entry requires a separate registration fee. Be sure to check the schedule to avoid time conflicts.',
-      },
-      {
-        question: 'What should I bring to the competition?',
-        answer:
-          'Bring your costume, shoes, music backup (USB drive), registration confirmation, water, snacks, and any necessary makeup or hair supplies. Arrive at least 1 hour before your scheduled performance time.',
-      },
-      {
-        question: 'How is the scoring system work?',
-        answer:
-          'Performances are judged on four criteria: Technique (25 points), Creativity & Choreography (25 points), Presentation (25 points), and Appearance & Costume (25 points), for a total of 100 points. Decimals are allowed for precise scoring.',
-      },
-      {
-        question: 'What is the refund policy?',
-        answer:
-          'Full refunds are available up to 30 days before the competition. 50% refunds are available 15-29 days before. No refunds within 14 days of the event, but you may transfer your registration to another dancer.',
-      },
-    ],
-    [contactEmail],
+    () => faqListFromSiteContentJson(siteContent, 'contact_faq_json', CONTACT_PAGE_FAQ_DEFAULTS),
+    [siteContent],
   );
 
   useEffect(() => {
@@ -186,28 +158,15 @@ const Contact = () => {
     return () => ctx.revert();
   }, []);
 
-  const socialLinks = [
-    {
-      icon: Facebook,
-      href: 'https://www.facebook.com/profile.php?id=61583857120063',
-      label: 'Facebook',
-    },
-    {
-      icon: Instagram,
-      href: 'https://instagram.com/dancetopaz2.0',
-      label: 'Instagram',
-    },
-    {
-      icon: Twitter,
-      href: 'https://x.com/0topaz20',
-      label: 'Twitter / X',
-    },
-    {
-      icon: TikTokIcon,
-      href: 'https://www.tiktok.com/@dancetopaz2.0',
-      label: 'TikTok',
-    },
-  ];
+  const socialLinks = useMemo(
+    () => [
+      { icon: Facebook, href: siteContentText(siteContent, 'footer_social_facebook_url'), label: 'Facebook' },
+      { icon: Instagram, href: siteContentText(siteContent, 'footer_social_instagram_url'), label: 'Instagram' },
+      { icon: Twitter, href: siteContentText(siteContent, 'footer_social_twitter_url'), label: 'Twitter / X' },
+      { icon: TikTokIcon, href: siteContentText(siteContent, 'footer_social_tiktok_url'), label: 'TikTok' },
+    ],
+    [siteContent],
+  );
 
   return (
     <div className="min-h-screen bg-white">
@@ -227,10 +186,11 @@ const Contact = () => {
 
         <div className="relative w-full px-4 sm:px-6 lg:px-12 max-w-7xl mx-auto text-center z-10">
           <p className="hero-animate font-mono text-primary font-bold tracking-[0.3em] uppercase mb-6">
-            Connect With Us
+            {siteContentText(siteContent, 'contact_hero_kicker')}
           </p>
           <h1 className="hero-animate font-display font-black text-5xl sm:text-6xl lg:text-8xl text-white mb-8 tracking-tighter uppercase">
-            Get in <span className="text-primary italic">Touch</span>
+            {siteContentText(siteContent, 'contact_hero_heading_prefix')}
+            <span className="text-primary italic">{siteContentText(siteContent, 'contact_hero_heading_accent')}</span>
           </h1>
           <div className="hero-animate w-24 h-1 bg-primary mx-auto rounded-full" />
         </div>
@@ -244,11 +204,11 @@ const Contact = () => {
             <div ref={formRef} className="lg:col-span-3">
               <div className="max-w-2xl">
                 <h2 className="font-display font-black text-3xl lg:text-4xl text-[#0a0a0a] mb-8 uppercase tracking-tight">
-                  Send Us a <span className="text-primary">Message</span>
+                  {siteContentText(siteContent, 'contact_form_heading_prefix')}
+                  <span className="text-primary">{siteContentText(siteContent, 'contact_form_heading_accent')}</span>
                 </h2>
                 <p className="text-lg text-gray-500 mb-12 leading-relaxed">
-                  Have questions about registration, categories, or our events? 
-                  Fill out the form below and our team will get back to you within 24 hours.
+                  {siteContentText(siteContent, 'contact_form_intro')}
                 </p>
                 <div className="bg-[#fcfcfc] border border-gray-100 rounded-3xl p-8 lg:p-12 shadow-premium">
                   <ContactForm />
@@ -259,7 +219,8 @@ const Contact = () => {
             {/* Right Column - Contact Info (40%) */}
             <div ref={infoRef} className="lg:col-span-2 space-y-10">
               <h2 className="font-display font-black text-3xl lg:text-4xl text-[#0a0a0a] mb-8 uppercase tracking-tight">
-                Contact <span className="text-primary">Details</span>
+                {siteContentText(siteContent, 'contact_details_heading_prefix')}
+                <span className="text-primary">{siteContentText(siteContent, 'contact_details_heading_accent')}</span>
               </h2>
               {/* Contact Cards */}
               <div className="space-y-6">
@@ -298,12 +259,11 @@ const Contact = () => {
               <div className="info-card bg-[#0a0a0a] rounded-3xl p-10 overflow-hidden relative group">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-1000" />
                 <h3 className="font-display font-black text-2xl text-white mb-3 uppercase tracking-wider relative z-10">
-                  Follow the <span className="text-primary italic">Movement</span>
+                  {siteContentText(siteContent, 'contact_social_heading_prefix')}
+                  <span className="text-primary italic">{siteContentText(siteContent, 'contact_social_heading_accent')}</span>
                 </h3>
                 <p className="text-white/55 text-sm mb-8 relative z-10 max-w-sm leading-relaxed">
-                  Follow{' '}
-                  <span className="text-white/80 font-medium">@dancetopaz2.0</span> on TikTok for updates
-                  and behind-the-scenes content.
+                  {siteContentText(siteContent, 'contact_social_body')}
                 </p>
                 <div className="flex flex-wrap gap-4 relative z-10">
                   {socialLinks.map((social) => (
@@ -330,11 +290,11 @@ const Contact = () => {
         <div className="w-full px-4 sm:px-6 lg:px-12 max-w-4xl mx-auto relative z-10">
           <div className="text-center mb-24 max-w-3xl mx-auto">
             <h2 className="font-display font-black text-4xl lg:text-6xl text-[#0a0a0a] mb-8 uppercase tracking-tighter">
-              Common <span className="text-primary italic">Questions</span>
+              {siteContentText(siteContent, 'contact_faq_section_heading_prefix')}
+              <span className="text-primary italic">{siteContentText(siteContent, 'contact_faq_section_heading_accent')}</span>
             </h2>
             <p className="text-lg text-gray-500 leading-relaxed">
-              Find instant answers to our most frequently asked questions. 
-              Can't find what you're looking for? Reach out above.
+              {siteContentText(siteContent, 'contact_faq_section_intro')}
             </p>
           </div>
 

@@ -17,10 +17,14 @@ import {
 } from 'lucide-react';
 import HeroSection from '../sections/HeroSection';
 import MailingListSection from '../components/MailingListSection';
-import type { LucideIcon } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import type { Database } from '@/types/database';
-import { rowsToSiteContentMap, siteContentText, siteContentUrl } from '@/constants/siteContentDefaults';
+import {
+  rowsToSiteContentMap,
+  siteContentText,
+  siteContentUrl,
+  type SiteContentTextKey,
+} from '@/constants/siteContentDefaults';
 
 type TestimonialRow = Database['public']['Tables']['testimonials']['Row'];
 type InstructorRow = Database['public']['Tables']['instructors']['Row'];
@@ -28,53 +32,12 @@ type InstructorRow = Database['public']['Tables']['instructors']['Row'];
 // Register GSAP plugin
 gsap.registerPlugin(ScrollTrigger);
 
-const LEGACY_FEATURE_CARDS: {
-  id: string;
-  icon: LucideIcon;
-  title: string;
-  description: string;
-  gradient: string;
-}[] = [
-  {
-    id: 'prestigious-awards',
-    icon: Award,
-    title: 'PRESTIGIOUS AWARDS',
-    description:
-      'Our unique cumulative scoring system lets dancers earn bronze, silver, and gold medals as they progress through the competition season.',
-    gradient: 'from-[#2E75B6]/20 to-blue-600/20',
-  },
-  {
-    id: 'inclusive-community',
-    icon: Users,
-    title: 'INCLUSIVE COMMUNITY',
-    description:
-      'Welcoming dancers of all ages, backgrounds, and skill levels in a supportive and inspiring environment.',
-    gradient: 'from-purple-500/20 to-pink-500/20',
-  },
-];
-
-/** Heritage grid keys + copy (URLs come from `site_content` via `siteContentUrl`). */
+/** Heritage grid: image URLs from `site_content`; alt text editable in admin. */
 const HERITAGE_GRID = [
-  {
-    key: 'hero_image_1' as const,
-    alt: 'Vintage TOPAZ competition — young dancer in tuxedo with trophy',
-    aspect: 'tall' as const,
-  },
-  {
-    key: 'hero_image_2' as const,
-    alt: 'Vintage TOPAZ competition — duo with trophy',
-    aspect: 'square' as const,
-  },
-  {
-    key: 'hero_image_3' as const,
-    alt: 'Vintage TOPAZ competition — group of dancers with trophy',
-    aspect: 'square' as const,
-  },
-  {
-    key: 'hero_image_4' as const,
-    alt: '1975 newspaper clipping featuring TOPAZ',
-    aspect: 'tall' as const,
-  },
+  { key: 'hero_image_1' as const, altKey: 'home_heritage_1_alt' as const, aspect: 'tall' as const },
+  { key: 'hero_image_2' as const, altKey: 'home_heritage_2_alt' as const, aspect: 'square' as const },
+  { key: 'hero_image_3' as const, altKey: 'home_heritage_3_alt' as const, aspect: 'square' as const },
+  { key: 'hero_image_4' as const, altKey: 'home_heritage_4_alt' as const, aspect: 'tall' as const },
 ];
 
 const Home = () => {
@@ -95,7 +58,7 @@ const Home = () => {
 
   const heritagePhotos = HERITAGE_GRID.map((p) => ({
     src: siteContentUrl(siteContent, p.key),
-    alt: p.alt,
+    alt: siteContentText(siteContent, p.altKey as SiteContentTextKey),
     aspect: p.aspect,
   }));
   const heroVideoRaw = siteContent['hero_video_url'];
@@ -107,9 +70,9 @@ const Home = () => {
       [
         {
           id: 1,
-          title: 'MASTER CLASSES',
-          subtitle: 'COMING SOON',
-          description: 'Learn from industry professionals',
+          title: siteContentText(siteContent, 'home_promo_1_title'),
+          subtitle: siteContentText(siteContent, 'home_promo_1_subtitle'),
+          description: siteContentText(siteContent, 'home_promo_1_description'),
           bg: 'from-violet-600/90 via-purple-700/90 to-indigo-900/90',
           accent: '#8B5CF6',
           image: siteContentUrl(siteContent, 'home_promo_masterclass'),
@@ -117,9 +80,9 @@ const Home = () => {
         },
         {
           id: 2,
-          title: 'SPONSORS',
-          subtitle: 'COMING SOON',
-          description: 'Partner with excellence',
+          title: siteContentText(siteContent, 'home_promo_2_title'),
+          subtitle: siteContentText(siteContent, 'home_promo_2_subtitle'),
+          description: siteContentText(siteContent, 'home_promo_2_description'),
           bg: 'from-[#2E75B6]/90 via-[#1F4E78]/90 to-[#0F2847]/90',
           accent: '#2E75B6',
           image: siteContentUrl(siteContent, 'home_promo_sponsors'),
@@ -127,13 +90,34 @@ const Home = () => {
         },
         {
           id: 3,
-          title: 'PANEL & JUDGES',
-          subtitle: 'COMING SOON',
-          description: 'Expert adjudication panel',
+          title: siteContentText(siteContent, 'home_promo_3_title'),
+          subtitle: siteContentText(siteContent, 'home_promo_3_subtitle'),
+          description: siteContentText(siteContent, 'home_promo_3_description'),
           bg: 'from-amber-600/90 via-orange-700/90 to-red-900/90',
           accent: '#F59E0B',
           image: siteContentUrl(siteContent, 'home_promo_panel'),
           icon: Heart,
+        },
+      ] as const,
+    [siteContent],
+  );
+
+  const legacyFeatureCards = useMemo(
+    () =>
+      [
+        {
+          id: 'prestigious-awards',
+          icon: Award,
+          title: siteContentText(siteContent, 'home_legacy_card_1_title'),
+          description: siteContentText(siteContent, 'home_legacy_card_1_body'),
+          gradient: 'from-[#2E75B6]/20 to-blue-600/20',
+        },
+        {
+          id: 'inclusive-community',
+          icon: Users,
+          title: siteContentText(siteContent, 'home_legacy_card_2_title'),
+          description: siteContentText(siteContent, 'home_legacy_card_2_body'),
+          gradient: 'from-purple-500/20 to-pink-500/20',
         },
       ] as const,
     [siteContent],
@@ -385,17 +369,17 @@ const Home = () => {
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-12 text-center lg:mb-16">
             <span className="font-mono text-sm font-bold uppercase tracking-[0.2em] text-[#2E75B6]">
-              What&apos;s Coming
+              {siteContentText(siteContent, 'home_whats_coming_kicker')}
             </span>
             <h2 className="mt-3 font-display text-3xl font-black tracking-tight text-gray-900 sm:text-4xl lg:text-5xl">
-              Exciting <span className="italic">Features</span> Ahead
+              {siteContentText(siteContent, 'home_whats_coming_heading')}
             </h2>
           </div>
 
           <div className="grid grid-cols-1 gap-6 md:grid-cols-3 lg:gap-8">
             {promoCards.map((card) => {
-              const isMasterclass = card.title === 'MASTER CLASSES';
-              const isJudges = card.title === 'PANEL & JUDGES';
+              const isMasterclass = card.id === 1;
+              const isJudges = card.id === 3;
               const count = isMasterclass
                 ? masterclassInstructors.length
                 : isJudges
@@ -475,10 +459,13 @@ const Home = () => {
           <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="mb-12 text-center lg:mb-16">
               <span className="font-mono text-sm font-bold uppercase tracking-[0.2em] text-violet-600">
-                Master Classes
+                {siteContentText(siteContent, 'home_masterclass_kicker')}
               </span>
               <h2 className="mt-3 font-display text-3xl font-black tracking-tight text-gray-900 sm:text-4xl lg:text-5xl">
-                Learn from <span className="italic text-violet-600">Industry Pros</span>
+                {siteContentText(siteContent, 'home_masterclass_heading_main')}
+                <span className="italic text-violet-600">
+                  {siteContentText(siteContent, 'home_masterclass_heading_accent')}
+                </span>
               </h2>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
@@ -519,10 +506,13 @@ const Home = () => {
           <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="mb-12 text-center lg:mb-16">
               <span className="font-mono text-sm font-bold uppercase tracking-[0.2em] text-amber-600">
-                Panel &amp; Judges
+                {siteContentText(siteContent, 'home_judges_kicker')}
               </span>
               <h2 className="mt-3 font-display text-3xl font-black tracking-tight text-gray-900 sm:text-4xl lg:text-5xl">
-                Our <span className="italic text-amber-600">Adjudicators</span>
+                {siteContentText(siteContent, 'home_judges_heading_main')}
+                <span className="italic text-amber-600">
+                  {siteContentText(siteContent, 'home_judges_heading_accent')}
+                </span>
               </h2>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
@@ -562,7 +552,7 @@ const Home = () => {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <img
             src={officialBannerSrc}
-            alt="TOPAZ 2.0 Dance and Performing Arts Competition banner"
+            alt={siteContentText(siteContent, 'home_official_banner_alt')}
             className="w-full h-auto object-contain"
           />
         </div>
@@ -580,18 +570,21 @@ const Home = () => {
           <div className="text-center mb-16 lg:mb-20">
             <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#2E75B6]/10 text-[#2E75B6] text-sm font-bold uppercase tracking-wider mb-4">
               <Star className="w-4 h-4" />
-              Why Choose TOPAZ
+              {siteContentText(siteContent, 'home_legacy_kicker')}
             </span>
             <h2 className="about-animate font-display font-black text-4xl md:text-5xl lg:text-6xl text-gray-900 tracking-tight">
-              TOPAZ <span className="text-[#2E75B6] italic">Legacy</span>
+              {siteContentText(siteContent, 'home_legacy_heading_main')}
+              <span className="text-[#2E75B6] italic">
+                {siteContentText(siteContent, 'home_legacy_heading_accent')}
+              </span>
             </h2>
             <p className="mt-4 text-gray-500 text-lg max-w-2xl mx-auto">
-              Over five decades of nurturing talent and creating unforgettable moments
+              {siteContentText(siteContent, 'home_legacy_subheading')}
             </p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            {LEGACY_FEATURE_CARDS.filter(
+            {legacyFeatureCards.filter(
               (card, index, arr) => arr.findIndex((c) => c.id === card.id) === index
             ).map((item) => (
               <div key={item.id} className="about-animate group relative">
@@ -629,11 +622,12 @@ const Home = () => {
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="tour-content space-y-8">
             <span className="inline-block px-6 py-3 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 font-mono text-[#2E75B6] font-bold tracking-[0.3em] uppercase text-sm">
-              The Return Of
+              {siteContentText(siteContent, 'home_tour_eyebrow')}
             </span>
 
             <h1 className="font-display font-black text-6xl sm:text-7xl md:text-8xl lg:text-[10rem] text-white leading-[0.85] tracking-tighter uppercase">
-              TOPAZ <span className="text-[#2E75B6] italic">2.0</span>
+              {siteContentText(siteContent, 'home_tour_title_prefix')}
+              <span className="text-[#2E75B6] italic">{siteContentText(siteContent, 'home_tour_title_accent')}</span>
             </h1>
 
             <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-12 text-white">
@@ -656,7 +650,7 @@ const Home = () => {
                 to="/registration"
                 className="inline-flex items-center gap-3 px-12 py-5 bg-[#2E75B6] text-white font-bold text-lg uppercase tracking-wider rounded-full hover:bg-[#1F4E78] transition-all duration-300 hover:scale-105 shadow-2xl shadow-[#2E75B6]/50"
               >
-                REGISTER NOW
+                {siteContentText(siteContent, 'home_tour_register_btn')}
                 <ArrowRight className="w-6 h-6" />
               </Link>
             </div>
@@ -691,10 +685,10 @@ const Home = () => {
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="text-center mb-12">
             <span className="inline-block px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 font-mono text-white/80 text-sm tracking-[0.2em] uppercase font-bold mb-4">
-              What Studios Say
+              {siteContentText(siteContent, 'home_testimonials_kicker')}
             </span>
             <h2 className="font-display font-black text-4xl md:text-5xl lg:text-6xl text-white tracking-tight">
-              TESTIMONIALS
+              {siteContentText(siteContent, 'home_testimonials_heading')}
             </h2>
           </div>
 
@@ -737,7 +731,7 @@ const Home = () => {
                 <span className="text-xs font-bold uppercase tracking-wider text-white">Coming Soon</span>
               </div>
               <p className="text-white/90 text-xl leading-relaxed font-light">
-                Testimonials will appear here after the competition season. Check back soon to read comments from our students and participants.
+                {siteContentText(siteContent, 'home_testimonials_empty_body')}
               </p>
               <div className="mt-8 flex justify-center gap-1">
                 {[1, 2, 3].map((i) => (
@@ -762,16 +756,16 @@ const Home = () => {
 
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <span className="inline-block px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 font-mono text-white/80 text-sm tracking-wider uppercase font-bold mb-6">
-            Join The Legacy
+            {siteContentText(siteContent, 'home_final_cta_kicker')}
           </span>
           
           <h2 className="font-display font-black text-4xl md:text-5xl lg:text-6xl text-white mb-6 leading-tight">
-            READY TO TAKE THE <span className="text-[#7EB8E8] italic">STAGE</span>?
+            {siteContentText(siteContent, 'home_final_cta_heading_prefix')}
+            <span className="text-[#7EB8E8] italic">{siteContentText(siteContent, 'home_final_cta_heading_accent')}</span>
           </h2>
           
           <p className="text-white/80 text-lg md:text-xl mb-10 max-w-2xl mx-auto leading-relaxed">
-            Join thousands of dancers who have made TOPAZ their home. 
-            Register today and start your journey to excellence.
+            {siteContentText(siteContent, 'home_final_cta_body')}
           </p>
           
           <div className="flex flex-wrap justify-center gap-4">
@@ -779,14 +773,14 @@ const Home = () => {
               to="/registration"
               className="inline-flex items-center gap-3 px-10 py-5 bg-white text-[#2E75B6] font-bold text-sm uppercase tracking-wider rounded-full hover:bg-white/90 transition-all duration-300 hover:scale-105 shadow-2xl"
             >
-              REGISTER NOW
+              {siteContentText(siteContent, 'home_final_cta_primary_btn')}
               <ArrowRight className="w-5 h-5" />
             </Link>
             <Link
               to="/contact"
               className="inline-flex items-center gap-3 px-10 py-5 border-2 border-white/30 text-white font-bold text-sm uppercase tracking-wider rounded-full hover:bg-white/10 hover:border-white/50 transition-all duration-300"
             >
-              CONTACT US
+              {siteContentText(siteContent, 'home_final_cta_secondary_btn')}
             </Link>
           </div>
         </div>
