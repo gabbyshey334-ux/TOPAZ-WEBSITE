@@ -43,6 +43,12 @@ const About = () => {
     () => aboutPerformersSectionVisible(siteContent, siteContentReady),
     [siteContent, siteContentReady],
   );
+  /** No fallback: empty DB value must hide the pill caption (siteContentText would use defaults). */
+  const aboutImage3CaptionDisplay = useMemo(() => {
+    const raw = siteContent['about_image_3_caption'];
+    const v = raw != null ? String(raw).trim() : '';
+    return v;
+  }, [siteContent]);
   const aboutUsFallback = siteContentUrl(siteContent, 'about_us_fallback');
   const ricPortrait = siteContentUrl(siteContent, 'about_ric_portrait');
   const teamPhoto = siteContentUrl(siteContent, 'about_team_photo');
@@ -307,11 +313,13 @@ const About = () => {
                 </div>
               </div>
 
-              <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-white rounded-full shadow-xl px-6 py-3 border border-gray-100 max-w-[min(100vw-2rem,42rem)]">
-                <p className="font-display font-bold text-gray-900 text-center text-sm sm:text-base sm:whitespace-nowrap">
-                  {siteContentText(siteContent, 'about_image_3_caption')}
-                </p>
-              </div>
+              {aboutImage3CaptionDisplay ? (
+                <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-white rounded-full shadow-xl px-6 py-3 border border-gray-100 max-w-[min(100vw-2rem,42rem)]">
+                  <p className="font-display font-bold text-gray-900 text-center text-sm sm:text-base sm:whitespace-nowrap">
+                    {aboutImage3CaptionDisplay}
+                  </p>
+                </div>
+              ) : null}
             </div>
           </div>
         </section>
