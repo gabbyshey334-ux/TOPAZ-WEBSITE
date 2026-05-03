@@ -887,7 +887,7 @@ const PAGE_SECTIONS: PageSection[] = [
         slots: [
           {
             key: 'about_image_3',
-            label: 'About Page — Performers on Stage (Early Years)',
+            label: 'About page — heritage photo (third image)',
             storagePrefix: 'about/about-3',
             thumbClassName: 'aspect-[4/3]',
             siteVisibilityKey: 'about_performers_visible',

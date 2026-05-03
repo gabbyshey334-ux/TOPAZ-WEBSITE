@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, useMemo } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Link } from 'react-router-dom';
@@ -12,12 +12,26 @@ gsap.registerPlugin(ScrollTrigger);
 
 const TEAM_MEMBER_ROLE_KEYS = ['about_team_role_vp', 'about_team_role_founder', 'about_team_role_president'] as const;
 
+/** `site_content.about_performers_visible` is stored as text ('true' / 'false'). Only explicit true shows the block. */
+function aboutPerformersSectionVisible(
+  map: Record<string, string | null>,
+  contentReady: boolean,
+): boolean {
+  if (!contentReady) return false;
+  const raw = map['about_performers_visible'];
+  if (raw == null) return true;
+  const s = String(raw).trim().toLowerCase();
+  if (s === '') return true;
+  return s === 'true';
+}
+
 const About = () => {
   const heroRef = useRef<HTMLElement>(null);
   const storyRef = useRef<HTMLDivElement>(null);
   const quoteRef = useRef<HTMLDivElement>(null);
 
   const [siteContent, setSiteContent] = useState<Record<string, string | null>>({});
+  const [siteContentReady, setSiteContentReady] = useState(false);
 
   const aboutUsBody = siteContentText(siteContent, 'about_us_text');
   const ourStoryBody = siteContentText(siteContent, 'about_our_story_text');
@@ -27,11 +41,10 @@ const About = () => {
   const aboutImage1 = siteContentUrl(siteContent, 'about_image_1');
   const aboutImage2 = siteContentUrl(siteContent, 'about_image_2');
   const aboutImage3 = siteContentUrl(siteContent, 'about_image_3');
-  const performersVisible = (() => {
-    const v = siteContent['about_performers_visible'];
-    if (v == null || String(v).trim() === '') return true;
-    return String(v).toLowerCase() === 'true';
-  })();
+  const performersVisible = useMemo(
+    () => aboutPerformersSectionVisible(siteContent, siteContentReady),
+    [siteContent, siteContentReady],
+  );
   const aboutUsFallback = siteContentUrl(siteContent, 'about_us_fallback');
   const ricPortrait = siteContentUrl(siteContent, 'about_ric_portrait');
   const teamPhoto = siteContentUrl(siteContent, 'about_team_photo');
@@ -43,8 +56,14 @@ const About = () => {
         .from('site_content')
         .select('key, value')
         .order('key');
-      if (cancelled || error) return;
+      if (cancelled) return;
+      if (error) {
+        setSiteContent({});
+        setSiteContentReady(true);
+        return;
+      }
       setSiteContent(rowsToSiteContentMap(data as { key: string; value: string | null }[] | null));
+      setSiteContentReady(true);
     })();
     return () => {
       cancelled = true;
