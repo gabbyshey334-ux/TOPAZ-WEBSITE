@@ -168,6 +168,7 @@ const About = () => {
         imageAlt={siteContentText(siteContent, 'about_about_us_image_alt')}
         imageObjectFit="contain"
         stackImageFirst
+        imageCaption={siteContentText(siteContent, 'about_image_1_caption')}
         content={aboutUsBody}
       />
 
@@ -229,7 +230,7 @@ const About = () => {
 
           <div className="mt-20 lg:mt-32">
             <div className="grid lg:grid-cols-2 gap-12 items-center">
-              <div className="story-animate order-2 lg:order-1">
+              <div className="story-animate order-2 lg:order-1 space-y-4">
                 <div className="relative rounded-[2rem] overflow-hidden shadow-2xl">
                   <img
                     src={aboutImage2}
@@ -239,6 +240,9 @@ const About = () => {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
                 </div>
+                <p className="text-center font-display font-bold text-lg text-gray-700 px-2">
+                  {siteContentText(siteContent, 'about_image_2_caption')}
+                </p>
               </div>
 
               <div className="story-animate order-1 lg:order-2">
@@ -286,9 +290,9 @@ const About = () => {
                 </div>
               </div>
 
-              <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-white rounded-full shadow-xl px-6 py-3 border border-gray-100">
-                <p className="font-display font-bold text-gray-900 whitespace-nowrap">
-                  Bob and Pat — TOPAZ Founders
+              <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-white rounded-full shadow-xl px-6 py-3 border border-gray-100 max-w-[min(100vw-2rem,42rem)]">
+                <p className="font-display font-bold text-gray-900 text-center text-sm sm:text-base sm:whitespace-nowrap">
+                  {siteContentText(siteContent, 'about_image_3_caption')}
                 </p>
               </div>
             </div>

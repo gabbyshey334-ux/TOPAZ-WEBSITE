@@ -56,6 +56,75 @@ async function upsertSiteContent(key: string, value: string) {
   return supabase.from('site_content').upsert({ key, value }, { onConflict: 'key' });
 }
 
+/** Edited under About photo slots only — excluded from bulk text list. */
+const ABOUT_IMAGE_CAPTION_KEYS = new Set<string>([
+  'about_image_1_caption',
+  'about_image_2_caption',
+  'about_image_3_caption',
+]);
+
+function SlotCaptionEditor({
+  siteKey,
+  savedValue,
+  onSaved,
+}: {
+  siteKey: string;
+  savedValue: string | null | undefined;
+  onSaved: (v: string) => void;
+}) {
+  const [draft, setDraft] = useState(savedValue ?? '');
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    setDraft(savedValue ?? '');
+  }, [savedValue]);
+
+  async function save() {
+    setSaving(true);
+    const trimmed = draft.trim();
+    const { error } = await upsertSiteContent(siteKey, trimmed);
+    setSaving(false);
+    if (error) {
+      toast.error(`Failed to save caption: ${error.message}`);
+      return;
+    }
+    onSaved(trimmed);
+    toast.success('Caption saved');
+  }
+
+  const unchanged = trimmedEquals(savedValue, draft);
+
+  return (
+    <div className="mt-3 space-y-2 border-t border-slate-700 pt-3">
+      <Label htmlFor={`caption-${siteKey}`} className="text-xs font-medium text-slate-400">
+        Caption (optional).
+      </Label>
+      <Input
+        id={`caption-${siteKey}`}
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        disabled={saving}
+        placeholder="Shown on the public About page below this photo"
+        className="bg-slate-950 font-mono text-xs text-white border-slate-600"
+      />
+      <Button
+        type="button"
+        size="sm"
+        onClick={() => void save()}
+        disabled={saving || unchanged}
+        className="gap-2 bg-[#2E75B6] text-white hover:bg-[#1F4E78]"
+      >
+        {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+        Save Caption
+      </Button>
+    </div>
+  );
+}
+
+function trimmedEquals(a: string | null | undefined, b: string): boolean {
+  return (a ?? '').trim() === b.trim();
+}
+
 /** Longer text fields — textarea with extra rows in the editor. */
 const MULTILINE_TEXT_KEYS = new Set<string>([
   'about_our_story_text',
@@ -312,6 +381,9 @@ function ManagedImageSlot({
   onReplaced,
   thumbClassName,
   hidePhotoToggle,
+  captionSiteKey,
+  captionValue,
+  onCaptionSaved,
 }: {
   imageKey: string;
   label: string;
@@ -324,6 +396,9 @@ function ManagedImageSlot({
     currentRaw: string | null;
     onSaved: (value: string) => void;
   };
+  captionSiteKey?: string;
+  captionValue?: string | null;
+  onCaptionSaved?: (v: string) => void;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
@@ -426,23 +501,32 @@ function ManagedImageSlot({
 
   return (
     <div className="flex flex-col gap-3 rounded-xl border border-slate-700 bg-slate-900/60 p-4 sm:flex-row sm:items-start">
-      <div
-        className={cn(
-          'w-[200px] shrink-0 overflow-hidden rounded-lg bg-black ring-1 ring-white/10',
-          thumbClassName ?? 'aspect-square',
-        )}
-      >
-        {displayUrl ? (
-          <img
-            src={displayUrl}
-            alt=""
-            className="h-full w-full object-cover"
+      <div className="flex w-full shrink-0 flex-col sm:w-[200px]">
+        <div
+          className={cn(
+            'w-full overflow-hidden rounded-lg bg-black ring-1 ring-white/10',
+            thumbClassName ?? 'aspect-square',
+          )}
+        >
+          {displayUrl ? (
+            <img
+              src={displayUrl}
+              alt=""
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <div className="flex aspect-square w-full min-h-[120px] items-center justify-center text-slate-500">
+              <ImageIcon className="h-10 w-10" />
+            </div>
+          )}
+        </div>
+        {captionSiteKey && onCaptionSaved ? (
+          <SlotCaptionEditor
+            siteKey={captionSiteKey}
+            savedValue={captionValue}
+            onSaved={onCaptionSaved}
           />
-        ) : (
-          <div className="flex aspect-square w-[200px] items-center justify-center text-slate-500">
-            <ImageIcon className="h-10 w-10" />
-          </div>
-        )}
+        ) : null}
       </div>
       <div className="min-w-0 flex-1 space-y-2">
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -731,6 +815,8 @@ type PageSection = {
       storagePrefix: string;
       thumbClassName?: string;
       siteVisibilityKey?: string;
+      /** Optional `site_content` text key for public About page caption under this image. */
+      captionSiteKey?: string;
     }[];
     videoSlot?: { key: typeof HERO_VIDEO_KEY; label: string };
   }[];
@@ -785,7 +871,7 @@ const PAGE_SECTIONS: PageSection[] = [
         groupTitle: 'Hero & About Us',
         slots: [
           { key: 'about_hero_background', label: 'About hero background', storagePrefix: 'about/hero-bg' },
-          { key: 'about_image_1', label: 'About Us section (main photo)', storagePrefix: 'about/about-1' },
+          { key: 'about_image_1', label: 'About Us section (main photo)', storagePrefix: 'about/about-1', captionSiteKey: 'about_image_1_caption' },
           { key: 'about_us_fallback', label: 'About Us — fallback if main fails', storagePrefix: 'about/about-us-fallback' },
         ],
       },
@@ -793,7 +879,7 @@ const PAGE_SECTIONS: PageSection[] = [
         groupTitle: 'Story, Ric Heath, Continuing the Dream',
         slots: [
           { key: 'about_ric_portrait', label: 'Ric Heath portrait', storagePrefix: 'about/ric-portrait' },
-          { key: 'about_image_2', label: 'Continuing the Dream (B&W duo)', storagePrefix: 'about/about-2' },
+          { key: 'about_image_2', label: 'Continuing the Dream (B&W duo)', storagePrefix: 'about/about-2', captionSiteKey: 'about_image_2_caption' },
         ],
       },
       {
@@ -805,6 +891,7 @@ const PAGE_SECTIONS: PageSection[] = [
             storagePrefix: 'about/about-3',
             thumbClassName: 'aspect-[4/3]',
             siteVisibilityKey: 'about_performers_visible',
+            captionSiteKey: 'about_image_3_caption',
           },
         ],
       },
@@ -939,7 +1026,8 @@ export default function ContentTab() {
   }, []);
 
   const allTextFieldKeys = Object.keys(SITE_CONTENT_TEXT_DEFAULTS).sort() as SiteContentTextKey[];
-  const textEditorFieldCount = allTextFieldKeys.length + FAQ_JSON_EDITORS.length;
+  const textEditorFieldCount =
+    allTextFieldKeys.filter((k) => !ABOUT_IMAGE_CAPTION_KEYS.has(k)).length + FAQ_JSON_EDITORS.length;
 
   return (
     <div className="space-y-6">
@@ -1043,6 +1131,13 @@ export default function ContentTab() {
                               thumbClassName={slot.thumbClassName}
                               currentUrl={content[slot.key] ?? null}
                               onReplaced={(url) => updateLocal(slot.key, url)}
+                              captionSiteKey={slot.captionSiteKey}
+                              captionValue={slot.captionSiteKey ? content[slot.captionSiteKey] ?? null : null}
+                              onCaptionSaved={
+                                slot.captionSiteKey
+                                  ? (v) => updateLocal(slot.captionSiteKey!, v)
+                                  : undefined
+                              }
                               hidePhotoToggle={
                                 slot.siteVisibilityKey
                                   ? {
@@ -1099,7 +1194,10 @@ export default function ContentTab() {
                 </p>
 
                 {TEXT_SECTION_ORDER.map((section) => {
-                  const keys = allTextFieldKeys.filter((k) => textSectionForKey(k) === section.id);
+                  const keys = allTextFieldKeys.filter(
+                    (k) =>
+                      textSectionForKey(k) === section.id && !ABOUT_IMAGE_CAPTION_KEYS.has(k),
+                  );
                   if (keys.length === 0) return null;
                   return (
                     <div key={section.id} className="space-y-4">

@@ -22,6 +22,8 @@ export interface TextSectionProps {
    * (desktop stays text left, image right).
    */
   stackImageFirst?: boolean;
+  /** Shown below the image when set (e.g. About Us photo caption from site_content). */
+  imageCaption?: string;
   className?: string;
 }
 
@@ -35,6 +37,7 @@ const TextSection = ({
   imageAlt = 'Section image',
   imageObjectFit = 'cover',
   stackImageFirst = false,
+  imageCaption,
   className = '',
 }: TextSectionProps) => {
   const [imgSrc, setImgSrc] = useState(imageSrc);
@@ -101,31 +104,40 @@ const TextSection = ({
   const imageBlock = imgSrc ? (
     <div
       ref={imageRef}
-      className={`relative min-w-0 overflow-hidden rounded-[2.5rem] shadow-premium ${
+      className={`relative min-w-0 ${
         alignment === 'right' ? 'lg:order-1' : ''
       } ${
         stackImageFirst && alignment === 'left'
           ? 'order-1 lg:order-2'
           : ''
-      } ${imageObjectFit === 'contain' ? 'flex items-center justify-center bg-white/5 p-4 sm:p-6' : ''}`}
+      }`}
     >
-      <img
-        src={imgSrc}
-        alt={imageAlt}
-        loading="lazy"
-        className={
-          imageObjectFit === 'contain'
-            ? 'max-h-[min(85vh,820px)] w-full object-contain transition-transform duration-1000 hover:scale-[1.02]'
-            : 'aspect-[4/5] h-full w-full object-cover transition-transform duration-1000 hover:scale-110'
-        }
-        onError={() => {
-          if (imageFallbackSrc && imgSrc !== imageFallbackSrc) {
-            setImgSrc(imageFallbackSrc);
+      <div
+        className={`relative overflow-hidden rounded-[2.5rem] shadow-premium ${
+          imageObjectFit === 'contain' ? 'flex items-center justify-center bg-white/5 p-4 sm:p-6' : ''
+        }`}
+      >
+        <img
+          src={imgSrc}
+          alt={imageAlt}
+          loading="lazy"
+          className={
+            imageObjectFit === 'contain'
+              ? 'max-h-[min(85vh,820px)] w-full object-contain transition-transform duration-1000 hover:scale-[1.02]'
+              : 'aspect-[4/5] h-full w-full object-cover transition-transform duration-1000 hover:scale-110'
           }
-        }}
-      />
-      {imageObjectFit === 'cover' ? (
-        <div className="absolute inset-0 bg-primary/10 opacity-0 hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+          onError={() => {
+            if (imageFallbackSrc && imgSrc !== imageFallbackSrc) {
+              setImgSrc(imageFallbackSrc);
+            }
+          }}
+        />
+        {imageObjectFit === 'cover' ? (
+          <div className="absolute inset-0 bg-primary/10 opacity-0 hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+        ) : null}
+      </div>
+      {imageCaption != null && imageCaption.trim() !== '' ? (
+        <p className="mt-4 text-center font-display font-bold text-lg text-gray-400">{imageCaption.trim()}</p>
       ) : null}
     </div>
   ) : null;
