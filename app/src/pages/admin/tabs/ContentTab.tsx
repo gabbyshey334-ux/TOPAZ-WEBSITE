@@ -953,6 +953,25 @@ export default function ContentTab() {
             Change photos, hero video, and page backgrounds without touching code. Public pages use these keys with
             safe fallbacks when a slot is empty.
           </p>
+          <div className="mt-4 rounded-xl border border-[#2E75B6]/40 bg-[#2E75B6]/10 px-4 py-3 text-sm text-slate-200">
+            <p className="font-bold text-white">Where to edit what</p>
+            <ul className="mt-2 list-disc space-y-1 pl-5 text-slate-300">
+              <li>
+                <strong className="text-white">Photos &amp; hero video</strong> — expand the page sections below
+                (Homepage, About page, Schedule, etc.). This is separate from the text editor.
+              </li>
+              <li>
+                <strong className="text-white">Wording, buttons, footer, contact lines, optional FAQ JSON</strong> —
+                open <strong className="text-white">All website text &amp; FAQs</strong> at the bottom of this tab.
+              </li>
+            </ul>
+            <p className="mt-2 text-xs text-slate-400">
+              If new uploads look correct here but the live site still shows an old photo, the site may be falling back
+              because guests cannot read the storage bucket — apply the latest Supabase migration (gallery-media public
+              read) or add a Storage policy so <code className="text-slate-300">anon</code> can SELECT objects in{' '}
+              <code className="text-slate-300">gallery-media</code>.
+            </p>
+          </div>
         </div>
         <Button
           size="sm"

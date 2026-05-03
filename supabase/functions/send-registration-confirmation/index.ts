@@ -178,6 +178,14 @@ Deno.serve(async (req: Request) => {
         ${song_title ? `<div class="detail-row"><span class="detail-label">Song</span><span class="detail-value">${song_title}${artist_name ? ' — ' + artist_name : ''}</span></div>` : ''}
       </div>
 
+      <div style="background:#f5f3ff;border-left:4px solid #6D1ED4;padding:16px;margin:20px 0;border-radius:4px;">
+        <strong style="font-size:16px;">💜 Payment Required</strong><br><br>
+        Please send <strong>${feeFormatted}</strong> via Zelle to:<br>
+        <strong style="font-size:18px;">TOPAZ2.0@yahoo.com</strong><br><br>
+        Memo: <strong>${contestant_name} — ${routine_name ?? '—'}</strong><br><br>
+        <em style="color:#6b7280;">Your registration is not confirmed until payment is received.</em>
+      </div>
+
       <p>Entry fee: <span class="fee">${feeFormatted}</span></p>
       <p style="font-size:13px;color:#6b7280;">Solo $100 &bull; Duo $80/person &bull; Trio $70/person &bull; Group/Production $60/person</p>
 
@@ -214,6 +222,8 @@ ${studio_name ? `- Studio: ${studio_name}\n` : ''}- Category: ${category}
 - Entry Type: ${group_size}
 ${routine_name ? `- Routine: ${routine_name}\n` : ''}${song_title ? `- Song: ${song_title}${artist_name ? ' — ' + artist_name : ''}\n` : ''}
 Entry Fee: ${feeFormatted}
+
+Payment (Zelle): Send ${feeFormatted} to TOPAZ2.0@yahoo.com. Memo: ${contestant_name} — ${routine_name ?? '—'}. Your registration is not confirmed until payment is received.
 
 Music: ${musicNote}
 

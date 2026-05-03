@@ -164,7 +164,7 @@ export const SITE_CONTENT_TEXT_DEFAULTS = {
   schedule_event_description:
     'Event time: 8:00 AM – 12:00 PM. Registration opens April 1, 2026. Deadline: July 30, 2026, 12:00 AM.',
   rules_ballet_note:
-    'Pointe powder will NOT be supplied by TOPAZ 2.0. Dancers must bring their own.',
+    'Rosin powder will NOT be supplied by TOPAZ 2.0. Dancers must bring their own.',
   rules_general_note: '',
 
   footer_tagline:
@@ -202,7 +202,8 @@ export const SITE_CONTENT_TEXT_DEFAULTS = {
   home_legacy_kicker: 'Why Choose TOPAZ',
   home_legacy_heading_main: 'TOPAZ ',
   home_legacy_heading_accent: 'Legacy',
-  home_legacy_subheading: 'Over five decades of nurturing talent and creating unforgettable moments',
+  home_legacy_subheading:
+    'Over three decades of nurturing talent, building community, and creating unforgettable moments in theatrical arts.',
   home_legacy_card_1_title: 'PRESTIGIOUS AWARDS',
   home_legacy_card_1_body:
     'Our unique cumulative scoring system lets dancers earn bronze, silver, and gold medals as they progress through the competition season.',
@@ -229,7 +230,7 @@ export const SITE_CONTENT_TEXT_DEFAULTS = {
   about_page_title_main: 'About ',
   about_page_title_accent: 'Us',
   about_hero_subtitle:
-    'Over five decades of nurturing talent, building community, and creating unforgettable moments in theatrical arts.',
+    'Over three decades of nurturing talent, building community, and creating unforgettable moments in theatrical arts.',
   about_story_kicker: 'The Founders',
   about_story_heading_main: 'Our ',
   about_story_heading_accent: 'Story',
