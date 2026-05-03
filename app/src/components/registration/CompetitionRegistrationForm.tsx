@@ -76,9 +76,11 @@ const GROUP_SIZES = [
 
 const PAYMENT_METHODS = ['Check', 'Money Order'] as const;
 
+const PAYMENT_INSTRUCTIONS =
+  'Payment accepted by Check, Money Order, or Zelle. For Zelle payments send to TOPAZ2.0@yahoo.com — include your dancer name and routine name in the memo.';
+
 /** Zelle payee (Nick) — display and deep link must match exactly */
 const ZELLE_EMAIL = 'TOPAZ2.0@yahoo.com';
-const ZELLE_RECIPIENT_LEGAL_NAME = 'Topaz LLC';
 const ZELLE_DEEP_LINK = `zelle://send?email=${ZELLE_EMAIL}`;
 const ZELLE_WEB_FALLBACK = 'https://www.zellepay.com';
 
@@ -626,17 +628,11 @@ export default function CompetitionRegistrationForm() {
             <p className="font-display font-black text-lg text-[#0a0a0a] uppercase tracking-tight mb-4">
               💳 Payment Required to Confirm Your Spot
             </p>
+            <p className="text-gray-700 font-medium leading-relaxed mb-4">{PAYMENT_INSTRUCTIONS}</p>
             <p className="text-gray-700 font-medium leading-relaxed mb-2">
-              Send <span className="font-black text-[#2E75B6]">${success.total_fee.toFixed(2)}</span> via Zelle to:
+              Amount due: <span className="font-black text-[#2E75B6]">${success.total_fee.toFixed(2)}</span>
             </p>
-            <p className="font-black text-xl text-[#0a0a0a] break-all mb-4">{ZELLE_EMAIL}</p>
-            <p className="text-sm font-bold text-gray-800 mb-1">
-              Memo:{' '}
-              <span className="text-[#0a0a0a]">
-                {success.contestant_name} — {success.routine_name}
-              </span>
-            </p>
-            <p className="text-sm font-semibold text-gray-600 mt-4 mb-6">
+            <p className="text-sm font-semibold text-gray-600 mb-6">
               Your registration is NOT confirmed until payment is received by TOPAZ 2.0.
             </p>
             <CopyZellePaymentDetailsButton
@@ -1099,25 +1095,14 @@ export default function CompetitionRegistrationForm() {
                 </div>
 
                 <div className="rounded-[2rem] border-2 border-[#6D1ED4]/30 border-l-4 border-l-[#6D1ED4] p-6 sm:p-8 shadow-sm bg-[#f5f3ff]">
-                  <p className="font-display font-black text-xl uppercase tracking-tight mb-1 text-[#6D1ED4]">
-                    💜 Pay with Zelle
+                  <p className="font-display font-black text-xl uppercase tracking-tight mb-3 text-[#6D1ED4]">
+                    Payment
                   </p>
-                  <p className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-4">{ZELLE_RECIPIENT_LEGAL_NAME}</p>
-                  <p className="text-sm font-bold text-gray-600 mb-1">Send payment to:</p>
-                  <p className="font-black text-lg text-[#0a0a0a] break-all mb-4">{ZELLE_EMAIL}</p>
-                  <p className="text-sm font-semibold text-gray-800 mb-1">
+                  <p className="text-sm font-medium text-gray-700 leading-relaxed mb-4">{PAYMENT_INSTRUCTIONS}</p>
+                  <p className="text-sm font-semibold text-gray-800 mb-4">
                     Amount due:{' '}
                     <span className="font-black text-xl text-[#6D1ED4]">${totalFee.toFixed(2)}</span>
                   </p>
-                  <div className="mt-4 rounded-xl bg-amber-50 border border-amber-200/80 p-4 text-sm font-medium text-amber-950">
-                    <p className="font-bold mb-1">⚠️ Memo</p>
-                    <p className="leading-snug">
-                      <span className="font-black">{contestantName.trim() || '—'}</span>
-                      <span className="mx-1">—</span>
-                      <span className="font-black">{routineName.trim() || '—'}</span>
-                    </p>
-                    <p className="text-xs text-amber-900/90 mt-2">Include this in your Zelle payment memo</p>
-                  </div>
                   <div className="mt-6 flex flex-col sm:flex-row gap-3">
                     <button
                       type="button"

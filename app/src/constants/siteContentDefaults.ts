@@ -250,7 +250,7 @@ export const SITE_CONTENT_TEXT_DEFAULTS = {
   about_heritage_kicker: 'Through The Years',
   about_heritage_heading_main: 'TOPAZ ',
   about_heritage_heading_accent: 'Heritage',
-  about_heritage_caption: 'Performers on Stage — Early Years',
+  about_heritage_caption: 'Bob and Pat — TOPAZ Founders',
   about_team_heading: 'Meet The|Team',
   about_team_role_vp: 'Vice President',
   about_team_role_founder: 'Founder',

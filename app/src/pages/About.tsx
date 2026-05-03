@@ -288,7 +288,7 @@ const About = () => {
 
               <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-white rounded-full shadow-xl px-6 py-3 border border-gray-100">
                 <p className="font-display font-bold text-gray-900 whitespace-nowrap">
-                  {siteContentText(siteContent, 'about_heritage_caption')}
+                  Bob and Pat — TOPAZ Founders
                 </p>
               </div>
             </div>
