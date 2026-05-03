@@ -21,6 +21,7 @@ interface RegistrationEmailPayload {
   song_title?: string;
   artist_name?: string;
   music_delivery_method?: string;
+  payment_type?: string;
 }
 
 // Build a service-role client used to write back email status to the
@@ -83,7 +84,20 @@ Deno.serve(async (req: Request) => {
     });
   }
 
-  let { to, contestant_name, category, group_size, total_fee, studio_name, teacher_name, routine_name, song_title, artist_name, music_delivery_method } = payload;
+  let {
+    to,
+    contestant_name,
+    category,
+    group_size,
+    total_fee,
+    studio_name,
+    teacher_name,
+    routine_name,
+    song_title,
+    artist_name,
+    music_delivery_method,
+    payment_type,
+  } = payload;
   const registrationId = payload.registrationId;
 
   // If only a registrationId was provided, load the fields from the DB.
@@ -98,7 +112,9 @@ Deno.serve(async (req: Request) => {
     }
     const { data: reg, error: regErr } = await client
       .from('registrations')
-      .select('email, contestant_name, category, group_size, total_fee, studio_name, teacher_name, routine_name, song_title, artist_name, music_delivery_method')
+      .select(
+        'email, contestant_name, category, group_size, total_fee, payment_type, studio_name, teacher_name, routine_name, song_title, artist_name, music_delivery_method',
+      )
       .eq('id', registrationId)
       .single();
     if (regErr || !reg) {
@@ -112,6 +128,7 @@ Deno.serve(async (req: Request) => {
     category = reg.category as string;
     group_size = reg.group_size as string;
     total_fee = Number(reg.total_fee);
+    payment_type = (reg.payment_type as string | null) ?? 'individual';
     studio_name = (reg.studio_name as string | null) ?? undefined;
     teacher_name = (reg.teacher_name as string | null) ?? undefined;
     routine_name = (reg.routine_name as string | null) ?? undefined;
@@ -126,6 +143,14 @@ Deno.serve(async (req: Request) => {
       headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
     });
   }
+
+  const paymentTypeResolved = payment_type === 'group_full' ? 'group_full' : 'individual';
+  const paymentTypeLabel =
+    paymentTypeResolved === 'group_full'
+      ? 'Full group total (entire routine fee on this registration)'
+      : 'Individual share (per dancer registering separately)';
+
+  const ZELLE_PAYEE = 'TOPAZ2.0@dancetopaz.com';
 
   const musicNote = music_delivery_method === 'upload'
     ? 'Your music file has been uploaded digitally.'
@@ -174,6 +199,7 @@ Deno.serve(async (req: Request) => {
         ${teacher_name ? `<div class="detail-row"><span class="detail-label">Teacher</span><span class="detail-value">${teacher_name}</span></div>` : ''}
         <div class="detail-row"><span class="detail-label">Category</span><span class="detail-value">${category}</span></div>
         <div class="detail-row"><span class="detail-label">Entry Type</span><span class="detail-value">${group_size}</span></div>
+        <div class="detail-row"><span class="detail-label">Payment type</span><span class="detail-value">${paymentTypeLabel}</span></div>
         ${routine_name ? `<div class="detail-row"><span class="detail-label">Routine Name</span><span class="detail-value">${routine_name}</span></div>` : ''}
         ${song_title ? `<div class="detail-row"><span class="detail-label">Song</span><span class="detail-value">${song_title}${artist_name ? ' — ' + artist_name : ''}</span></div>` : ''}
       </div>
@@ -181,7 +207,7 @@ Deno.serve(async (req: Request) => {
       <div style="background:#f5f3ff;border-left:4px solid #6D1ED4;padding:16px;margin:20px 0;border-radius:4px;">
         <strong style="font-size:16px;">💜 Payment Required</strong><br><br>
         Please send <strong>${feeFormatted}</strong> via Zelle to:<br>
-        <strong style="font-size:18px;">TOPAZ2.0@yahoo.com</strong><br><br>
+        <strong style="font-size:18px;">${ZELLE_PAYEE}</strong><br><br>
         Memo: <strong>${contestant_name} — ${routine_name ?? '—'}</strong><br><br>
         <em style="color:#6b7280;">Your registration is not confirmed until payment is received.</em>
       </div>
@@ -220,10 +246,10 @@ Entry Summary:
 - Dancer/Entry: ${contestant_name}
 ${studio_name ? `- Studio: ${studio_name}\n` : ''}- Category: ${category}
 - Entry Type: ${group_size}
-${routine_name ? `- Routine: ${routine_name}\n` : ''}${song_title ? `- Song: ${song_title}${artist_name ? ' — ' + artist_name : ''}\n` : ''}
+${routine_name ? `- Routine: ${routine_name}\n` : ''}${song_title ? `- Song: ${song_title}${artist_name ? ' — ' + artist_name : ''}\n` : ''}- Payment type: ${paymentTypeLabel}
 Entry Fee: ${feeFormatted}
 
-Payment (Zelle): Send ${feeFormatted} to TOPAZ2.0@yahoo.com. Memo: ${contestant_name} — ${routine_name ?? '—'}. Your registration is not confirmed until payment is received.
+Payment (Zelle): Send ${feeFormatted} to ${ZELLE_PAYEE}. Memo: ${contestant_name} — ${routine_name ?? '—'}. Your registration is not confirmed until payment is received.
 
 Music: ${musicNote}
 

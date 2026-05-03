@@ -54,8 +54,9 @@ const SPECIAL = [
 
 const AGE_DIVISIONS = [
   '3–7 years of age',
-  '8–12 years of age',
-  '13–18 years of age',
+  '8–10 years of age',
+  '11–13 years of age',
+  '14–18 years of age',
   '19 years of age and up',
 ] as const;
 
@@ -77,11 +78,11 @@ const GROUP_SIZES = [
 const PAYMENT_METHODS = ['Check', 'Money Order'] as const;
 
 const PAYMENT_INSTRUCTIONS =
-  'Payment accepted by Check, Money Order, or Zelle. For Zelle payments send to TOPAZ2.0@yahoo.com — include your dancer name and routine name in the memo.';
+  'Payment accepted by Check, Money Order, or Zelle. For Zelle payments send to TOPAZ2.0@dancetopaz.com — include your dancer name and routine name in the memo.';
 
 /** Zelle payee (Nick) — display and deep link must match exactly */
-const ZELLE_EMAIL = 'TOPAZ2.0@yahoo.com';
-const ZELLE_DEEP_LINK = `zelle://send?email=${ZELLE_EMAIL}`;
+const ZELLE_EMAIL = 'TOPAZ2.0@dancetopaz.com';
+const ZELLE_DEEP_LINK = `zelle://send?email=${encodeURIComponent(ZELLE_EMAIL)}`;
 const ZELLE_WEB_FALLBACK = 'https://www.zellepay.com';
 
 function openZelleApp() {
@@ -196,6 +197,25 @@ function computeFee(groupSize: string, count: number): number {
   return 60 * count;
 }
 
+/** Per-person entry rate (each dancer registers separately for duo/group). */
+function perPersonRate(groupSize: string): number {
+  if (!groupSize) return 0;
+  if (groupSize.startsWith('Solo')) return 100;
+  if (groupSize.startsWith('Duo')) return 80;
+  if (groupSize.startsWith('Trio')) return 70;
+  return 60;
+}
+
+/** Whether `age` (whole years on competition day) fits the selected division label. */
+function divisionAcceptsAge(division: string, age: number): boolean {
+  if (division === '3–7 years of age') return age >= 3 && age <= 7;
+  if (division === '8–10 years of age') return age >= 8 && age <= 10;
+  if (division === '11–13 years of age') return age >= 11 && age <= 13;
+  if (division === '14–18 years of age') return age >= 14 && age <= 18;
+  if (division === '19 years of age and up') return age >= 19;
+  return false;
+}
+
 function emptyParticipant(): RegistrationParticipant {
   return { name: '', age: '', signature_confirmed: false };
 }
@@ -272,6 +292,8 @@ export default function CompetitionRegistrationForm() {
     category: string;
     group_size: string;
     total_fee: number;
+    entry_total_fee: number;
+    payment_type: 'individual' | 'group_full';
     email: string;
     song_title: string;
     artist_name: string;
@@ -328,6 +350,7 @@ export default function CompetitionRegistrationForm() {
   // ── Step 4: Payment + participants ───────────────────────────────────────
   const [participants, setParticipants] = useState<RegistrationParticipant[]>([emptyParticipant()]);
   const [paymentMethod, setPaymentMethod] = useState('');
+  const [paymentType, setPaymentType] = useState<'individual' | 'group_full'>('individual');
 
   // ── Step 5: Disclaimer ───────────────────────────────────────────────────
   const [disclaimerAccepted, setDisclaimerAccepted] = useState(false);
@@ -349,19 +372,41 @@ export default function CompetitionRegistrationForm() {
     return Math.max(minParticipants(groupSize), participants.length);
   }, [groupSize, participants]);
 
-  const totalFee = useMemo(() => {
+  const entryTotalFee = useMemo(() => {
     if (!groupSize) return 0;
     return computeFee(groupSize, countForFee);
   }, [groupSize, countForFee]);
 
-  const feeBreakdown = useMemo(() => {
+  const perPersonAmount = useMemo(() => perPersonRate(groupSize), [groupSize]);
+
+  const amountDue = useMemo(() => {
+    if (!groupSize) return 0;
+    if (paymentType === 'group_full') return entryTotalFee;
+    return perPersonAmount;
+  }, [groupSize, paymentType, entryTotalFee, perPersonAmount]);
+
+  const feeShareLabel = useMemo(
+    () =>
+      paymentType === 'group_full'
+        ? 'You are paying the full entry total for this registration.'
+        : 'Your share of the entry fee.',
+    [paymentType],
+  );
+
+  const feeTotalExplainer = useMemo(() => {
     if (!groupSize) return '';
-    const n = countForFee;
-    if (groupSize.startsWith('Solo')) return 'Solo entry: $100';
-    if (groupSize.startsWith('Duo')) return `Duo: $80 × ${n} = $${80 * n}`;
-    if (groupSize.startsWith('Trio')) return `Trio: $70 × ${n} = $${70 * n}`;
-    return `Group / Production: $60 × ${n} = $${60 * n}`;
-  }, [groupSize, countForFee]);
+    if (groupSize.startsWith('Solo')) {
+      return `Total for this entry type: $${entryTotalFee.toFixed(2)}.`;
+    }
+    return `Total for this entry type: $${entryTotalFee.toFixed(2)} — each participant pays their own share.`;
+  }, [groupSize, entryTotalFee]);
+
+  const ageDivisionError = useMemo(() => {
+    if (!ageDivision || !dateOfBirth) return null;
+    const age = ageAsOf(dateOfBirth, COMPETITION_DATE);
+    if (divisionAcceptsAge(ageDivision, age)) return null;
+    return `Your age does not match the selected division. Please select the correct age group for a ${age} year old dancer.`;
+  }, [ageDivision, dateOfBirth]);
 
   function syncParticipantsToGroupSize(gs: string) {
     const n = defaultParticipantCount(gs);
@@ -399,6 +444,12 @@ export default function CompetitionRegistrationForm() {
     if (s === 2 && !category) return 'Select one category.';
     if (s === 3) {
       if (!ageDivision) return 'Select an age division.';
+      if (dateOfBirth) {
+        const stepAge = ageAsOf(dateOfBirth, COMPETITION_DATE);
+        if (!divisionAcceptsAge(ageDivision, stepAge)) {
+          return `Your age does not match the selected division. Please select the correct age group for a ${stepAge} year old dancer.`;
+        }
+      }
       if (!abilityLevel) return 'Select an ability level.';
       if (!songTitle.trim()) return 'Song title is required.';
       if (!artistName.trim()) return 'Artist / composer name is required.';
@@ -450,7 +501,12 @@ export default function CompetitionRegistrationForm() {
   }
 
   async function submit() {
-    const err = validateStep(5);
+    const err =
+      validateStep(1) ||
+      validateStep(2) ||
+      validateStep(3) ||
+      validateStep(4) ||
+      validateStep(5);
     setError(err);
     if (err) {
       scrollFormIntoView();
@@ -468,7 +524,9 @@ export default function CompetitionRegistrationForm() {
       setSubmitting(false);
       return;
     }
-    const fee = computeFee(groupSize, n);
+    const entryFull = computeFee(groupSize, n);
+    const payShare = perPersonRate(groupSize);
+    const fee = paymentType === 'group_full' ? entryFull : payShare;
 
     // ── Build participants payload — ALWAYS an array, never null/undefined ──
     // The DB column `participants_json` is NOT NULL (with default '[]'::jsonb),
@@ -532,6 +590,7 @@ export default function CompetitionRegistrationForm() {
       music_file_url: musicFileUrl,
       contestant_count: n,
       total_fee: fee,
+      payment_type: paymentType,
       payment_method: paymentMethod,
       participants_json: participantsPayload ?? [],
       disclaimer_accepted: true,
@@ -568,6 +627,7 @@ export default function CompetitionRegistrationForm() {
             artist_name: row.artist_name,
             music_delivery_method: row.music_delivery_method,
             total_fee: fee,
+            payment_type: paymentType,
           },
         });
       } catch {
@@ -596,6 +656,8 @@ export default function CompetitionRegistrationForm() {
       category,
       group_size: groupSize,
       total_fee: fee,
+      entry_total_fee: entryFull,
+      payment_type: paymentType,
       email: row.email,
       song_title: songTitle.trim(),
       artist_name: artistName.trim(),
@@ -629,9 +691,25 @@ export default function CompetitionRegistrationForm() {
               💳 Payment Required to Confirm Your Spot
             </p>
             <p className="text-gray-700 font-medium leading-relaxed mb-4">{PAYMENT_INSTRUCTIONS}</p>
+            <p className="text-sm font-semibold text-gray-800 mb-1">
+              Pay to <span className="font-black text-[#2E75B6]">{ZELLE_EMAIL}</span> (Zelle)
+            </p>
             <p className="text-gray-700 font-medium leading-relaxed mb-2">
               Amount due: <span className="font-black text-[#2E75B6]">${success.total_fee.toFixed(2)}</span>
             </p>
+            <p className="text-sm text-gray-600 font-medium mb-1">
+              {success.payment_type === 'individual' ? 'Your share of the entry fee.' : 'Full routine / group total payment.'}
+            </p>
+            {!success.group_size.startsWith('Solo') && success.payment_type === 'individual' && success.entry_total_fee > success.total_fee ? (
+              <p className="text-sm text-gray-500 font-medium mb-4">
+                Total for this entry type: ${success.entry_total_fee.toFixed(2)} — each participant pays their own share.
+              </p>
+            ) : null}
+            {success.payment_type === 'group_full' && !success.group_size.startsWith('Solo') ? (
+              <p className="text-sm text-gray-500 font-medium mb-4">
+                Total for this entry type: ${success.entry_total_fee.toFixed(2)} — you chose to pay the full amount on this registration.
+              </p>
+            ) : null}
             <p className="text-sm font-semibold text-gray-600 mb-6">
               Your registration is NOT confirmed until payment is received by TOPAZ 2.0.
             </p>
@@ -660,8 +738,11 @@ export default function CompetitionRegistrationForm() {
               </div>
             )}
             <div>
-              <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1">Total Entry Fee</p>
+              <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1">Amount due</p>
               <p className="font-black text-3xl text-[#2E75B6]">${success.total_fee.toFixed(2)}</p>
+              <p className="text-xs font-medium text-gray-500 mt-1">
+                {success.payment_type === 'individual' ? 'Individual share' : 'Full group / routine total'}
+              </p>
             </div>
             <div>
               <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1">Confirmation Email</p>
@@ -803,6 +884,7 @@ export default function CompetitionRegistrationForm() {
                   onValueChange={(v) => {
                     setGroupSize(v);
                     syncParticipantsToGroupSize(v);
+                    setPaymentType('individual');
                     if (!v.startsWith('Solo')) setSoloSignatureConfirmed(false);
                     if (v.startsWith('Solo')) setGroupLinkCode('');
                   }}
@@ -987,6 +1069,12 @@ export default function CompetitionRegistrationForm() {
                       </label>
                     ))}
                   </RadioGroup>
+                  {ageDivisionError ? (
+                    <p className="mt-3 text-sm font-medium text-red-600 flex items-start gap-2">
+                      <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+                      {ageDivisionError}
+                    </p>
+                  ) : null}
                 </div>
 
                 {/* Ability level */}
@@ -1090,8 +1178,33 @@ export default function CompetitionRegistrationForm() {
                 <div className="rounded-[2rem] bg-[#0a0a0a] p-8 text-white relative overflow-hidden shadow-2xl">
                   <div className="absolute top-0 right-0 w-48 h-48 bg-[#2E75B6]/20 rounded-full blur-[60px] pointer-events-none" />
                   <p className="font-bold text-[#2E75B6] text-xs uppercase tracking-widest mb-4 relative z-10">Entry fee calculation</p>
-                  <p className="text-4xl font-black text-white relative z-10 mb-2">${totalFee.toFixed(2)}</p>
-                  <p className="text-sm text-gray-400 font-medium relative z-10">{feeBreakdown || 'Select entry type in step 1.'}</p>
+                  <p className="text-4xl font-black text-white relative z-10 mb-2">${amountDue.toFixed(2)}</p>
+                  <p className="text-sm text-gray-300 font-medium relative z-10 mb-1">{feeShareLabel}</p>
+                  <p className="text-sm text-gray-400 font-medium relative z-10">
+                    {groupSize ? feeTotalExplainer : 'Select entry type in step 1.'}
+                  </p>
+                </div>
+
+                <div>
+                  <FormLabel>Who is paying for this entry? *</FormLabel>
+                  <RadioGroup
+                    value={paymentType}
+                    onValueChange={(v) => setPaymentType(v as 'individual' | 'group_full')}
+                    className="space-y-3 mt-4"
+                  >
+                    <label className="flex items-start gap-4 rounded-2xl border-2 border-gray-100 p-4 cursor-pointer transition-all hover:bg-gray-50 has-[:checked]:border-[#2E75B6] has-[:checked]:bg-[#2E75B6]/5">
+                      <RadioGroupItem value="individual" className="w-5 h-5 mt-0.5 shrink-0" />
+                      <span className="font-bold text-gray-800 text-sm leading-snug">
+                        I am paying my share (${perPersonAmount.toFixed(2)})
+                      </span>
+                    </label>
+                    <label className="flex items-start gap-4 rounded-2xl border-2 border-gray-100 p-4 cursor-pointer transition-all hover:bg-gray-50 has-[:checked]:border-[#2E75B6] has-[:checked]:bg-[#2E75B6]/5">
+                      <RadioGroupItem value="group_full" className="w-5 h-5 mt-0.5 shrink-0" />
+                      <span className="font-bold text-gray-800 text-sm leading-snug">
+                        I am paying for the whole group (${entryTotalFee.toFixed(2)})
+                      </span>
+                    </label>
+                  </RadioGroup>
                 </div>
 
                 <div className="rounded-[2rem] border-2 border-[#6D1ED4]/30 border-l-4 border-l-[#6D1ED4] p-6 sm:p-8 shadow-sm bg-[#f5f3ff]">
@@ -1099,9 +1212,12 @@ export default function CompetitionRegistrationForm() {
                     Payment
                   </p>
                   <p className="text-sm font-medium text-gray-700 leading-relaxed mb-4">{PAYMENT_INSTRUCTIONS}</p>
+                  <p className="text-sm font-semibold text-gray-800 mb-1">
+                    Pay to <span className="font-black text-[#6D1ED4]">{ZELLE_EMAIL}</span> (Zelle)
+                  </p>
                   <p className="text-sm font-semibold text-gray-800 mb-4">
                     Amount due:{' '}
-                    <span className="font-black text-xl text-[#6D1ED4]">${totalFee.toFixed(2)}</span>
+                    <span className="font-black text-xl text-[#6D1ED4]">${amountDue.toFixed(2)}</span>
                   </p>
                   <div className="mt-6 flex flex-col sm:flex-row gap-3">
                     <button
@@ -1112,7 +1228,7 @@ export default function CompetitionRegistrationForm() {
                       Open Zelle App
                     </button>
                     <CopyZellePaymentDetailsButton
-                      fee={totalFee}
+                      fee={amountDue}
                       dancerName={contestantName.trim() || '—'}
                       routineName={routineName.trim() || '—'}
                       className="flex-1"
@@ -1222,7 +1338,18 @@ export default function CompetitionRegistrationForm() {
                 <div className="sm:col-span-2 h-px bg-gray-200 my-2" />
                 
                 <div><span className="text-gray-400 text-xs font-bold uppercase tracking-widest">Payment Method</span><p className="font-bold text-lg text-gray-800 mt-1">{paymentMethod}</p></div>
-                <div><span className="text-gray-400 text-xs font-bold uppercase tracking-widest">Total Fee</span><p className="font-black text-3xl text-[#2E75B6] mt-1">${totalFee.toFixed(2)}</p></div>
+                <div>
+                  <span className="text-gray-400 text-xs font-bold uppercase tracking-widest">Who is paying</span>
+                  <p className="font-bold text-lg text-gray-800 mt-1">
+                    {paymentType === 'individual' ? 'My share only' : 'Full routine / group total'}
+                  </p>
+                </div>
+                <div className="sm:col-span-2">
+                  <span className="text-gray-400 text-xs font-bold uppercase tracking-widest">Amount due</span>
+                  <p className="font-black text-3xl text-[#2E75B6] mt-1">${amountDue.toFixed(2)}</p>
+                  <p className="text-sm text-gray-500 font-medium mt-2">{feeShareLabel}</p>
+                  <p className="text-sm text-gray-500 font-medium">{feeTotalExplainer}</p>
+                </div>
               </div>
 
               {needsParticipantTable(groupSize) && participants.length > 0 && (

@@ -19,9 +19,7 @@ function aboutPerformersSectionVisible(
 ): boolean {
   if (!contentReady) return false;
   const raw = map['about_performers_visible'];
-  if (raw == null) return true;
-  const s = String(raw).trim().toLowerCase();
-  if (s === '') return true;
+  const s = String(raw ?? '').trim().toLowerCase();
   return s === 'true';
 }
 

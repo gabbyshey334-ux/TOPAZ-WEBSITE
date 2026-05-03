@@ -73,6 +73,7 @@ export type Database = {
           contestant_count: number;
           total_fee: number;
           payment_method: string;
+          payment_type: string;
           participants_json: Json | null;
           // Music
           song_title: string | null;
@@ -121,6 +122,7 @@ export type Database = {
           contestant_count: number;
           total_fee: number;
           payment_method: string;
+          payment_type?: string;
           participants_json?: Json | null;
           song_title?: string | null;
           artist_name?: string | null;
@@ -165,6 +167,7 @@ export type Database = {
           contestant_count?: number;
           total_fee?: number;
           payment_method?: string;
+          payment_type?: string;
           participants_json?: Json | null;
           song_title?: string | null;
           artist_name?: string | null;

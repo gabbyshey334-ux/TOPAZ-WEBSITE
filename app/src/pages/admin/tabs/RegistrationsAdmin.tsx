@@ -1025,7 +1025,7 @@ export default function RegistrationsAdmin() {
       'studio_address', 'studio_city', 'studio_state', 'studio_zip',
       'category', 'age_division', 'ability_level', 'group_size',
       'song_title', 'artist_name', 'music_delivery_method',
-      'contestant_count', 'total_fee', 'payment_method',
+      'contestant_count', 'total_fee', 'payment_method', 'payment_type',
       'disclaimer_accepted',
     ] as const;
 
