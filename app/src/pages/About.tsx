@@ -308,13 +308,14 @@ const About = () => {
 
             <div className="relative max-w-5xl mx-auto">
               <div className="overflow-hidden rounded-[2.5rem] border border-gray-200 bg-gray-900 shadow-2xl">
-                <div className="flex h-72 w-full items-start justify-center overflow-hidden bg-gray-900">
+                {/* Same `about_image_3` URL at all breakpoints — contain avoids wide-desktop crop that looked like a different/banner image */}
+                <div className="flex min-h-[220px] w-full items-center justify-center overflow-hidden bg-gray-900 aspect-[4/3] sm:min-h-[260px] md:aspect-[16/10] md:min-h-[280px] lg:min-h-[320px]">
                   <img
                     key={aboutImage3Url}
                     src={aboutImage3Url}
                     alt={siteContentText(siteContent, 'about_image_3_alt')}
                     loading="lazy"
-                    className="h-full w-full object-cover object-top bg-gray-900"
+                    className="max-h-[min(72vh,520px)] w-full object-contain object-center bg-gray-900"
                   />
                 </div>
               </div>
