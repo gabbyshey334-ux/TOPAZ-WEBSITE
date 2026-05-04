@@ -44,6 +44,35 @@ import {
   List,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { FunctionsHttpError } from '@supabase/functions-js';
+
+/**
+ * When an Edge Function returns 4xx/5xx, supabase-js throws FunctionsHttpError with a generic
+ * `message` and puts the **unparsed** Response on `error.context`. The JSON body (`{ error: "..." }`)
+ * must be read from that Response — otherwise the admin only sees "Edge Function returned a non-2xx status code".
+ */
+async function parseSyncInvokeFailure(error: unknown): Promise<string> {
+  if (error instanceof FunctionsHttpError) {
+    try {
+      const res = error.context as Response;
+      const ct = res.headers.get('Content-Type') ?? '';
+      if (ct.includes('application/json')) {
+        const body = (await res.json()) as unknown;
+        if (body && typeof body === 'object' && body !== null && 'error' in body) {
+          const inner = (body as { error?: unknown }).error;
+          if (inner != null && String(inner).trim() !== '') return String(inner);
+        }
+      } else {
+        const text = (await res.text()).trim();
+        if (text) return text.length > 600 ? `${text.slice(0, 600)}…` : text;
+      }
+    } catch {
+      // fall through to generic message
+    }
+  }
+  if (error instanceof Error) return error.message;
+  return String(error ?? 'Unknown error');
+}
 
 // ── Sync error classification ────────────────────────────────────────────────
 // When the scoring app doesn't have the TOPAZ competition yet, the edge
@@ -239,7 +268,7 @@ function DetailDialog({
       const { data, error } = await supabase.functions.invoke('sync-to-scoring-app', {
         body: { registrationId: row.id },
       });
-      if (error) throw new Error(error.message);
+      if (error) throw new Error(await parseSyncInvokeFailure(error));
       if (data?.alreadySynced) {
         setSyncMsg('Already synced — no action needed.');
       } else if (data?.skipped) {
@@ -872,8 +901,8 @@ export default function RegistrationsAdmin() {
           body: { registrationId: reg.id },
         });
         if (error) {
-          thisError = error.message || 'Unknown error';
-        } else if (data && typeof data === 'object' && 'error' in data && data.error) {
+          thisError = await parseSyncInvokeFailure(error);
+        } else if (data && typeof data === 'object' && data !== null && 'error' in data && (data as { error?: unknown }).error) {
           thisError = String((data as { error: unknown }).error);
         } else {
           successCount++;
@@ -981,7 +1010,7 @@ export default function RegistrationsAdmin() {
           'sync-to-scoring-app',
           { body: { registrationId: (insData as RegRow).id } }
         );
-        if (syncErr) throw new Error(syncErr.message);
+        if (syncErr) throw new Error(await parseSyncInvokeFailure(syncErr));
         if (syncData?.alreadySynced) {
           syncMsg = 'Registration added — already synced to scoring app.';
         } else if (syncData?.skipped) {

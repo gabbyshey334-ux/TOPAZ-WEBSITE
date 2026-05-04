@@ -92,15 +92,25 @@ Deno.serve(async (req: Request) => {
     });
   }
 
-  // Validate secrets are configured
-  if (!SCORING_APP_URL || !SCORING_APP_SERVICE_ROLE_KEY) {
+  if (!WEBSITE_URL || !WEBSITE_SERVICE_ROLE_KEY) {
     return new Response(
-      JSON.stringify({ error: 'SCORING_APP_URL and SCORING_APP_SERVICE_ROLE_KEY secrets are not configured. Please add them in the Supabase dashboard under Edge Function secrets.' }),
-      { status: 500, headers: JSON_HEADERS }
+      JSON.stringify({
+        error:
+          'SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY is missing in the Edge Function environment (should be automatic on Supabase-hosted functions).',
+      }),
+      { status: 500, headers: JSON_HEADERS },
     );
   }
 
   const websiteClient = createClient(WEBSITE_URL, WEBSITE_SERVICE_ROLE_KEY);
+
+  // Persist scoring-app misconfiguration on the registration row (admin UI reads this).
+  if (!SCORING_APP_URL || !SCORING_APP_SERVICE_ROLE_KEY) {
+    const msg =
+      'SCORING_APP_URL and SCORING_APP_SERVICE_ROLE_KEY secrets are not configured. Add them in the Supabase dashboard under Edge Function secrets, then retry sync.';
+    await updateSyncStatus(websiteClient, registrationId, 'failed', null, msg);
+    return new Response(JSON.stringify({ error: msg }), { status: 500, headers: JSON_HEADERS });
+  }
 
   // ── 1. Fetch the registration ────────────────────────────────────────────────
   const { data: reg, error: regErr } = await websiteClient
@@ -110,10 +120,12 @@ Deno.serve(async (req: Request) => {
     .single();
 
   if (regErr || !reg) {
-    return new Response(
-      JSON.stringify({ error: `Registration not found: ${regErr?.message}` }),
-      { status: 404, headers: JSON_HEADERS }
-    );
+    const msg = `Registration not found: ${regErr?.message ?? 'no row'}`;
+    await updateSyncStatus(websiteClient, registrationId, 'failed', null, msg);
+    return new Response(JSON.stringify({ error: msg }), {
+      status: 404,
+      headers: JSON_HEADERS,
+    });
   }
 
   // ── 2. Idempotency check ─────────────────────────────────────────────────────
