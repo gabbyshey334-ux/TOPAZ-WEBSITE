@@ -9,6 +9,8 @@ import {
   Download,
   ChevronUp,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   EyeOff,
   CheckCircle2,
   XCircle,
@@ -53,8 +55,22 @@ const YOUTH_SIZES = [
 ] as const;
 const ADULT_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL'] as const;
 const PRESET_SIZES = [...YOUTH_SIZES, ...ADULT_SIZES];
-const CATEGORIES = ['t-shirts', 'hoodies', 'accessories', 'other'];
+const CATEGORIES = ['t-shirts', 'hoodies', 'accessories', 'other'] as const;
 const ORDER_STATUSES = ['pending', 'paid', 'fulfilled', 'cancelled'] as const;
+
+const MAX_PRODUCT_IMAGES = 10;
+
+function dedupeUrlsPreserveOrder(urls: string[]): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const raw of urls) {
+    const t = (raw ?? '').trim();
+    if (!t || seen.has(t)) continue;
+    seen.add(t);
+    out.push(t);
+  }
+  return out;
+}
 
 function statusColor(status: string) {
   switch (status) {
@@ -73,8 +89,8 @@ type ProductFormData = {
   category: string;
   sizes: string[];
   customSize: string;
-  image_url: string;
-  image_url_back: string;
+  /** Ordered product photos; first = main thumbnail on shop & cart. */
+  gallery_urls: string[];
   is_available: boolean;
   is_visible: boolean;
   stock_note: string;
@@ -88,8 +104,7 @@ const defaultForm = (): ProductFormData => ({
   category: 't-shirts',
   sizes: [...YOUTH_SIZES, ...ADULT_SIZES],
   customSize: '',
-  image_url: '',
-  image_url_back: '',
+  gallery_urls: [],
   is_available: true,
   is_visible: true,
   stock_note: '',
@@ -97,9 +112,6 @@ const defaultForm = (): ProductFormData => ({
 });
 
 function productFromDB(p: Product): ProductFormData {
-  const urls = p.image_urls ?? [];
-  const primary = (p.image_url?.trim() || urls[0]?.trim() || '');
-  const backOnly = urls[1]?.trim() || '';
   return {
     name: p.name,
     description: p.description ?? '',
@@ -107,8 +119,10 @@ function productFromDB(p: Product): ProductFormData {
     category: p.category ?? 't-shirts',
     sizes: p.sizes_available ?? [],
     customSize: '',
-    image_url: primary,
-    image_url_back: backOnly,
+    gallery_urls: dedupeUrlsPreserveOrder([
+      ...(p.image_url?.trim() ? [p.image_url.trim()] : []),
+      ...(p.image_urls ?? []).map((u) => (typeof u === 'string' ? u.trim() : '')).filter(Boolean),
+    ]),
     is_available: p.is_available,
     is_visible: p.is_visible,
     stock_note: p.stock_note ?? '',
@@ -131,15 +145,15 @@ function ProductFormDialog({
 }) {
   const [form, setForm] = useState<ProductFormData>(defaultForm);
   const [saving, setSaving] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const [uploadingBack, setUploadingBack] = useState(false);
+  const [uploadingGallery, setUploadingGallery] = useState(false);
   const [error, setError] = useState('');
-  const fileRef = useRef<HTMLInputElement>(null);
-  const fileBackRef = useRef<HTMLInputElement>(null);
+  const [galleryPaste, setGalleryPaste] = useState('');
+  const fileGalleryRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (open) {
       setForm(editingProduct ? productFromDB(editingProduct) : defaultForm());
+      setGalleryPaste('');
       setError('');
     }
   }, [open, editingProduct]);
@@ -162,11 +176,15 @@ function ProductFormDialog({
     setForm((f) => ({ ...f, sizes: f.sizes.filter((s) => s !== size) }));
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: 'image_url' | 'image_url_back') => {
+  const handleGalleryFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    e.target.value = '';
     if (!file) return;
-    const setBusy = field === 'image_url_back' ? setUploadingBack : setUploading;
-    setBusy(true);
+    if (form.gallery_urls.length >= MAX_PRODUCT_IMAGES) {
+      setError(`Maximum ${MAX_PRODUCT_IMAGES} photos per product.`);
+      return;
+    }
+    setUploadingGallery(true);
     setError('');
     try {
       const ext = file.name.split('.').pop();
@@ -176,13 +194,43 @@ function ProductFormDialog({
         .upload(path, file, { upsert: false });
       if (uploadErr) throw uploadErr;
       const { data } = supabase.storage.from('gallery').getPublicUrl(path);
-      setForm((f) => ({ ...f, [field]: data.publicUrl }));
+      setForm((f) => {
+        if (f.gallery_urls.length >= MAX_PRODUCT_IMAGES) return f;
+        return { ...f, gallery_urls: dedupeUrlsPreserveOrder([...f.gallery_urls, data.publicUrl]) };
+      });
     } catch (err) {
       setError('Image upload failed. Please try again.');
       console.error(err);
     } finally {
-      setBusy(false);
+      setUploadingGallery(false);
     }
+  };
+
+  const addGalleryFromPaste = () => {
+    const t = galleryPaste.trim();
+    if (!t) return;
+    if (form.gallery_urls.length >= MAX_PRODUCT_IMAGES) {
+      setError(`Maximum ${MAX_PRODUCT_IMAGES} photos per product.`);
+      return;
+    }
+    setForm((f) => ({ ...f, gallery_urls: dedupeUrlsPreserveOrder([...f.gallery_urls, t]) }));
+    setGalleryPaste('');
+  };
+
+  const removeGalleryAt = (index: number) => {
+    setForm((f) => ({ ...f, gallery_urls: f.gallery_urls.filter((_, j) => j !== index) }));
+  };
+
+  const moveGallery = (index: number, delta: number) => {
+    setForm((f) => {
+      const arr = [...f.gallery_urls];
+      const j = index + delta;
+      if (j < 0 || j >= arr.length) return f;
+      const t = arr[index];
+      arr[index] = arr[j];
+      arr[j] = t;
+      return { ...f, gallery_urls: arr };
+    });
   };
 
   const handleSave = async () => {
@@ -193,10 +241,9 @@ function ProductFormDialog({
     setSaving(true);
     setError('');
     try {
-      const front = form.image_url.trim();
-      const back = form.image_url_back.trim();
-      const image_urls =
-        front && back ? [front, back] : front ? [front] : null;
+      const urls = dedupeUrlsPreserveOrder(form.gallery_urls);
+      const image_url = urls[0] || null;
+      const image_urls = urls.length > 0 ? urls : null;
 
       const payload = {
         name: form.name.trim(),
@@ -204,7 +251,7 @@ function ProductFormDialog({
         price,
         category: form.category || null,
         sizes_available: form.sizes.length > 0 ? form.sizes : null,
-        image_url: front || null,
+        image_url: image_url,
         image_urls,
         is_available: form.is_available,
         is_visible: form.is_visible,
@@ -369,107 +416,102 @@ function ProductFormDialog({
             </div>
           </div>
 
-          {/* Image */}
-          <div className="space-y-2">
-            <Label className="text-slate-300">Product Image</Label>
-            {form.image_url ? (
-              <div className="relative w-full aspect-square rounded-lg overflow-hidden bg-slate-800 max-w-[160px]">
-                <img
-                  src={form.image_url}
-                  alt=""
-                  className="w-full h-full object-cover"
-                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                />
-                <button
-                  type="button"
-                  onClick={() => setForm((f) => ({ ...f, image_url: '' }))}
-                  className="absolute top-1.5 right-1.5 w-6 h-6 bg-red-600/80 rounded-full flex items-center justify-center text-white text-xs hover:bg-red-600"
-                >
-                  ×
-                </button>
-              </div>
-            ) : (
-              <button
-                type="button"
-                onClick={() => fileRef.current?.click()}
-                disabled={uploading}
-                className="w-full h-24 rounded-lg border-2 border-dashed border-slate-600 flex flex-col items-center justify-center gap-2 text-slate-400 hover:border-[#2E75B6] hover:text-[#7EB8E8] transition-colors disabled:opacity-50"
-              >
-                {uploading ? (
-                  <><Loader2 className="w-5 h-5 animate-spin" /><span className="text-xs">Uploading…</span></>
-                ) : (
-                  <><Plus className="w-5 h-5" /><span className="text-xs">Tap to upload image</span></>
-                )}
-              </button>
-            )}
-            <input
-              ref={fileRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={(e) => void handleImageUpload(e, 'image_url')}
-            />
-            {!form.image_url && (
-              <p className="text-xs text-slate-500">
-                Or paste a URL:{' '}
-                <Input
-                  value={form.image_url}
-                  onChange={(e) => setForm((f) => ({ ...f, image_url: e.target.value }))}
-                  placeholder="https://..."
-                  className="mt-1 bg-slate-800 border-slate-600 text-white text-xs placeholder:text-slate-500"
-                />
+          {/* Product photos (gallery) */}
+          <div className="space-y-3">
+            <div>
+              <Label className="text-slate-300">Product photos</Label>
+              <p className="text-xs text-slate-500 mt-1">
+                First photo is the main thumbnail on the shop and in the cart. Add multiple angles, back print, or color
+                options (up to {MAX_PRODUCT_IMAGES}).
               </p>
-            )}
-          </div>
+            </div>
 
-          {/* Back image (optional) */}
-          <div className="space-y-2">
-            <Label className="text-slate-300">Back Photo (optional)</Label>
-            {form.image_url_back ? (
-              <div className="relative w-full aspect-square rounded-lg overflow-hidden bg-slate-800 max-w-[160px]">
-                <img
-                  src={form.image_url_back}
-                  alt=""
-                  className="w-full h-full object-cover"
-                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                />
-                <button
-                  type="button"
-                  onClick={() => setForm((f) => ({ ...f, image_url_back: '' }))}
-                  className="absolute top-1.5 right-1.5 w-6 h-6 bg-red-600/80 rounded-full flex items-center justify-center text-white text-xs hover:bg-red-600"
-                >
-                  ×
-                </button>
+            {form.gallery_urls.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {form.gallery_urls.map((url, i) => (
+                  <div
+                    key={`${url}-${i}`}
+                    className="relative w-[72px] h-[72px] rounded-lg overflow-hidden bg-slate-800 border border-slate-600 shrink-0"
+                  >
+                    <img src={url} alt="" className="w-full h-full object-cover" />
+                    {i === 0 && (
+                      <span className="absolute top-0 left-0 right-0 bg-black/70 text-[9px] font-bold text-center py-0.5 text-white">
+                        Main
+                      </span>
+                    )}
+                    <button
+                      type="button"
+                      title="Remove photo"
+                      onClick={() => removeGalleryAt(i)}
+                      className="absolute top-0.5 right-0.5 w-5 h-5 bg-red-600/90 rounded-full flex items-center justify-center text-white text-xs hover:bg-red-600 z-10"
+                    >
+                      ×
+                    </button>
+                    <div className="absolute bottom-0 left-0 right-0 flex justify-center gap-0.5 bg-black/55 py-0.5">
+                      <button
+                        type="button"
+                        title="Move earlier"
+                        disabled={i === 0}
+                        onClick={() => moveGallery(i, -1)}
+                        className="w-6 h-5 rounded bg-slate-800/95 text-white flex items-center justify-center disabled:opacity-25 hover:bg-slate-700"
+                      >
+                        <ChevronLeft className="w-3 h-3" />
+                      </button>
+                      <button
+                        type="button"
+                        title="Move later"
+                        disabled={i === form.gallery_urls.length - 1}
+                        onClick={() => moveGallery(i, 1)}
+                        className="w-6 h-5 rounded bg-slate-800/95 text-white flex items-center justify-center disabled:opacity-25 hover:bg-slate-700"
+                      >
+                        <ChevronRight className="w-3 h-3" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ) : (
+            )}
+
+            <div className="flex flex-col gap-2">
               <button
                 type="button"
-                onClick={() => fileBackRef.current?.click()}
-                disabled={uploadingBack}
-                className="w-full h-20 rounded-lg border-2 border-dashed border-slate-600 flex flex-col items-center justify-center gap-1 text-slate-400 hover:border-[#2E75B6] hover:text-[#7EB8E8] transition-colors disabled:opacity-50 text-xs"
+                onClick={() => fileGalleryRef.current?.click()}
+                disabled={uploadingGallery || form.gallery_urls.length >= MAX_PRODUCT_IMAGES}
+                className="w-full h-14 rounded-lg border-2 border-dashed border-slate-600 flex flex-col items-center justify-center gap-1 text-slate-400 hover:border-[#2E75B6] hover:text-[#7EB8E8] transition-colors disabled:opacity-50 text-xs"
               >
-                {uploadingBack ? (
+                {uploadingGallery ? (
                   <><Loader2 className="w-4 h-4 animate-spin" /><span>Uploading…</span></>
                 ) : (
-                  <><Plus className="w-4 h-4" /><span>Upload back photo</span></>
+                  <><Plus className="w-4 h-4" /><span>Add photo (upload)</span></>
                 )}
               </button>
-            )}
-            <input
-              ref={fileBackRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={(e) => void handleImageUpload(e, 'image_url_back')}
-            />
-            {!form.image_url_back && (
-              <Input
-                value={form.image_url_back}
-                onChange={(e) => setForm((f) => ({ ...f, image_url_back: e.target.value }))}
-                placeholder="Or paste back image URL"
-                className="bg-slate-800 border-slate-600 text-white text-xs placeholder:text-slate-500"
+              <input
+                ref={fileGalleryRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => void handleGalleryFile(e)}
               />
-            )}
+              <div className="flex gap-2">
+                <Input
+                  value={galleryPaste}
+                  onChange={(e) => setGalleryPaste(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addGalleryFromPaste())}
+                  placeholder="Or paste image URL and Add"
+                  disabled={form.gallery_urls.length >= MAX_PRODUCT_IMAGES}
+                  className="bg-slate-800 border-slate-600 text-white text-xs placeholder:text-slate-500"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={addGalleryFromPaste}
+                  disabled={form.gallery_urls.length >= MAX_PRODUCT_IMAGES || !galleryPaste.trim()}
+                  className="shrink-0 border-slate-600 text-slate-300 hover:bg-slate-700 text-xs"
+                >
+                  Add URL
+                </Button>
+              </div>
+            </div>
           </div>
 
           {/* Toggles */}

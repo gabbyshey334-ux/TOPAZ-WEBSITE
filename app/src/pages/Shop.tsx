@@ -7,7 +7,7 @@ import { rowsToSiteContentMap, siteContentText, siteContentUrl } from '@/constan
 
 type Product = Database['public']['Tables']['products']['Row'];
 
-/** Up to two distinct URLs: primary/front first, then back (matches admin `image_urls`). */
+/** Distinct image URLs in display order (primary first — matches admin `image_url` + `image_urls`). */
 function productGalleryUrls(product: Product): string[] {
   const ordered = [product.image_url, ...(product.image_urls ?? [])];
   const seen = new Set<string>();
@@ -17,7 +17,6 @@ function productGalleryUrls(product: Product): string[] {
     if (!t || seen.has(t)) continue;
     seen.add(t);
     out.push(t);
-    if (out.length >= 2) break;
   }
   return out;
 }
@@ -92,17 +91,18 @@ function ProductCard({ product }: { product: Product }) {
         </div>
 
         {galleryUrls.length > 1 && (
-          <div className="absolute bottom-3 left-0 right-0 z-10 flex justify-center gap-2">
+          <div className="absolute bottom-3 left-0 right-0 z-10 flex max-h-14 flex-wrap justify-center gap-1.5 overflow-y-auto px-2 py-0.5">
             {galleryUrls.map((_, i) => (
               <button
                 key={i}
                 type="button"
-                aria-label={`Show photo ${i + 1}`}
+                aria-label={`Show photo ${i + 1} of ${galleryUrls.length}`}
+                title={`Photo ${i + 1}`}
                 onClick={(e) => {
                   e.stopPropagation();
                   setImageIndex(i);
                 }}
-                className={`h-2.5 w-2.5 rounded-full transition-transform ${
+                className={`h-2.5 w-2.5 shrink-0 rounded-full transition-transform ${
                   i === imageIndex ? 'scale-110 bg-white shadow' : 'bg-white/50 hover:bg-white/80'
                 }`}
               />
