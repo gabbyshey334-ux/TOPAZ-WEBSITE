@@ -43,7 +43,16 @@ type OrderItem = {
   unit_price: number;
 };
 
-const STANDARD_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+/** Youth sizes — labels match the Shop page size guide tables. */
+const YOUTH_SIZES = [
+  'Youth XS (4–5)',
+  'Youth S (6–7)',
+  'Youth M (8)',
+  'Youth L (10–12)',
+  'Youth XL (14–16)',
+] as const;
+const ADULT_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL'] as const;
+const PRESET_SIZES = [...YOUTH_SIZES, ...ADULT_SIZES];
 const CATEGORIES = ['t-shirts', 'hoodies', 'accessories', 'other'];
 const ORDER_STATUSES = ['pending', 'paid', 'fulfilled', 'cancelled'] as const;
 
@@ -77,7 +86,7 @@ const defaultForm = (): ProductFormData => ({
   description: '',
   price: '',
   category: 't-shirts',
-  sizes: ['S', 'M', 'L', 'XL', 'XXL'],
+  sizes: [...YOUTH_SIZES, ...ADULT_SIZES],
   customSize: '',
   image_url: '',
   image_url_back: '',
@@ -224,7 +233,7 @@ function ProductFormDialog({
     }
   };
 
-  const customSizes = form.sizes.filter((s) => !STANDARD_SIZES.includes(s));
+  const customSizes = form.sizes.filter((s) => !(PRESET_SIZES as readonly string[]).includes(s));
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
@@ -286,23 +295,45 @@ function ProductFormDialog({
           </div>
 
           {/* Sizes */}
-          <div className="space-y-2">
+          <div className="space-y-3">
             <Label className="text-slate-300">Sizes Available</Label>
-            <div className="flex flex-wrap gap-2">
-              {STANDARD_SIZES.map((size) => (
-                <button
-                  key={size}
-                  type="button"
-                  onClick={() => toggleSize(size)}
-                  className={`h-9 w-12 rounded-lg border-2 text-sm font-semibold transition-all ${
-                    form.sizes.includes(size)
-                      ? 'border-[#2E75B6] bg-[#2E75B6]/20 text-[#7EB8E8]'
-                      : 'border-slate-600 text-slate-400 hover:border-slate-500'
-                  }`}
-                >
-                  {size}
-                </button>
-              ))}
+            <div className="space-y-2">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Youth (kids)</p>
+              <div className="flex flex-wrap gap-2">
+                {YOUTH_SIZES.map((size) => (
+                  <button
+                    key={size}
+                    type="button"
+                    onClick={() => toggleSize(size)}
+                    className={`min-h-9 rounded-lg border-2 px-2.5 py-1.5 text-left text-xs font-semibold leading-snug transition-all max-w-full ${
+                      form.sizes.includes(size)
+                        ? 'border-[#2E75B6] bg-[#2E75B6]/20 text-[#7EB8E8]'
+                        : 'border-slate-600 text-slate-400 hover:border-slate-500'
+                    }`}
+                  >
+                    {size}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="space-y-2">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Adult</p>
+              <div className="flex flex-wrap gap-2">
+                {ADULT_SIZES.map((size) => (
+                  <button
+                    key={size}
+                    type="button"
+                    onClick={() => toggleSize(size)}
+                    className={`h-9 w-12 rounded-lg border-2 text-sm font-semibold transition-all ${
+                      form.sizes.includes(size)
+                        ? 'border-[#2E75B6] bg-[#2E75B6]/20 text-[#7EB8E8]'
+                        : 'border-slate-600 text-slate-400 hover:border-slate-500'
+                    }`}
+                  >
+                    {size}
+                  </button>
+                ))}
+              </div>
             </div>
             {customSizes.length > 0 && (
               <div className="flex flex-wrap gap-2">
