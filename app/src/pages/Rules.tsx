@@ -216,7 +216,7 @@ const OTHER_RULES = [
     icon: AlertTriangle,
     title: 'Food & Beverage',
     content:
-      'No food in dressing rooms or the audience area; bottled water allowed. No outside food may be brought into the venue.',
+      'No food in dressing rooms or the audience area. No outside food or beverages may be brought into the venue.',
   },
 ] as const;
 

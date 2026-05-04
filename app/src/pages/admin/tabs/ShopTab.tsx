@@ -65,6 +65,7 @@ type ProductFormData = {
   sizes: string[];
   customSize: string;
   image_url: string;
+  image_url_back: string;
   is_available: boolean;
   is_visible: boolean;
   stock_note: string;
@@ -79,6 +80,7 @@ const defaultForm = (): ProductFormData => ({
   sizes: ['S', 'M', 'L', 'XL', 'XXL'],
   customSize: '',
   image_url: '',
+  image_url_back: '',
   is_available: true,
   is_visible: true,
   stock_note: '',
@@ -86,6 +88,9 @@ const defaultForm = (): ProductFormData => ({
 });
 
 function productFromDB(p: Product): ProductFormData {
+  const urls = p.image_urls ?? [];
+  const primary = (p.image_url?.trim() || urls[0]?.trim() || '');
+  const backOnly = urls[1]?.trim() || '';
   return {
     name: p.name,
     description: p.description ?? '',
@@ -93,7 +98,8 @@ function productFromDB(p: Product): ProductFormData {
     category: p.category ?? 't-shirts',
     sizes: p.sizes_available ?? [],
     customSize: '',
-    image_url: p.image_url ?? '',
+    image_url: primary,
+    image_url_back: backOnly,
     is_available: p.is_available,
     is_visible: p.is_visible,
     stock_note: p.stock_note ?? '',
@@ -117,8 +123,10 @@ function ProductFormDialog({
   const [form, setForm] = useState<ProductFormData>(defaultForm);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadingBack, setUploadingBack] = useState(false);
   const [error, setError] = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
+  const fileBackRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (open) {
@@ -145,10 +153,11 @@ function ProductFormDialog({
     setForm((f) => ({ ...f, sizes: f.sizes.filter((s) => s !== size) }));
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: 'image_url' | 'image_url_back') => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setUploading(true);
+    const setBusy = field === 'image_url_back' ? setUploadingBack : setUploading;
+    setBusy(true);
     setError('');
     try {
       const ext = file.name.split('.').pop();
@@ -158,12 +167,12 @@ function ProductFormDialog({
         .upload(path, file, { upsert: false });
       if (uploadErr) throw uploadErr;
       const { data } = supabase.storage.from('gallery').getPublicUrl(path);
-      setForm((f) => ({ ...f, image_url: data.publicUrl }));
+      setForm((f) => ({ ...f, [field]: data.publicUrl }));
     } catch (err) {
       setError('Image upload failed. Please try again.');
       console.error(err);
     } finally {
-      setUploading(false);
+      setBusy(false);
     }
   };
 
@@ -175,13 +184,19 @@ function ProductFormDialog({
     setSaving(true);
     setError('');
     try {
+      const front = form.image_url.trim();
+      const back = form.image_url_back.trim();
+      const image_urls =
+        front && back ? [front, back] : front ? [front] : null;
+
       const payload = {
         name: form.name.trim(),
         description: form.description.trim() || null,
         price,
         category: form.category || null,
         sizes_available: form.sizes.length > 0 ? form.sizes : null,
-        image_url: form.image_url || null,
+        image_url: front || null,
+        image_urls,
         is_available: form.is_available,
         is_visible: form.is_visible,
         stock_note: form.stock_note.trim() || null,
@@ -361,7 +376,7 @@ function ProductFormDialog({
               type="file"
               accept="image/*"
               className="hidden"
-              onChange={handleImageUpload}
+              onChange={(e) => void handleImageUpload(e, 'image_url')}
             />
             {!form.image_url && (
               <p className="text-xs text-slate-500">
@@ -373,6 +388,56 @@ function ProductFormDialog({
                   className="mt-1 bg-slate-800 border-slate-600 text-white text-xs placeholder:text-slate-500"
                 />
               </p>
+            )}
+          </div>
+
+          {/* Back image (optional) */}
+          <div className="space-y-2">
+            <Label className="text-slate-300">Back Photo (optional)</Label>
+            {form.image_url_back ? (
+              <div className="relative w-full aspect-square rounded-lg overflow-hidden bg-slate-800 max-w-[160px]">
+                <img
+                  src={form.image_url_back}
+                  alt=""
+                  className="w-full h-full object-cover"
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setForm((f) => ({ ...f, image_url_back: '' }))}
+                  className="absolute top-1.5 right-1.5 w-6 h-6 bg-red-600/80 rounded-full flex items-center justify-center text-white text-xs hover:bg-red-600"
+                >
+                  ×
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => fileBackRef.current?.click()}
+                disabled={uploadingBack}
+                className="w-full h-20 rounded-lg border-2 border-dashed border-slate-600 flex flex-col items-center justify-center gap-1 text-slate-400 hover:border-[#2E75B6] hover:text-[#7EB8E8] transition-colors disabled:opacity-50 text-xs"
+              >
+                {uploadingBack ? (
+                  <><Loader2 className="w-4 h-4 animate-spin" /><span>Uploading…</span></>
+                ) : (
+                  <><Plus className="w-4 h-4" /><span>Upload back photo</span></>
+                )}
+              </button>
+            )}
+            <input
+              ref={fileBackRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => void handleImageUpload(e, 'image_url_back')}
+            />
+            {!form.image_url_back && (
+              <Input
+                value={form.image_url_back}
+                onChange={(e) => setForm((f) => ({ ...f, image_url_back: e.target.value }))}
+                placeholder="Or paste back image URL"
+                className="bg-slate-800 border-slate-600 text-white text-xs placeholder:text-slate-500"
+              />
             )}
           </div>
 
@@ -545,9 +610,9 @@ function ProductCard({
   return (
     <div className="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
       <div className="aspect-square bg-slate-700 relative">
-        {product.image_url ? (
+        {(product.image_url?.trim() || product.image_urls?.[0]?.trim()) ? (
           <img
-            src={product.image_url}
+            src={(product.image_url?.trim() || product.image_urls?.[0]?.trim())!}
             alt={product.name}
             className="w-full h-full object-cover"
             onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}

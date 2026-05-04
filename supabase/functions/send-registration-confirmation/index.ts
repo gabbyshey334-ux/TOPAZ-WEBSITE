@@ -150,7 +150,9 @@ Deno.serve(async (req: Request) => {
       ? 'Full group total (entire routine fee on this registration)'
       : 'Individual share (per dancer registering separately)';
 
-  const ZELLE_PAYEE = 'TOPAZ2.0@dancetopaz.com';
+  /** Linked to Nick's Zelle account (plain text in email — no payment links). */
+  const ZELLE_PAYEE = 'topaz2.0@yahoo.com';
+  const ADMIN_NOTIFICATION_BCC = 'topaz2.0@dancetopaz.com';
 
   const musicNote = music_delivery_method === 'upload'
     ? 'Your music file has been uploaded digitally.'
@@ -205,9 +207,10 @@ Deno.serve(async (req: Request) => {
       </div>
 
       <div style="background:#f5f3ff;border-left:4px solid #6D1ED4;padding:16px;margin:20px 0;border-radius:4px;">
-        <strong style="font-size:16px;">💜 Payment Required</strong><br><br>
-        Please send <strong>${feeFormatted}</strong> via Zelle to:<br>
-        <strong style="font-size:18px;">${ZELLE_PAYEE}</strong><br><br>
+        <strong style="font-size:16px;">Payment required</strong><br><br>
+        Pay via Zelle to: <strong style="font-size:18px;">${ZELLE_PAYEE}</strong><br><br>
+        Include your dancer name and routine name in the memo.<br><br>
+        Amount due: <strong>${feeFormatted}</strong><br>
         Memo: <strong>${contestant_name} — ${routine_name ?? '—'}</strong><br><br>
         <em style="color:#6b7280;">Your registration is not confirmed until payment is received.</em>
       </div>
@@ -249,7 +252,7 @@ ${studio_name ? `- Studio: ${studio_name}\n` : ''}- Category: ${category}
 ${routine_name ? `- Routine: ${routine_name}\n` : ''}${song_title ? `- Song: ${song_title}${artist_name ? ' — ' + artist_name : ''}\n` : ''}- Payment type: ${paymentTypeLabel}
 Entry Fee: ${feeFormatted}
 
-Payment (Zelle): Send ${feeFormatted} to ${ZELLE_PAYEE}. Memo: ${contestant_name} — ${routine_name ?? '—'}. Your registration is not confirmed until payment is received.
+Payment (Zelle): Pay via Zelle to ${ZELLE_PAYEE}. Include your dancer name and routine name in the memo. Amount due: ${feeFormatted}. Memo: ${contestant_name} — ${routine_name ?? '—'}. Your registration is not confirmed until payment is received.
 
 Music: ${musicNote}
 
@@ -265,6 +268,10 @@ Registration deadline: July 30, 2026, 12:00 AM. No exceptions.
 
   if (resendApiKey) {
     try {
+      const bcc =
+        to.trim().toLowerCase() === ADMIN_NOTIFICATION_BCC.toLowerCase()
+          ? undefined
+          : [ADMIN_NOTIFICATION_BCC];
       const response = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
@@ -274,6 +281,7 @@ Registration deadline: July 30, 2026, 12:00 AM. No exceptions.
         body: JSON.stringify({
           from: FROM_EMAIL,
           to: [to],
+          ...(bcc ? { bcc } : {}),
           subject: `TOPAZ 2.0 — Registration Confirmed: ${contestant_name}`,
           html: htmlBody,
           text: textBody,

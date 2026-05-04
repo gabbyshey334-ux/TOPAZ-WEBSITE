@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ShoppingBag, ImageOff, CheckCircle2, XCircle } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useCart } from '@/contexts/CartContext';
@@ -7,6 +7,21 @@ import { rowsToSiteContentMap, siteContentText, siteContentUrl } from '@/constan
 
 type Product = Database['public']['Tables']['products']['Row'];
 
+/** Up to two distinct URLs: primary/front first, then back (matches admin `image_urls`). */
+function productGalleryUrls(product: Product): string[] {
+  const ordered = [product.image_url, ...(product.image_urls ?? [])];
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const s of ordered) {
+    const t = typeof s === 'string' ? s.trim() : '';
+    if (!t || seen.has(t)) continue;
+    seen.add(t);
+    out.push(t);
+    if (out.length >= 2) break;
+  }
+  return out;
+}
+
 // ─── Product Card ──────────────────────────────────────────────────────────────
 
 function ProductCard({ product }: { product: Product }) {
@@ -14,11 +29,15 @@ function ProductCard({ product }: { product: Product }) {
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [sizeError, setSizeError] = useState(false);
   const [added, setAdded] = useState(false);
+  const [imageIndex, setImageIndex] = useState(0);
 
-  const displayImage =
-    product.image_url?.trim() ||
-    (Array.isArray(product.image_urls) && product.image_urls[0]?.trim()) ||
-    null;
+  const galleryUrls = useMemo(() => productGalleryUrls(product), [product.id, product.image_url, product.image_urls]);
+
+  useEffect(() => {
+    setImageIndex(0);
+  }, [product.id]);
+
+  const displayImage = galleryUrls[imageIndex] ?? galleryUrls[0] ?? null;
 
   const sizes = product.sizes_available ?? [];
 
@@ -45,21 +64,51 @@ function ProductCard({ product }: { product: Product }) {
       {/* Image */}
       <div className="relative aspect-square overflow-hidden bg-gray-100">
         {displayImage ? (
-          <img
-            src={displayImage}
-            alt={product.name}
-            className="h-full w-full object-cover"
-            loading="lazy"
-            decoding="async"
-            onError={(e) => {
-              (e.target as HTMLImageElement).style.display = 'none';
-              (e.target as HTMLImageElement).parentElement!.querySelector('.img-fallback')!.classList.remove('hidden');
+          <button
+            type="button"
+            className="relative block h-full w-full cursor-pointer border-0 bg-transparent p-0 text-left"
+            onClick={() => {
+              if (galleryUrls.length <= 1) return;
+              setImageIndex((i) => (i + 1) % galleryUrls.length);
             }}
-          />
+            aria-label={galleryUrls.length > 1 ? 'Switch product photo' : undefined}
+          >
+            <img
+              src={displayImage}
+              alt={product.name}
+              className="h-full w-full object-cover"
+              loading="lazy"
+              decoding="async"
+              onError={(e) => {
+                const img = e.target as HTMLImageElement;
+                img.style.display = 'none';
+                img.closest('.aspect-square')?.querySelector('.img-fallback')?.classList.remove('hidden');
+              }}
+            />
+          </button>
         ) : null}
         <div className={`img-fallback ${displayImage ? 'hidden' : ''} absolute inset-0 flex items-center justify-center`}>
           <ImageOff className="w-12 h-12 text-gray-300" />
         </div>
+
+        {galleryUrls.length > 1 && (
+          <div className="absolute bottom-3 left-0 right-0 z-10 flex justify-center gap-2">
+            {galleryUrls.map((_, i) => (
+              <button
+                key={i}
+                type="button"
+                aria-label={`Show photo ${i + 1}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setImageIndex(i);
+                }}
+                className={`h-2.5 w-2.5 rounded-full transition-transform ${
+                  i === imageIndex ? 'scale-110 bg-white shadow' : 'bg-white/50 hover:bg-white/80'
+                }`}
+              />
+            ))}
+          </div>
+        )}
 
         {!product.is_available && (
           <div className="pointer-events-none absolute right-3 top-3 z-10 rounded-full bg-gray-800 px-3 py-1 text-xs font-bold text-white">
@@ -67,7 +116,11 @@ function ProductCard({ product }: { product: Product }) {
           </div>
         )}
         {product.is_available && product.stock_note && (
-          <div className="pointer-events-none absolute left-3 bottom-3 z-10 rounded-full bg-amber-500 px-3 py-1 text-xs font-bold text-white">
+          <div
+            className={`pointer-events-none absolute left-3 z-10 rounded-full bg-amber-500 px-3 py-1 text-xs font-bold text-white ${
+              galleryUrls.length > 1 ? 'bottom-10' : 'bottom-3'
+            }`}
+          >
             {product.stock_note}
           </div>
         )}

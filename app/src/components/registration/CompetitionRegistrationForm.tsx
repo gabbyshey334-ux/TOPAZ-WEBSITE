@@ -78,76 +78,22 @@ const GROUP_SIZES = [
 const PAYMENT_METHODS = ['Check', 'Money Order'] as const;
 
 const PAYMENT_INSTRUCTIONS =
-  'Payment accepted by Check, Money Order, or Zelle. For Zelle payments send to TOPAZ2.0@dancetopaz.com — include your dancer name and routine name in the memo.';
+  'Payment accepted by Check, Money Order, or Zelle. See below for Zelle payee and memo.';
 
-/** Zelle payee (Nick) — display and deep link must match exactly */
-const ZELLE_EMAIL = 'TOPAZ2.0@dancetopaz.com';
-const ZELLE_DEEP_LINK = `zelle://send?email=${encodeURIComponent(ZELLE_EMAIL)}`;
-const ZELLE_WEB_FALLBACK = 'https://www.zellepay.com';
+/** Zelle payee linked to Nick's account (plain text only — no deep links). */
+const ZELLE_EMAIL_DISPLAY = 'topaz2.0@yahoo.com';
 
-function openZelleApp() {
-  const opened = window.open(ZELLE_DEEP_LINK, '_blank');
-  if (opened == null) {
-    window.open(ZELLE_WEB_FALLBACK, '_blank');
-  }
-}
-
-function buildZelleCopyLine(fee: number, dancerName: string, routineName: string) {
-  return `Pay $${fee.toFixed(2)} to ${ZELLE_EMAIL} — Memo: ${dancerName} - ${routineName}`;
-}
-
-function CopyZellePaymentDetailsButton({
-  fee,
-  dancerName,
-  routineName,
-  className,
-}: {
-  fee: number;
-  dancerName: string;
-  routineName: string;
-  className?: string;
-}) {
-  const [copied, setCopied] = useState(false);
-
-  async function copy() {
-    const text = buildZelleCopyLine(fee, dancerName, routineName);
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 2000);
-    } catch {
-      try {
-        const ta = document.createElement('textarea');
-        ta.value = text;
-        ta.setAttribute('readonly', '');
-        ta.style.position = 'fixed';
-        ta.style.left = '-9999px';
-        document.body.appendChild(ta);
-        ta.select();
-        document.execCommand('copy');
-        document.body.removeChild(ta);
-        setCopied(true);
-        window.setTimeout(() => setCopied(false), 2000);
-      } catch {
-        // no-op
-      }
-    }
-  }
-
+function ZellePlainTextBlock({ emailStrongClassName }: { emailStrongClassName: string }) {
   return (
-    <button
-      type="button"
-      onClick={() => void copy()}
-      className={cn(
-        'w-full sm:w-auto px-6 py-3 rounded-xl font-bold text-sm uppercase tracking-widest transition-all border-2',
-        copied
-          ? 'bg-emerald-600 border-emerald-600 text-white'
-          : 'bg-white border-[#6D1ED4]/40 text-[#6D1ED4] hover:bg-[#6D1ED4]/5',
-        className
-      )}
-    >
-      {copied ? 'Copied!' : 'Copy Payment Details'}
-    </button>
+    <div className="space-y-3 text-gray-800">
+      <p className="font-medium leading-relaxed">
+        Pay via Zelle to:{' '}
+        <strong className={cn('font-black', emailStrongClassName)}>{ZELLE_EMAIL_DISPLAY}</strong>
+      </p>
+      <p className="font-medium leading-relaxed text-gray-700">
+        Include your dancer name and routine name in the memo.
+      </p>
+    </div>
   );
 }
 
@@ -691,9 +637,9 @@ export default function CompetitionRegistrationForm() {
               💳 Payment Required to Confirm Your Spot
             </p>
             <p className="text-gray-700 font-medium leading-relaxed mb-4">{PAYMENT_INSTRUCTIONS}</p>
-            <p className="text-sm font-semibold text-gray-800 mb-1">
-              Pay to <span className="font-black text-[#2E75B6]">{ZELLE_EMAIL}</span> (Zelle)
-            </p>
+            <div className="mb-4">
+              <ZellePlainTextBlock emailStrongClassName="text-[#2E75B6]" />
+            </div>
             <p className="text-gray-700 font-medium leading-relaxed mb-2">
               Amount due: <span className="font-black text-[#2E75B6]">${success.total_fee.toFixed(2)}</span>
             </p>
@@ -710,14 +656,9 @@ export default function CompetitionRegistrationForm() {
                 Total for this entry type: ${success.entry_total_fee.toFixed(2)} — you chose to pay the full amount on this registration.
               </p>
             ) : null}
-            <p className="text-sm font-semibold text-gray-600 mb-6">
+            <p className="text-sm font-semibold text-gray-600">
               Your registration is NOT confirmed until payment is received by TOPAZ 2.0.
             </p>
-            <CopyZellePaymentDetailsButton
-              fee={success.total_fee}
-              dancerName={success.contestant_name}
-              routineName={success.routine_name}
-            />
           </div>
 
           <div className="grid sm:grid-cols-2 gap-x-8 gap-y-6 mb-10">
@@ -1212,28 +1153,13 @@ export default function CompetitionRegistrationForm() {
                     Payment
                   </p>
                   <p className="text-sm font-medium text-gray-700 leading-relaxed mb-4">{PAYMENT_INSTRUCTIONS}</p>
-                  <p className="text-sm font-semibold text-gray-800 mb-1">
-                    Pay to <span className="font-black text-[#6D1ED4]">{ZELLE_EMAIL}</span> (Zelle)
-                  </p>
-                  <p className="text-sm font-semibold text-gray-800 mb-4">
+                  <div className="mb-4 text-sm">
+                    <ZellePlainTextBlock emailStrongClassName="text-[#6D1ED4]" />
+                  </div>
+                  <p className="text-sm font-semibold text-gray-800">
                     Amount due:{' '}
                     <span className="font-black text-xl text-[#6D1ED4]">${amountDue.toFixed(2)}</span>
                   </p>
-                  <div className="mt-6 flex flex-col sm:flex-row gap-3">
-                    <button
-                      type="button"
-                      onClick={openZelleApp}
-                      className="flex-1 py-3.5 px-4 rounded-xl font-bold text-sm uppercase tracking-widest text-white shadow-md transition-all hover:opacity-95 bg-[#6D1ED4]"
-                    >
-                      Open Zelle App
-                    </button>
-                    <CopyZellePaymentDetailsButton
-                      fee={amountDue}
-                      dancerName={contestantName.trim() || '—'}
-                      routineName={routineName.trim() || '—'}
-                      className="flex-1"
-                    />
-                  </div>
                 </div>
 
                 {/* Payment method */}

@@ -23,6 +23,35 @@ function mapAbilityLevel(raw: string | null): string | null {
   return null;
 }
 
+// Map website registration `category` values → scoring app `entries.dance_type`
+// (must match judge filter / category labels in the scoring app DB).
+const WEBSITE_CATEGORY_TO_SCORING_DANCE_TYPE: Record<string, string> = {
+  TAP: 'Tap',
+  BALLET: 'Ballet',
+  JAZZ: 'Jazz',
+  'LYRICAL/CONTEMPORARY': 'Lyrical/Contemporary',
+  VOCAL: 'Vocal',
+  ACTING: 'Acting',
+  'HIP HOP': 'Hip Hop',
+  'VARIETY A (Song & Dance/Character/Combination of Performing Arts)': 'Variety A',
+  'VARIETY B (Dance with Prop)': 'Variety B',
+  'VARIETY C (Dance with Acrobatics)': 'Variety C',
+  'VARIETY D (Dance with Acrobatics & Prop)': 'Variety D',
+  'VARIETY E (Hip Hop)': 'Variety E',
+  'VARIETY F (Ballroom)': 'Variety F',
+  'VARIETY G (Line Dancing)': 'Variety G',
+  PRODUCTION: 'Production',
+  'STUDENT CHOREOGRAPHY': 'Student Choreography',
+  'TEACHER/STUDENT': 'Teacher/Student',
+};
+
+function mapDanceType(raw: string | null): string | null {
+  if (raw == null) return null;
+  const key = raw.trim();
+  if (!key) return null;
+  return WEBSITE_CATEGORY_TO_SCORING_DANCE_TYPE[key] ?? key;
+}
+
 async function updateSyncStatus(
   client: ReturnType<typeof createClient>,
   registrationId: string,
@@ -247,7 +276,7 @@ Deno.serve(async (req: Request) => {
     entry_number: entryNumber,
     competitor_name: entryName,
     age: reg.age ? parseInt(reg.age, 10) || null : null,
-    dance_type: reg.category ?? null,
+    dance_type: mapDanceType(typeof reg.category === 'string' ? reg.category : null),
     ability_level: mapAbilityLevel(reg.ability_level),
     studio_name: reg.studio_name ?? null,
     teacher_name: reg.teacher_name ?? null,

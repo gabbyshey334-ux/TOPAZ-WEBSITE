@@ -49,6 +49,11 @@ const About = () => {
     const v = raw != null ? String(raw).trim() : '';
     return v;
   }, [siteContent]);
+  const aboutImage3Url = useMemo(() => {
+    const base = aboutImage3;
+    const sep = base.includes('?') ? '&' : '?';
+    return `${base}${sep}v=${Date.now()}`;
+  }, [aboutImage3]);
   const aboutUsFallback = siteContentUrl(siteContent, 'about_us_fallback');
   const ricPortrait = siteContentUrl(siteContent, 'about_ric_portrait');
   const teamPhoto = siteContentUrl(siteContent, 'about_team_photo');
@@ -305,7 +310,8 @@ const About = () => {
               <div className="overflow-hidden rounded-[2.5rem] border border-gray-200 bg-gray-900 shadow-2xl">
                 <div className="flex h-72 w-full items-start justify-center overflow-hidden bg-gray-900">
                   <img
-                    src={aboutImage3}
+                    key={aboutImage3Url}
+                    src={aboutImage3Url}
                     alt={siteContentText(siteContent, 'about_image_3_alt')}
                     loading="lazy"
                     className="h-full w-full object-cover object-top bg-gray-900"
