@@ -190,6 +190,34 @@ function normalizeKey(v: string | null | undefined): string {
   return (v ?? '').trim().toLowerCase();
 }
 
+/**
+ * Bucket rows for the "By Group" admin view.
+ * Priority: shared group_link_code → shared routine_name → one card per solo → one card per non-solo orphan.
+ * (Previously every empty routine_name collapsed into one bucket, splitting families incorrectly.)
+ */
+function registrationGroupBucket(r: RegRow): { bucketKey: string; displayTitle: string } {
+  const code = normalizeKey(r.group_link_code);
+  if (code) {
+    const raw = (r.group_link_code ?? '').trim();
+    const rn = (r.routine_name ?? '').trim();
+    return {
+      bucketKey: `link:${code}`,
+      displayTitle: rn || `Group (link: ${raw})`,
+    };
+  }
+  const routine = normalizeKey(r.routine_name);
+  if (routine) {
+    return { bucketKey: `routine:${routine}`, displayTitle: (r.routine_name ?? '').trim() };
+  }
+  if (entryType(r.group_size) === 'Solo') {
+    return { bucketKey: `solo:${r.id}`, displayTitle: r.contestant_name };
+  }
+  return {
+    bucketKey: `entry:${r.id}`,
+    displayTitle: (r.routine_name ?? '').trim() || r.contestant_name || '(No routine name)',
+  };
+}
+
 function findLinkedRegistrations(row: RegRow, all: RegRow[]): RegRow[] {
   const routineKey = normalizeKey(row.routine_name);
   const codeKey = normalizeKey(row.group_link_code);
@@ -725,6 +753,7 @@ export default function RegistrationsAdmin() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [entryTypeFilter, setEntryTypeFilter] = useState<string>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [ageDivisionFilter, setAgeDivisionFilter] = useState<string>('all');
   const [viewMode, setViewMode] = useState<'all' | 'groups'>('all');
   const [detail, setDetail] = useState<RegRow | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
@@ -801,6 +830,20 @@ export default function RegistrationsAdmin() {
     return Array.from(s).sort();
   }, [rows]);
 
+  const ageDivisionsInData = useMemo(() => {
+    const s = new Set<string>();
+    for (const r of rows) {
+      const a = (r.age_division ?? '').trim();
+      if (a) s.add(a);
+    }
+    return Array.from(s).sort();
+  }, [rows]);
+
+  const hasUnsetAgeDivision = useMemo(
+    () => rows.some((r) => !(r.age_division ?? '').trim()),
+    [rows],
+  );
+
   const filtered = useMemo(() => {
     return rows.filter((r) => {
       const q = search.toLowerCase().trim();
@@ -813,13 +856,15 @@ export default function RegistrationsAdmin() {
       const matchStatus    = statusFilter === 'all'    || r.status === statusFilter;
       const matchEntry     = entryTypeFilter === 'all' || entryType(r.group_size) === entryTypeFilter;
       const matchCategory  = categoryFilter === 'all'  || r.category === categoryFilter;
-      return matchSearch && matchStatus && matchEntry && matchCategory;
+      const ad = (r.age_division ?? '').trim();
+      const matchAgeDivision =
+        ageDivisionFilter === 'all'
+        || (ageDivisionFilter === '__unset__' ? ad === '' : ad === ageDivisionFilter);
+      return matchSearch && matchStatus && matchEntry && matchCategory && matchAgeDivision;
     });
-  }, [rows, search, statusFilter, entryTypeFilter, categoryFilter]);
+  }, [rows, search, statusFilter, entryTypeFilter, categoryFilter, ageDivisionFilter]);
 
-  // Grouped-by-routine-name view.
-  // Grouping key = lowercased/trimmed routine_name. Rows missing a routine name
-  // fall into a single catch-all bucket so Nick can still see them.
+  // Grouped view: same link code or same routine name → one card; solos never lumped together.
   type RoutineGroup = {
     key: string;
     routineName: string;
@@ -830,15 +875,22 @@ export default function RegistrationsAdmin() {
   const groups = useMemo<RoutineGroup[]>(() => {
     const map = new Map<string, RoutineGroup>();
     for (const r of filtered) {
-      const key = normalizeKey(r.routine_name) || '__no_routine__';
-      const g = map.get(key);
+      const { bucketKey, displayTitle } = registrationGroupBucket(r);
+      const g = map.get(bucketKey);
       if (g) {
         g.rows.push(r);
         g.totalFee += Number(r.total_fee || 0);
+        const rn = (r.routine_name ?? '').trim();
+        if (
+          rn
+          && (g.routineName.startsWith('Group (link:') || g.routineName === '(No routine name)')
+        ) {
+          g.routineName = rn;
+        }
       } else {
-        map.set(key, {
-          key,
-          routineName: key === '__no_routine__' ? '(No routine name)' : r.routine_name,
+        map.set(bucketKey, {
+          key: bucketKey,
+          routineName: displayTitle,
           rows: [r],
           totalFee: Number(r.total_fee || 0),
           hasLinkCodeMismatch: false,
@@ -1079,6 +1131,7 @@ export default function RegistrationsAdmin() {
     statusFilter !== 'all' ? statusFilter : null,
     entryTypeFilter !== 'all' ? entryTypeFilter : null,
     categoryFilter !== 'all' ? categoryFilter : null,
+    ageDivisionFilter !== 'all' ? (ageDivisionFilter === '__unset__' ? 'Age unset' : ageDivisionFilter) : null,
   ].filter(Boolean);
 
   const unsyncedCount = useMemo(
@@ -1287,13 +1340,34 @@ export default function RegistrationsAdmin() {
             </SelectContent>
           </Select>
 
+          {/* Age division filter */}
+          <Select value={ageDivisionFilter} onValueChange={setAgeDivisionFilter}>
+            <SelectTrigger className="w-[200px] bg-slate-900 border-slate-700 text-white text-sm h-9">
+              <SelectValue placeholder="Age division" />
+            </SelectTrigger>
+            <SelectContent className="bg-slate-900 border-slate-700">
+              <SelectItem value="all" className="text-white">All age divisions</SelectItem>
+              {hasUnsetAgeDivision && (
+                <SelectItem value="__unset__" className="text-amber-200/90">Age division unset</SelectItem>
+              )}
+              {ageDivisionsInData.map((a) => (
+                <SelectItem key={a} value={a} className="text-white">{a}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
           {/* Clear filters */}
           {activeFilters.length > 0 && (
             <Button
               variant="ghost"
               size="sm"
               className="h-9 text-slate-400 hover:text-white"
-              onClick={() => { setStatusFilter('all'); setEntryTypeFilter('all'); setCategoryFilter('all'); }}
+              onClick={() => {
+                setStatusFilter('all');
+                setEntryTypeFilter('all');
+                setCategoryFilter('all');
+                setAgeDivisionFilter('all');
+              }}
             >
               <X className="w-3.5 h-3.5 mr-1" />
               Clear
@@ -1302,7 +1376,7 @@ export default function RegistrationsAdmin() {
         </div>
       </div>
 
-      {/* View mode toggle — All Registrations vs grouped By Group (routine_name) */}
+      {/* View mode toggle — All Registrations vs By Group (link code → routine → solo) */}
       <div className="flex items-center gap-2 bg-slate-900 border border-slate-700 rounded-xl p-1 w-fit">
         <button
           type="button"
@@ -1413,6 +1487,7 @@ export default function RegistrationsAdmin() {
                           <p className="text-sm font-medium text-white truncate">{r.contestant_name}</p>
                           <p className="text-[11px] text-slate-400 truncate">
                             {r.studio_name} · {r.category}
+                            {r.age_division ? ` · ${r.age_division}` : ''}
                           </p>
                         </div>
                         <div className="shrink-0 text-right flex items-center gap-2">
@@ -1457,7 +1532,10 @@ export default function RegistrationsAdmin() {
                       <span className="text-xs text-slate-500">{entryType(r.group_size)}</span>
                     </div>
                     <p className="text-xs text-slate-400 truncate">{r.studio_name}</p>
-                    <p className="text-xs text-slate-500 mt-0.5 truncate">{r.category}</p>
+                    <p className="text-xs text-slate-500 mt-0.5 truncate">
+                      {r.category}
+                      {r.age_division ? ` · ${r.age_division}` : ''}
+                    </p>
                   </div>
 
                   {/* Right side: fee + date + sync badge */}

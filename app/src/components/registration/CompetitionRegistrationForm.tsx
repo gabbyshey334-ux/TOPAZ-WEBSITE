@@ -74,7 +74,7 @@ const GROUP_SIZES = [
   'Production 10 or more (8 min limit)',
 ] as const;
 
-const PAYMENT_METHODS = ['Check', 'Money Order'] as const;
+const PAYMENT_METHODS = ['Zelle', 'Check', 'Money Order'] as const;
 
 const PAYMENT_INSTRUCTIONS =
   'Payment accepted by Check, Money Order, or Zelle. See below for Zelle payee and memo.';
@@ -1001,10 +1001,14 @@ export default function CompetitionRegistrationForm() {
                   <FormLabel>Age division *</FormLabel>
                   <p className="text-xs text-gray-400 mb-4 font-medium">Duo, trio, and group ages are averaged.</p>
                   <RadioGroup value={ageDivision} onValueChange={setAgeDivision} className="space-y-3">
-                    {AGE_DIVISIONS.map((d) => (
-                      <label key={d} className="flex items-center gap-4 rounded-2xl border-2 border-gray-100 p-4 cursor-pointer transition-all hover:bg-gray-50 has-[:checked]:border-[#2E75B6] has-[:checked]:bg-[#2E75B6]/5">
-                        <RadioGroupItem value={d} className="w-5 h-5" />
-                        <span className="font-bold text-gray-800 text-sm">{d}</span>
+                    {AGE_DIVISIONS.map((d, i) => (
+                      <label
+                        key={d}
+                        htmlFor={`age-div-${i}`}
+                        className="flex items-center gap-4 rounded-2xl border-2 border-gray-100 p-4 cursor-pointer transition-all hover:bg-gray-50 has-[:checked]:border-[#2E75B6] has-[:checked]:bg-[#2E75B6]/5 touch-manipulation min-h-[52px] active:bg-gray-50"
+                      >
+                        <RadioGroupItem value={d} id={`age-div-${i}`} className="size-5 shrink-0" />
+                        <span className="font-bold text-gray-800 text-sm select-none">{d}</span>
                       </label>
                     ))}
                   </RadioGroup>
@@ -1022,9 +1026,12 @@ export default function CompetitionRegistrationForm() {
                   <p className="text-xs text-gray-400 mb-4 font-medium">&nbsp;</p>
                   <RadioGroup value={abilityLevel} onValueChange={setAbilityLevel} className="space-y-3">
                     {ABILITY_LEVELS.map((d) => (
-                      <label key={d} className="flex items-start gap-4 rounded-2xl border-2 border-gray-100 p-4 cursor-pointer transition-all hover:bg-gray-50 has-[:checked]:border-[#2E75B6] has-[:checked]:bg-[#2E75B6]/5">
-                        <RadioGroupItem value={d} className="w-5 h-5 mt-0.5 shrink-0" />
-                        <span className="font-bold text-gray-800 text-sm leading-tight">{d}</span>
+                      <label
+                        key={d}
+                        className="flex items-start gap-4 rounded-2xl border-2 border-gray-100 p-4 cursor-pointer transition-all hover:bg-gray-50 has-[:checked]:border-[#2E75B6] has-[:checked]:bg-[#2E75B6]/5 touch-manipulation min-h-[52px] active:bg-gray-50"
+                      >
+                        <RadioGroupItem value={d} id={`ability-${d.slice(0, 24).replace(/\s/g, '-')}`} className="size-5 mt-0.5 shrink-0" />
+                        <span className="font-bold text-gray-800 text-sm leading-tight select-none">{d}</span>
                       </label>
                     ))}
                   </RadioGroup>
@@ -1163,11 +1170,15 @@ export default function CompetitionRegistrationForm() {
                 {/* Payment method */}
                 <div>
                   <FormLabel>Payment method *</FormLabel>
-                  <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="grid grid-cols-2 gap-4 mt-4">
+                  <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
                     {PAYMENT_METHODS.map((p) => (
-                      <label key={p} className="flex items-center gap-3 rounded-2xl border-2 border-gray-100 p-4 cursor-pointer transition-all hover:border-gray-200 hover:bg-gray-50 has-[:checked]:border-[#2E75B6] has-[:checked]:bg-[#2E75B6]/5">
-                        <RadioGroupItem value={p} className="w-5 h-5" />
-                        <span className="font-bold text-gray-800">{p}</span>
+                      <label
+                        key={p}
+                        htmlFor={`pay-${p.replace(/\s+/g, '-')}`}
+                        className="flex items-center gap-3 rounded-2xl border-2 border-gray-100 p-4 cursor-pointer transition-all hover:border-gray-200 hover:bg-gray-50 has-[:checked]:border-[#2E75B6] has-[:checked]:bg-[#2E75B6]/5 touch-manipulation min-h-[52px] active:bg-gray-50"
+                      >
+                        <RadioGroupItem value={p} id={`pay-${p.replace(/\s+/g, '-')}`} className="size-5 shrink-0" />
+                        <span className="font-bold text-gray-800 select-none">{p}</span>
                       </label>
                     ))}
                   </RadioGroup>
