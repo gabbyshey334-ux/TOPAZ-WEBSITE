@@ -321,7 +321,7 @@ const Registration = () => {
                   {[
                     'Completed online registration form or PDF',
                     'Performance music (MP3 upload or USB)',
-                    'Payment (check or money order)',
+                    'Payment (Zelle, check, or money order)',
                     'Parent or teacher signature (for minors)'
                   ].map((item, i) => (
                     <li key={i} className="flex items-start gap-4">
