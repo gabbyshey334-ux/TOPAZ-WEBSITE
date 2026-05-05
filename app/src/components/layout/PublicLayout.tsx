@@ -5,7 +5,7 @@ import CartDrawer from '@/components/CartDrawer';
 
 export default function PublicLayout() {
   return (
-    <div className="min-h-screen flex flex-col bg-white">
+    <div className="min-h-screen flex flex-col bg-[#0a0a0a]">
       <Navbar />
       <CartDrawer />
       <main className="flex-1 bg-white pt-20">

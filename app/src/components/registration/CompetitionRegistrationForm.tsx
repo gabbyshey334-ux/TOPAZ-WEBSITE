@@ -54,9 +54,8 @@ const SPECIAL = [
 
 const AGE_DIVISIONS = [
   '3–7 years of age',
-  '8–10 years of age',
-  '11–13 years of age',
-  '14–18 years of age',
+  '8–12 years of age',
+  '13–18 years of age',
   '19 years of age and up',
 ] as const;
 
@@ -155,9 +154,8 @@ function perPersonRate(groupSize: string): number {
 /** Whether `age` (whole years on competition day) fits the selected division label. */
 function divisionAcceptsAge(division: string, age: number): boolean {
   if (division === '3–7 years of age') return age >= 3 && age <= 7;
-  if (division === '8–10 years of age') return age >= 8 && age <= 10;
-  if (division === '11–13 years of age') return age >= 11 && age <= 13;
-  if (division === '14–18 years of age') return age >= 14 && age <= 18;
+  if (division === '8–12 years of age') return age >= 8 && age <= 12;
+  if (division === '13–18 years of age') return age >= 13 && age <= 18;
   if (division === '19 years of age and up') return age >= 19;
   return false;
 }

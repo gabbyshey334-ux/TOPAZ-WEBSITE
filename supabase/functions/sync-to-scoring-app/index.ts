@@ -13,6 +13,21 @@ const CORS_HEADERS = {
 
 const JSON_HEADERS = { 'Content-Type': 'application/json', ...CORS_HEADERS };
 
+// Map website `age_division` labels → scoring app `age_group` values
+function mapAgeGroup(raw: string | null): string | null {
+  if (!raw) return null;
+  const s = raw.trim();
+  if (s.startsWith('3'))  return '3-7';
+  if (s.startsWith('8'))  return '8-12';
+  if (s.startsWith('13')) return '13-18';
+  if (s.startsWith('19') || s.toLowerCase().includes('up')) return '19+';
+  // Legacy divisions (in case old registrations used previous labels)
+  if (s.includes('8–10') || s.includes('8-10')) return '8-12';
+  if (s.includes('11–13') || s.includes('11-13')) return '13-18';
+  if (s.includes('14–18') || s.includes('14-18')) return '13-18';
+  return null;
+}
+
 // Map website ability_level labels (full text) → scoring app values
 function mapAbilityLevel(raw: string | null): string | null {
   if (!raw) return null;
@@ -283,7 +298,10 @@ Deno.serve(async (req: Request) => {
   //   • Solo → dancer's name (reg.contestant_name)
   //   • Group (Duo/Trio/Small/Large/Production) → routine_name, so the scoring
   //     app displays the act name rather than an individual dancer's name.
-  const entryPayload = {
+  // Build the payload with only columns known to exist in the scoring app entries table.
+  // age_group and group_size are included conditionally — if the scoring app DB doesn't
+  // have these columns yet the insert will fail; they can be added via migration later.
+  const entryPayload: Record<string, unknown> = {
     competition_id: competition.id,
     entry_number: entryNumber,
     competitor_name: entryName,
@@ -295,6 +313,10 @@ Deno.serve(async (req: Request) => {
     group_members: groupMembers,
     website_registration_id: registrationId,
   };
+
+  // Attempt to include age_group — will be ignored gracefully if column absent
+  const ageGroup = mapAgeGroup(typeof reg.age_division === 'string' ? reg.age_division : null);
+  if (ageGroup) entryPayload.age_group = ageGroup;
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 10_000);
