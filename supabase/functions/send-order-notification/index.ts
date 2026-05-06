@@ -111,9 +111,35 @@ Total: $${total_amount.toFixed(2)}
 
 Action needed: Contact ${customer_name} at ${customer_email} to arrange payment and pickup/delivery.`;
 
+    const brevoApiKey = Deno.env.get('BREVO_API_KEY');
     const resendApiKey = Deno.env.get('RESEND_API_KEY');
 
-    if (resendApiKey) {
+    let sentViaBrevoOk = false;
+    if (brevoApiKey) {
+      const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: {
+          'api-key': brevoApiKey,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          sender: { name: 'TOPAZ 2.0', email: 'noreply@dancetopaz.com' },
+          to: [{ email: ADMIN_EMAIL }],
+          subject: `New Order from ${customer_name} — $${total_amount.toFixed(2)}`,
+          htmlContent: htmlBody,
+          textContent: textBody,
+        }),
+      });
+      sentViaBrevoOk = res.ok;
+      if (!res.ok) {
+        const err = await res.text();
+        console.error('Brevo error:', err);
+      } else {
+        console.log('Order notification sent via Brevo');
+      }
+    }
+
+    if (resendApiKey && !sentViaBrevoOk) {
       const res = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
@@ -133,8 +159,8 @@ Action needed: Contact ${customer_name} at ${customer_email} to arrange payment 
         const err = await res.text();
         console.error('Resend error:', err);
       }
-    } else {
-      console.warn('RESEND_API_KEY not set — order notification email skipped');
+    } else if (!brevoApiKey && !resendApiKey) {
+      console.warn('BREVO_API_KEY / RESEND_API_KEY not set — order notification email skipped');
       console.log('Order notification would have been sent:', textBody);
     }
 

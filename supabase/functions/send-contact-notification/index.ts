@@ -1,4 +1,3 @@
-const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
 const TO_EMAIL = 'topaz2.0@yahoo.com';
 
 Deno.serve(async (req: Request) => {
@@ -22,8 +21,10 @@ Deno.serve(async (req: Request) => {
     return new Response(JSON.stringify({ error: String(e) }), { status: 400 });
   }
 
-  if (!RESEND_API_KEY) {
-    console.error('[send-contact-notification] RESEND_API_KEY not set');
+  const brevoApiKey = Deno.env.get('BREVO_API_KEY');
+  const resendApiKey = Deno.env.get('RESEND_API_KEY');
+  if (!brevoApiKey && !resendApiKey) {
+    console.error('[send-contact-notification] BREVO_API_KEY and RESEND_API_KEY not set');
     return new Response(JSON.stringify({ error: 'Email service not configured' }), { status: 500 });
   }
 
@@ -82,26 +83,52 @@ Deno.serve(async (req: Request) => {
 </body>
 </html>`;
 
-  const res = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${RESEND_API_KEY}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      from: 'TOPAZ 2.0 Website <noreply@dancetopaz.com>',
-      to: [TO_EMAIL],
-      subject: 'New Contact Message — TOPAZ 2.0 Website',
-      html,
-      reply_to: body.email,
-    }),
-  });
-
-  if (!res.ok) {
+  if (brevoApiKey) {
+    const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: {
+        'api-key': brevoApiKey,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        sender: { name: 'TOPAZ 2.0', email: 'noreply@dancetopaz.com' },
+        to: [{ email: TO_EMAIL }],
+        subject: 'New Contact Message — TOPAZ 2.0 Website',
+        htmlContent: html,
+        replyTo: { email: body.email, name: body.name },
+      }),
+    });
+    if (res.ok) {
+      return new Response(JSON.stringify({ success: true }), { status: 200 });
+    }
     const text = await res.text();
-    console.error('[send-contact-notification] Resend error:', text);
-    return new Response(JSON.stringify({ error: 'Email delivery failed' }), { status: 500 });
+    console.error('[send-contact-notification] Brevo error:', text);
   }
 
-  return new Response(JSON.stringify({ success: true }), { status: 200 });
+  if (resendApiKey) {
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${resendApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: 'TOPAZ 2.0 Website <noreply@dancetopaz.com>',
+        to: [TO_EMAIL],
+        subject: 'New Contact Message — TOPAZ 2.0 Website',
+        html,
+        reply_to: body.email,
+      }),
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      console.error('[send-contact-notification] Resend error:', text);
+      return new Response(JSON.stringify({ error: 'Email delivery failed' }), { status: 500 });
+    }
+
+    return new Response(JSON.stringify({ success: true }), { status: 200 });
+  }
+
+  return new Response(JSON.stringify({ error: 'Email delivery failed' }), { status: 500 });
 });

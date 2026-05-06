@@ -7,8 +7,6 @@ const FROM_EMAIL = 'TOPAZ 2.0 <noreply@dancetopaz.com>';
 const FROM_NAME = 'TOPAZ 2.0 Dance Competition';
 
 interface RegistrationEmailPayload {
-  // Either pass a registrationId and the function will load the row server-side
-  // (preferred — allows manual "Resend" from admin), or pass the explicit fields.
   registrationId?: string;
   to?: string;
   contestant_name?: string;
@@ -24,8 +22,6 @@ interface RegistrationEmailPayload {
   payment_type?: string;
 }
 
-// Build a service-role client used to write back email status to the
-// registrations row. Returns null if the required env vars are missing.
 function getServiceClient() {
   const url = Deno.env.get('SUPABASE_URL');
   const key = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
@@ -55,7 +51,6 @@ async function markEmailFailed(registrationId: string, err: string) {
 }
 
 Deno.serve(async (req: Request) => {
-  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, {
       status: 204,
@@ -100,8 +95,6 @@ Deno.serve(async (req: Request) => {
   } = payload;
   const registrationId = payload.registrationId;
 
-  // If only a registrationId was provided, load the fields from the DB.
-  // This is the path used by the admin "Resend Confirmation Email" button.
   if (registrationId && (!to || !contestant_name)) {
     const client = getServiceClient();
     if (!client) {
@@ -150,7 +143,6 @@ Deno.serve(async (req: Request) => {
       ? 'Full group total (entire routine fee on this registration)'
       : 'Individual share (per dancer registering separately)';
 
-  /** Linked to Nick's Zelle account (plain text in email — no payment links). */
   const ZELLE_PAYEE = 'topaz2.0@yahoo.com';
   const ADMIN_NOTIFICATION_BCC = 'topaz2.0@dancetopaz.com';
 
@@ -264,14 +256,54 @@ Registration deadline: July 30, 2026, 12:00 AM. No exceptions.
 
 — TOPAZ 2.0 LLC`;
 
+  const brevoApiKey = Deno.env.get('BREVO_API_KEY');
   const resendApiKey = Deno.env.get('RESEND_API_KEY');
+
+  const bccForAdmin =
+    to.trim().toLowerCase() === ADMIN_NOTIFICATION_BCC.toLowerCase()
+      ? undefined
+      : [ADMIN_NOTIFICATION_BCC];
+
+  let brevoFailureDetail: string | null = null;
+
+  if (brevoApiKey) {
+    try {
+      const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: {
+          'api-key': brevoApiKey,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          sender: { name: 'TOPAZ 2.0', email: 'noreply@dancetopaz.com' },
+          to: [{ email: to }],
+          ...(bccForAdmin ? { bcc: bccForAdmin.map((email) => ({ email })) } : {}),
+          subject: `TOPAZ 2.0 — Registration Confirmed: ${contestant_name}`,
+          htmlContent: htmlBody,
+          textContent: textBody,
+        }),
+      });
+
+      if (response.ok) {
+        const result = (await response.json()) as { messageId?: string };
+        console.log('[send-registration-confirmation] Email sent via Brevo:', result.messageId);
+        if (registrationId) await markEmailSent(registrationId);
+        return new Response(JSON.stringify({ success: true, id: result.messageId ?? 'brevo' }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+        });
+      }
+      const errBody = await response.text();
+      brevoFailureDetail = `Brevo ${response.status}: ${errBody}`;
+      console.error('[send-registration-confirmation] Brevo API error:', response.status, errBody);
+    } catch (err) {
+      brevoFailureDetail = err instanceof Error ? err.message : String(err);
+      console.error('[send-registration-confirmation] Brevo unexpected error:', err);
+    }
+  }
 
   if (resendApiKey) {
     try {
-      const bcc =
-        to.trim().toLowerCase() === ADMIN_NOTIFICATION_BCC.toLowerCase()
-          ? undefined
-          : [ADMIN_NOTIFICATION_BCC];
       const response = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
@@ -281,7 +313,7 @@ Registration deadline: July 30, 2026, 12:00 AM. No exceptions.
         body: JSON.stringify({
           from: FROM_EMAIL,
           to: [to],
-          ...(bcc ? { bcc } : {}),
+          ...(bccForAdmin ? { bcc: bccForAdmin } : {}),
           subject: `TOPAZ 2.0 — Registration Confirmed: ${contestant_name}`,
           html: htmlBody,
           text: textBody,
@@ -316,8 +348,16 @@ Registration deadline: July 30, 2026, 12:00 AM. No exceptions.
     }
   }
 
-  // No email provider configured — log, mark on DB, and return success so registration is not blocked
-  const missingProviderMsg = 'No email provider configured (RESEND_API_KEY not set on Supabase).';
+  if (brevoFailureDetail && !resendApiKey) {
+    if (registrationId) await markEmailFailed(registrationId, brevoFailureDetail.slice(0, 500));
+    return new Response(JSON.stringify({ error: 'Email delivery failed', details: brevoFailureDetail }), {
+      status: 502,
+      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+    });
+  }
+
+  const missingProviderMsg =
+    'No email provider configured (set BREVO_API_KEY or RESEND_API_KEY on Supabase).';
   console.warn('[send-registration-confirmation] ' + missingProviderMsg + ' To: ' + to + ', Contestant: ' + contestant_name);
   if (registrationId) await markEmailFailed(registrationId, missingProviderMsg);
   return new Response(JSON.stringify({ success: true, warning: missingProviderMsg }), {
