@@ -1,3 +1,5 @@
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+
 const TO_EMAIL = 'topaz2.0@yahoo.com';
 
 Deno.serve(async (req: Request) => {
@@ -83,6 +85,7 @@ Deno.serve(async (req: Request) => {
 </body>
 </html>`;
 
+  let brevoErrorText: string | null = null;
   if (brevoApiKey) {
     const res = await fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
@@ -99,9 +102,10 @@ Deno.serve(async (req: Request) => {
       }),
     });
     if (res.ok) {
-      return new Response(JSON.stringify({ success: true }), { status: 200 });
+      return new Response(JSON.stringify({ success: true, provider: 'brevo' }), { status: 200 });
     }
     const text = await res.text();
+    brevoErrorText = text;
     console.error('[send-contact-notification] Brevo error:', text);
   }
 
@@ -124,11 +128,25 @@ Deno.serve(async (req: Request) => {
     if (!res.ok) {
       const text = await res.text();
       console.error('[send-contact-notification] Resend error:', text);
-      return new Response(JSON.stringify({ error: 'Email delivery failed' }), { status: 500 });
+      return new Response(
+        JSON.stringify({
+          error: 'Email delivery failed',
+          provider: 'resend',
+          brevo_error: brevoErrorText,
+          resend_error: text,
+        }),
+        { status: 500 },
+      );
     }
 
-    return new Response(JSON.stringify({ success: true }), { status: 200 });
+    return new Response(
+      JSON.stringify({ success: true, provider: 'resend', brevo_error: brevoErrorText }),
+      { status: 200 },
+    );
   }
 
-  return new Response(JSON.stringify({ error: 'Email delivery failed' }), { status: 500 });
+  return new Response(
+    JSON.stringify({ error: 'Email delivery failed', provider: 'brevo', brevo_error: brevoErrorText }),
+    { status: 500 },
+  );
 });

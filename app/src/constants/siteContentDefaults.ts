@@ -295,7 +295,7 @@ export const SITE_CONTENT_TEXT_DEFAULTS = {
 
   schedule_hero_kicker: 'Season 2026',
   schedule_hero_heading_prefix: 'Competition ',
-  schedule_hero_heading_accent: 'Schedule',
+  schedule_hero_heading_accent: 'Events',
   schedule_upcoming_heading: 'Upcoming Competitions',
   schedule_upcoming_subtitle: "Don't miss your chance to shine on the TOPAZ stage.",
   schedule_cta_heading_prefix: 'Ready to ',

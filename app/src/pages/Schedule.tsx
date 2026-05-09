@@ -32,6 +32,14 @@ const Schedule = () => {
     };
   }, []);
 
+  useEffect(() => {
+    const previousTitle = document.title;
+    document.title = 'Events | Topaz 2.0 - Dance Competition';
+    return () => {
+      document.title = previousTitle;
+    };
+  }, []);
+
   const scheduleHeroBg = siteContentUrl(siteContent, 'schedule_hero_background');
   const eventCardImage = siteContentUrl(siteContent, 'schedule_event_card_image');
   const cardErrorFallback = siteContentUrl(siteContent, 'schedule_card_error_fallback');

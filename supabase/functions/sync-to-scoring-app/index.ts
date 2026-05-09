@@ -38,6 +38,31 @@ function mapAbilityLevel(raw: string | null): string | null {
   return null;
 }
 
+const getAgeDivisionId = (age: number): string | null => {
+  if (age >= 3 && age <= 7) return 'fd5593b0-dfe5-4329-a00e-964559867a03';
+  if (age >= 8 && age <= 12) return '59295514-2972-4ed2-adf8-6e4ca4d005bb';
+  if (age >= 13 && age <= 18) return 'c8c35166-e1b8-4d7b-a295-e78029cd9111';
+  if (age >= 19) return '7c60b9b7-17d1-471e-a83e-a5dba9bf690c';
+  return null;
+};
+
+const normalizeDanceType = (type: string): string => {
+  const map: Record<string, string> = {
+    TAP: 'Tap',
+    JAZZ: 'Jazz',
+    BALLET: 'Ballet',
+    'HIP HOP': 'Hip Hop',
+    LYRICAL: 'Lyrical',
+    CONTEMPORARY: 'Contemporary',
+    ACTING: 'Acting',
+    VOCAL: 'Vocal',
+    PRODUCTION: 'Production',
+    'STUDENT CHOREOGRAPHY': 'Student Choreography',
+    'LYRICAL/CONTEMPORARY': 'Lyrical/Contemporary',
+  };
+  return map[type?.toUpperCase()] || type;
+};
+
 // Map website registration `category` values → scoring app `entries.dance_type`
 // (must match judge filter / category labels in the scoring app DB).
 const WEBSITE_CATEGORY_TO_SCORING_DANCE_TYPE: Record<string, string> = {
@@ -143,14 +168,6 @@ Deno.serve(async (req: Request) => {
     });
   }
 
-  // ── 2. Idempotency check ─────────────────────────────────────────────────────
-  if (reg.scoring_app_contestant_id) {
-    return new Response(
-      JSON.stringify({ success: true, alreadySynced: true, contestantId: reg.scoring_app_contestant_id }),
-      { status: 200, headers: JSON_HEADERS }
-    );
-  }
-
   const scoringClient = createClient(SCORING_APP_URL, SCORING_APP_SERVICE_ROLE_KEY);
 
   // ── 3. Find the competition in the scoring app ───────────────────────────────
@@ -239,38 +256,22 @@ Deno.serve(async (req: Request) => {
     : reg.contestant_name;
 
   // ── 5. Duplicate check ───────────────────────────────────────────────────────
-  // First check by website_registration_id (strongest signal)
-  const { data: byRegId } = await scoringClient
+  // Skip only when the same website registration + same competitor_name already exists
+  // (allows multiple entries per registration, e.g. group members, with distinct names).
+  const { data: existingSameRegAndName } = await scoringClient
     .from('entries')
     .select('id')
     .eq('competition_id', competition.id)
-    .eq('website_registration_id', registrationId)
+    .eq('website_registration_id', reg.id)
+    .eq('competitor_name', entryName)
     .maybeSingle();
 
-  if (byRegId) {
-    await updateSyncStatus(websiteClient, registrationId, 'synced', byRegId.id, null);
-    return new Response(JSON.stringify({ success: true, alreadySynced: true, contestantId: byRegId.id }), { status: 200, headers: JSON_HEADERS });
-  }
-
-  // Also check by name to prevent duplicates from manual entry in scoring app.
-  // IMPORTANT: only applies to Solo entries. For group entries we intentionally
-  // allow multiple registrations to share the same competitor_name (the routine
-  // name), because every dancer in the group pays and syncs separately. The
-  // byRegId check above already prevents a single registration from being synced
-  // twice.
-  if (!isGroupEntry) {
-    const { data: byName } = await scoringClient
-      .from('entries')
-      .select('id')
-      .eq('competition_id', competition.id)
-      .eq('competitor_name', entryName)
-      .maybeSingle();
-
-    if (byName) {
-      const msg = `Contestant "${entryName}" already exists in the scoring app for this competition (possibly entered manually). Skipped to avoid duplicate.`;
-      await updateSyncStatus(websiteClient, registrationId, 'skipped', byName.id, msg);
-      return new Response(JSON.stringify({ success: true, skipped: true, reason: msg }), { status: 200, headers: JSON_HEADERS });
-    }
+  if (existingSameRegAndName) {
+    await updateSyncStatus(websiteClient, registrationId, 'synced', existingSameRegAndName.id, null);
+    return new Response(
+      JSON.stringify({ success: true, alreadySynced: true, contestantId: existingSameRegAndName.id }),
+      { status: 200, headers: JSON_HEADERS },
+    );
   }
 
   // ── 6. Calculate next entry number ──────────────────────────────────────────
@@ -301,12 +302,19 @@ Deno.serve(async (req: Request) => {
   // Build the payload with only columns known to exist in the scoring app entries table.
   // age_group and group_size are included conditionally — if the scoring app DB doesn't
   // have these columns yet the insert will fail; they can be added via migration later.
+  const ageNum = reg.age != null && reg.age !== '' ? parseInt(String(reg.age), 10) : NaN;
+  const categoryStr = typeof reg.category === 'string' ? reg.category : null;
+  const mappedDance = mapDanceType(categoryStr);
+  const danceTypeRaw = normalizeDanceType(mappedDance ?? categoryStr ?? '');
+  const dance_type = danceTypeRaw.trim() ? danceTypeRaw : null;
+
   const entryPayload: Record<string, unknown> = {
     competition_id: competition.id,
     entry_number: entryNumber,
     competitor_name: entryName,
-    age: reg.age ? parseInt(reg.age, 10) || null : null,
-    dance_type: mapDanceType(typeof reg.category === 'string' ? reg.category : null),
+    age: Number.isFinite(ageNum) ? ageNum : null,
+    age_division_id: Number.isFinite(ageNum) ? getAgeDivisionId(ageNum) : null,
+    dance_type,
     ability_level: mapAbilityLevel(reg.ability_level),
     studio_name: reg.studio_name ?? null,
     teacher_name: reg.teacher_name ?? null,

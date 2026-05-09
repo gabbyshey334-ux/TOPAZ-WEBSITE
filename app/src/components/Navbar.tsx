@@ -5,8 +5,9 @@ import { useCart } from '@/contexts/CartContext';
 
 const navLinks = [
   { label: 'HOME', to: '/' },
+  { label: 'REGISTER', to: '/registration' },
+  { label: 'EVENTS', to: '/schedule' },
   { label: 'ABOUT', to: '/about' },
-  { label: 'TOUR', to: '/schedule' },
   { label: 'RULES', to: '/rules' },
   { label: 'GALLERY', to: '/gallery' },
   { label: 'SHOP', to: '/shop' },
@@ -177,13 +178,6 @@ const Navbar = () => {
 
         {/* Mobile CTAs */}
         <div className="absolute bottom-0 left-0 right-0 p-6 flex flex-col gap-3 border-t border-white/10 bg-[#0a0a0a]">
-          <Link
-            to="/registration"
-            onClick={() => setIsMobileMenuOpen(false)}
-            className="w-full py-4 text-center font-bold text-sm uppercase tracking-[0.2em] text-white border border-white/30 rounded-full hover:bg-white/10 transition-colors"
-          >
-            REGISTER
-          </Link>
           <a
             href="/?scrollTo=mailinglist"
             onClick={handleJoinClick}
