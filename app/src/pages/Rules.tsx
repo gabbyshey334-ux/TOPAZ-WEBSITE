@@ -418,7 +418,7 @@ const Rules = () => {
               Competition <span className="text-[#2E75B6] italic relative">Categories<div className="absolute -bottom-2 left-0 w-full h-2 bg-[#2E75B6]/20 rounded-full" /></span>
             </h2>
             <p className="section-animate text-lg text-gray-500 leading-relaxed font-medium">
-              Explore the diverse range of styles offered at TOPAZ 2.0. Performing Arts categories are eligible for high scoring awards.
+              Explore the diverse range of styles offered at TOPAZ 2.0. Performing Arts and Variety Arts categories are eligible for high scoring awards.
             </p>
           </div>
 
@@ -465,9 +465,12 @@ const Rules = () => {
               <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
                 <Sparkles className="w-7 h-7 text-white" />
               </div>
-              <h3 className="section-animate font-display font-black text-2xl lg:text-3xl text-[#0a0a0a] uppercase tracking-wide">
-                Variety Arts
-              </h3>
+              <div>
+                <h3 className="section-animate font-display font-black text-2xl lg:text-3xl text-[#0a0a0a] uppercase tracking-wide">
+                  Variety Arts
+                </h3>
+                <p className="text-sm font-bold text-[#2E75B6] tracking-wide uppercase mt-1">Eligible for high scoring awards</p>
+              </div>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -713,7 +716,7 @@ const Rules = () => {
                 </div>
                 <h3 className="font-display font-black text-2xl text-[#0a0a0a] mb-3">High Scoring Awards</h3>
                 <p className="text-gray-600 leading-relaxed text-[15px]">
-                  Given to the highest scores across all categories within <strong className="text-[#0a0a0a] bg-white border border-gray-200 px-1 rounded">12 divisions</strong>: (Junior/Senior × Beg/Int/Adv × Perf/Variety). Each division awards 1st–4th place trophies.
+                  Given to the highest scores across Performing Arts and Variety Arts categories within <strong className="text-[#0a0a0a] bg-white border border-gray-200 px-1 rounded">12 divisions</strong>: (Junior/Senior × Beg/Int/Adv × Perf/Variety). Each division awards 1st–4th place trophies.
                 </p>
               </div>
 

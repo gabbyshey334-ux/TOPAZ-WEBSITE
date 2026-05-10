@@ -2,10 +2,21 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import type { Database } from '@/types/database';
 import { ClipboardList, CheckCircle2, Clock, XCircle, AlertCircle, DollarSign, Users, CalendarCheck, RefreshCw } from 'lucide-react';
+import { registrationDivisionTypeLabel } from '@/lib/entryType';
 
 type RegRow = Database['public']['Tables']['registrations']['Row'];
 type EventRow = Database['public']['Tables']['events']['Row'];
-type TabId = 'overview' | 'registrations' | 'gallery' | 'events' | 'shop' | 'settings';
+type TabId =
+  | 'overview'
+  | 'registrations'
+  | 'gallery'
+  | 'events'
+  | 'content'
+  | 'members'
+  | 'announcements'
+  | 'shop'
+  | 'settings'
+  | 'scoring';
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; icon: typeof CheckCircle2 }> = {
   pending:    { label: 'Pending',    color: 'text-amber-400',   bg: 'bg-amber-400/10',   icon: Clock },
@@ -13,16 +24,6 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; 
   waitlisted: { label: 'Waitlisted', color: 'text-blue-400',    bg: 'bg-blue-400/10',    icon: AlertCircle },
   cancelled:  { label: 'Cancelled',  color: 'text-red-400',     bg: 'bg-red-400/10',     icon: XCircle },
 };
-
-function entryLabel(groupSize: string): string {
-  if (groupSize.startsWith('Solo'))        return 'Solo';
-  if (groupSize.startsWith('Duo'))         return 'Duo';
-  if (groupSize.startsWith('Trio'))        return 'Trio';
-  if (groupSize.startsWith('Small Group')) return 'Small Group';
-  if (groupSize.startsWith('Large Group')) return 'Large Group';
-  if (groupSize.startsWith('Production'))  return 'Production';
-  return groupSize;
-}
 
 export default function OverviewTab({ onNavigate }: { onNavigate: (tab: TabId) => void }) {
   const [regs, setRegs] = useState<RegRow[]>([]);
@@ -55,7 +56,7 @@ export default function OverviewTab({ onNavigate }: { onNavigate: (tab: TabId) =
   const byEntryType = useMemo(() => {
     const map: Record<string, number> = {};
     regs.forEach((r) => {
-      const label = entryLabel(r.group_size);
+      const label = registrationDivisionTypeLabel(r, regs);
       map[label] = (map[label] ?? 0) + 1;
     });
     return Object.entries(map).sort((a, b) => b[1] - a[1]);
@@ -288,7 +289,7 @@ export default function OverviewTab({ onNavigate }: { onNavigate: (tab: TabId) =
                 <div key={r.id} className="flex items-center justify-between gap-3 py-2 border-b border-slate-800 last:border-0">
                   <div className="min-w-0 flex-1">
                     <p className="font-medium text-white text-sm truncate">{r.contestant_name}</p>
-                    <p className="text-xs text-slate-500 truncate">{r.studio_name} · {entryLabel(r.group_size)}</p>
+                    <p className="text-xs text-slate-500 truncate">{r.studio_name} · {registrationDivisionTypeLabel(r, regs)}</p>
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
                     <span className="text-xs text-slate-500">

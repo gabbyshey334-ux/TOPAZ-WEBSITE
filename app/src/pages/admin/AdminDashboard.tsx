@@ -11,6 +11,7 @@ import {
   Settings,
   Users,
   Bell,
+  LayoutGrid,
 } from 'lucide-react';
 
 import OverviewTab from '@/pages/admin/tabs/OverviewTab';
@@ -22,11 +23,13 @@ import MembersTab from '@/pages/admin/tabs/MembersTab';
 import AnnouncementsTab from '@/pages/admin/tabs/AnnouncementsTab';
 import ShopTab from '@/pages/admin/tabs/ShopTab';
 import SettingsTab from '@/pages/admin/tabs/SettingsTab';
+import ScoringInterface from '@/pages/admin/ScoringInterface';
 
-type TabId = 'overview' | 'registrations' | 'gallery' | 'events' | 'content' | 'members' | 'announcements' | 'shop' | 'settings';
+type TabId = 'overview' | 'registrations' | 'gallery' | 'events' | 'content' | 'members' | 'announcements' | 'shop' | 'settings' | 'scoring';
 
 const NAV: { id: TabId; label: string; shortLabel: string; icon: typeof LayoutDashboard }[] = [
   { id: 'overview',       label: 'Overview',       shortLabel: 'Home',   icon: LayoutDashboard },
+  { id: 'scoring',        label: 'Scoring',        shortLabel: 'Score',  icon: LayoutGrid },
   { id: 'registrations',  label: 'Registrations',  shortLabel: 'Regs',   icon: ClipboardList },
   { id: 'gallery',        label: 'Gallery',        shortLabel: 'Gallery', icon: ImageIcon },
   { id: 'events',         label: 'Events',         shortLabel: 'Events', icon: Calendar },
@@ -92,6 +95,7 @@ export default function AdminDashboard() {
 
         <div className="max-w-6xl mx-auto px-4 py-6 lg:px-8 lg:py-10">
           {tab === 'overview'       && <OverviewTab onNavigate={setTab} />}
+          {tab === 'scoring'        && <ScoringInterface />}
           {tab === 'registrations'  && <RegistrationsAdmin />}
           {tab === 'gallery'        && <GalleryTab />}
           {tab === 'events'         && <EventsTab />}

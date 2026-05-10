@@ -74,10 +74,12 @@ const GROUP_SIZES = [
   'Production 10 or more (8 min limit)',
 ] as const;
 
-const PAYMENT_METHODS = ['Zelle', 'Check', 'Money Order'] as const;
+const PAYMENT_METHODS = ['Zelle', 'Check', 'Money Order', 'Cash'] as const;
 
 const PAYMENT_INSTRUCTIONS =
-  'Payment accepted by Check, Money Order, or Zelle. See below for Zelle payee and memo.';
+  'Payment accepted by Cash, Check, Money Order, or Zelle. See below for cash, Zelle payee, and memo.';
+
+const CASH_MAILING_ADDRESS = 'PO BOX 131, BANKS OR 97106';
 
 /** Zelle payee linked to Nick's account (plain text only — no deep links). */
 const ZELLE_EMAIL_DISPLAY = 'topaz2.0@yahoo.com';
@@ -238,6 +240,7 @@ export default function CompetitionRegistrationForm() {
     total_fee: number;
     entry_total_fee: number;
     payment_type: 'individual' | 'group_full';
+    payment_method: string;
     email: string;
     song_title: string;
     artist_name: string;
@@ -572,6 +575,7 @@ export default function CompetitionRegistrationForm() {
             music_delivery_method: row.music_delivery_method,
             total_fee: fee,
             payment_type: paymentType,
+            payment_method: paymentMethod,
           },
         });
       } catch {
@@ -602,6 +606,7 @@ export default function CompetitionRegistrationForm() {
       total_fee: fee,
       entry_total_fee: entryFull,
       payment_type: paymentType,
+      payment_method: paymentMethod,
       email: row.email,
       song_title: songTitle.trim(),
       artist_name: artistName.trim(),
@@ -635,11 +640,31 @@ export default function CompetitionRegistrationForm() {
               💳 Payment Required to Confirm Your Spot
             </p>
             <p className="text-gray-700 font-medium leading-relaxed mb-4">{PAYMENT_INSTRUCTIONS}</p>
-            <div className="mb-4">
-              <ZellePlainTextBlock emailStrongClassName="text-[#2E75B6]" />
+            <div className="mb-4 space-y-4">
+              <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+                <ZellePlainTextBlock emailStrongClassName="text-[#2E75B6]" />
+              </div>
+              <div className="rounded-xl border border-emerald-200 bg-emerald-50/90 p-4 shadow-sm">
+                <p className="font-display font-black text-lg text-emerald-950 uppercase tracking-tight mb-2">
+                  Pay with Cash
+                </p>
+                <p className="text-sm font-medium text-gray-800 leading-relaxed mb-2">
+                  Bring cash payment to the event or mail to:
+                </p>
+                <p className="text-sm font-bold text-gray-900 mb-3">
+                  TOPAZ 2.0
+                  <br />
+                  {CASH_MAILING_ADDRESS}
+                </p>
+              </div>
             </div>
             <p className="text-gray-700 font-medium leading-relaxed mb-2">
               Amount due: <span className="font-black text-[#2E75B6]">${success.total_fee.toFixed(2)}</span>
+              {success.payment_method === 'Cash' ? (
+                <span className="block text-sm text-gray-600 font-medium mt-1">
+                  You selected <strong className="text-gray-900">Cash</strong> — bring or mail payment as above, or pay via Zelle if you prefer.
+                </span>
+              ) : null}
             </p>
             <p className="text-sm text-gray-600 font-medium mb-1">
               {success.payment_type === 'individual' ? 'Your share of the entry fee.' : 'Full routine / group total payment.'}
@@ -1170,17 +1195,44 @@ export default function CompetitionRegistrationForm() {
                 {/* Payment method */}
                 <div>
                   <FormLabel>Payment method *</FormLabel>
-                  <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
-                    {PAYMENT_METHODS.map((p) => (
-                      <label
-                        key={p}
-                        htmlFor={`pay-${p.replace(/\s+/g, '-')}`}
-                        className="flex items-center gap-3 rounded-2xl border-2 border-gray-100 p-4 cursor-pointer transition-all hover:border-gray-200 hover:bg-gray-50 has-[:checked]:border-[#2E75B6] has-[:checked]:bg-[#2E75B6]/5 touch-manipulation min-h-[52px] active:bg-gray-50"
-                      >
-                        <RadioGroupItem value={p} id={`pay-${p.replace(/\s+/g, '-')}`} className="size-5 shrink-0" />
-                        <span className="font-bold text-gray-800 select-none">{p}</span>
-                      </label>
-                    ))}
+                  <RadioGroup
+                    value={paymentMethod}
+                    onValueChange={setPaymentMethod}
+                    className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 mt-4"
+                  >
+                    {PAYMENT_METHODS.map((p) =>
+                      p === 'Cash' ? (
+                        <label
+                          key={p}
+                          htmlFor="pay-Cash"
+                          className="flex flex-col rounded-2xl border-2 border-gray-100 p-5 cursor-pointer transition-all hover:border-gray-200 hover:bg-gray-50 has-[:checked]:border-[#2E75B6] has-[:checked]:bg-[#2E75B6]/5 touch-manipulation sm:col-span-2 xl:col-span-4 active:bg-gray-50"
+                        >
+                          <div className="flex items-center gap-3">
+                            <RadioGroupItem value="Cash" id="pay-Cash" className="size-5 shrink-0" />
+                            <span className="font-bold text-gray-800 select-none text-base">💵 Pay with Cash</span>
+                          </div>
+                          <p className="text-sm font-medium text-gray-600 leading-relaxed mt-4 pl-8">
+                            Bring cash payment to the event or mail to:
+                            <br />
+                            <span className="font-bold text-gray-900">TOPAZ 2.0</span>
+                            <br />
+                            {CASH_MAILING_ADDRESS}
+                          </p>
+                          <p className="text-sm font-semibold text-[#2E75B6] mt-3 pl-8">
+                            Amount due: <span className="font-black text-lg">${amountDue.toFixed(2)}</span>
+                          </p>
+                        </label>
+                      ) : (
+                        <label
+                          key={p}
+                          htmlFor={`pay-${p.replace(/\s+/g, '-')}`}
+                          className="flex items-center gap-3 rounded-2xl border-2 border-gray-100 p-4 cursor-pointer transition-all hover:border-gray-200 hover:bg-gray-50 has-[:checked]:border-[#2E75B6] has-[:checked]:bg-[#2E75B6]/5 touch-manipulation min-h-[52px] active:bg-gray-50"
+                        >
+                          <RadioGroupItem value={p} id={`pay-${p.replace(/\s+/g, '-')}`} className="size-5 shrink-0" />
+                          <span className="font-bold text-gray-800 select-none">{p}</span>
+                        </label>
+                      ),
+                    )}
                   </RadioGroup>
                 </div>
 

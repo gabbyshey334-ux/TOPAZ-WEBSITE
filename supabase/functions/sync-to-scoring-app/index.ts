@@ -92,6 +92,107 @@ function mapDanceType(raw: string | null): string | null {
   return WEBSITE_CATEGORY_TO_SCORING_DANCE_TYPE[key] ?? key;
 }
 
+type RegParticipantsRow = {
+  id: string;
+  participants_json: unknown;
+  contestant_name: string | null;
+};
+
+/** Collect unique performer names from one registration row. */
+function namesFromParticipantsJson(participants_json: unknown): string[] {
+  if (!Array.isArray(participants_json)) return [];
+  const out: string[] = [];
+  for (const p of participants_json) {
+    if (p && typeof p === 'object' && 'name' in p) {
+      const n = (p as { name?: unknown }).name;
+      if (typeof n === 'string' && n.trim() !== '') out.push(n.trim());
+    }
+  }
+  return out;
+}
+
+/**
+ * Fetch all website registrations linked by group_link_code or routine_name
+ * (same rules as admin) and merge participant + contestant names for scoring `group_members`.
+ */
+async function buildMergedGroupMemberNames(
+  websiteClient: ReturnType<typeof createClient>,
+  reg: Record<string, unknown>,
+): Promise<string[]> {
+  const groupSizeStr = typeof reg.group_size === 'string' ? reg.group_size : '';
+  // Solos: never merge by routine/link (different solos could share a routine title).
+  if (groupSizeStr.startsWith('Solo')) {
+    const seen = new Set<string>();
+    const names: string[] = [];
+    for (const n of namesFromParticipantsJson(reg.participants_json)) {
+      const k = n.toLowerCase();
+      if (seen.has(k)) continue;
+      seen.add(k);
+      names.push(n);
+    }
+    const cn = typeof reg.contestant_name === 'string' ? reg.contestant_name.trim() : '';
+    if (cn) {
+      const k = cn.toLowerCase();
+      if (!seen.has(k)) {
+        seen.add(k);
+        names.push(cn);
+      }
+    }
+    return names;
+  }
+
+  const code = typeof reg.group_link_code === 'string' ? reg.group_link_code.trim() : '';
+  const routine = typeof reg.routine_name === 'string' ? reg.routine_name.trim() : '';
+
+  let siblings: RegParticipantsRow[] = [];
+
+  if (code !== '') {
+    const { data, error } = await websiteClient
+      .from('registrations')
+      .select('id, participants_json, contestant_name')
+      .eq('group_link_code', code);
+    if (!error && data) siblings = data as RegParticipantsRow[];
+  } else if (routine !== '') {
+    const { data, error } = await websiteClient
+      .from('registrations')
+      .select('id, participants_json, contestant_name')
+      .eq('routine_name', routine);
+    if (!error && data) siblings = data as RegParticipantsRow[];
+  }
+
+  const selfId = typeof reg.id === 'string' ? reg.id : '';
+  const everyone: RegParticipantsRow[] = [...siblings];
+  const hasSelf = everyone.some((r) => r.id === selfId);
+  if (!hasSelf) {
+    everyone.push({
+      id: selfId,
+      participants_json: reg.participants_json,
+      contestant_name: typeof reg.contestant_name === 'string' ? reg.contestant_name : null,
+    });
+  }
+
+  const seen = new Set<string>();
+  const names: string[] = [];
+  for (const row of everyone) {
+    for (const n of namesFromParticipantsJson(row.participants_json)) {
+      const k = n.toLowerCase();
+      if (seen.has(k)) continue;
+      seen.add(k);
+      names.push(n);
+    }
+    const cn = (row.contestant_name ?? '').trim();
+    if (cn) {
+      const k = cn.toLowerCase();
+      if (!seen.has(k)) {
+        seen.add(k);
+        names.push(cn);
+      }
+    }
+  }
+
+  return names;
+}
+
 async function updateSyncStatus(
   client: ReturnType<typeof createClient>,
   registrationId: string,
@@ -285,12 +386,13 @@ Deno.serve(async (req: Request) => {
 
   const entryNumber = (maxEntry?.entry_number ?? 0) + 1;
 
-  // ── 7. Build group_members array ─────────────────────────────────────────────
+  // ── 7. Build group_members array (merge linked Duo/Trio registrations) ─────
   let groupMembers: string[] | null = null;
-  if (reg.participants_json && Array.isArray(reg.participants_json)) {
-    const names = (reg.participants_json as Array<{ name?: string }>)
-      .map((p) => p.name)
-      .filter((n): n is string => typeof n === 'string' && n.trim().length > 0);
+  const mergedNames = await buildMergedGroupMemberNames(websiteClient, reg as Record<string, unknown>);
+  if (mergedNames.length > 0) {
+    groupMembers = mergedNames;
+  } else if (reg.participants_json && Array.isArray(reg.participants_json)) {
+    const names = namesFromParticipantsJson(reg.participants_json);
     if (names.length > 0) groupMembers = names;
   }
 

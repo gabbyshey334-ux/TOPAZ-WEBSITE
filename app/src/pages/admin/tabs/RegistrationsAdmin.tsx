@@ -44,6 +44,12 @@ import {
   List,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import {
+  findLinkedRegistrations,
+  groupSizeToEntryType,
+  normalizeRegistrationKey,
+  registrationDivisionTypeLabel,
+} from '@/lib/entryType';
 import { FunctionsHttpError } from '@supabase/functions-js';
 
 /**
@@ -170,33 +176,13 @@ function statusCfg(s: string) {
   return STATUSES.find((x) => x.value === s) ?? STATUSES[0];
 }
 
-// ── Entry type label (short) ─────────────────────────────────────────────────
-function entryType(groupSize: string): string {
-  if (groupSize.startsWith('Solo'))        return 'Solo';
-  if (groupSize.startsWith('Duo'))         return 'Duo';
-  if (groupSize.startsWith('Trio'))        return 'Trio';
-  if (groupSize.startsWith('Small Group')) return 'Small Group';
-  if (groupSize.startsWith('Large Group')) return 'Large Group';
-  if (groupSize.startsWith('Production'))  return 'Production';
-  return groupSize;
-}
-
-// ── Routine/link normalization + linked-row finder ───────────────────────────
-// Normalizes a routine_name / group_link_code into the lookup key we use for
-// grouping and for detecting linked entries. Trims + lowercases; returns '' when
-// the underlying value is missing, which means "no key" (cannot be linked by
-// that field).
-function normalizeKey(v: string | null | undefined): string {
-  return (v ?? '').trim().toLowerCase();
-}
-
 /**
  * Bucket rows for the "By Group" admin view.
  * Priority: shared group_link_code → shared routine_name → one card per solo → one card per non-solo orphan.
  * (Previously every empty routine_name collapsed into one bucket, splitting families incorrectly.)
  */
 function registrationGroupBucket(r: RegRow): { bucketKey: string; displayTitle: string } {
-  const code = normalizeKey(r.group_link_code);
+  const code = normalizeRegistrationKey(r.group_link_code);
   if (code) {
     const raw = (r.group_link_code ?? '').trim();
     const rn = (r.routine_name ?? '').trim();
@@ -205,32 +191,17 @@ function registrationGroupBucket(r: RegRow): { bucketKey: string; displayTitle: 
       displayTitle: rn || `Group (link: ${raw})`,
     };
   }
-  const routine = normalizeKey(r.routine_name);
+  const routine = normalizeRegistrationKey(r.routine_name);
   if (routine) {
     return { bucketKey: `routine:${routine}`, displayTitle: (r.routine_name ?? '').trim() };
   }
-  if (entryType(r.group_size) === 'Solo') {
+  if (groupSizeToEntryType(r.group_size) === 'Solo') {
     return { bucketKey: `solo:${r.id}`, displayTitle: r.contestant_name };
   }
   return {
     bucketKey: `entry:${r.id}`,
     displayTitle: (r.routine_name ?? '').trim() || r.contestant_name || '(No routine name)',
   };
-}
-
-function findLinkedRegistrations(row: RegRow, all: RegRow[]): RegRow[] {
-  const routineKey = normalizeKey(row.routine_name);
-  const codeKey = normalizeKey(row.group_link_code);
-  if (!routineKey && !codeKey) return [];
-  return all.filter((r) => {
-    if (r.id === row.id) return false;
-    const rRoutine = normalizeKey(r.routine_name);
-    const rCode = normalizeKey(r.group_link_code);
-    return (
-      (routineKey !== '' && rRoutine === routineKey) ||
-      (codeKey !== '' && rCode === codeKey)
-    );
-  });
 }
 
 // ── Detail field row helper ──────────────────────────────────────────────────
@@ -473,8 +444,8 @@ function DetailDialog({
                   <div className="space-y-1.5">
                     {linked.map((lr) => {
                       const lcfg = statusCfg(lr.status);
-                      const matchRoutine = normalizeKey(lr.routine_name) === normalizeKey(row.routine_name) && normalizeKey(row.routine_name) !== '';
-                      const matchCode = normalizeKey(lr.group_link_code) === normalizeKey(row.group_link_code) && normalizeKey(row.group_link_code) !== '';
+                      const matchRoutine = normalizeRegistrationKey(lr.routine_name) === normalizeRegistrationKey(row.routine_name) && normalizeRegistrationKey(row.routine_name) !== '';
+                      const matchCode = normalizeRegistrationKey(lr.group_link_code) === normalizeRegistrationKey(row.group_link_code) && normalizeRegistrationKey(row.group_link_code) !== '';
                       return (
                         <button
                           key={lr.id}
@@ -488,7 +459,7 @@ function DetailDialog({
                               {lr.contestant_name}
                             </p>
                             <p className="text-[11px] text-slate-400 truncate">
-                              {entryType(lr.group_size)} · {lr.studio_name || '—'}
+                              {registrationDivisionTypeLabel(lr, allRows)} · {lr.studio_name || '—'}
                             </p>
                           </div>
                           <div className="shrink-0 text-right">
@@ -854,7 +825,7 @@ export default function RegistrationsAdmin() {
         || (r.routine_name ?? '').toLowerCase().includes(q)
         || (r.group_link_code ?? '').toLowerCase().includes(q);
       const matchStatus    = statusFilter === 'all'    || r.status === statusFilter;
-      const matchEntry     = entryTypeFilter === 'all' || entryType(r.group_size) === entryTypeFilter;
+      const matchEntry     = entryTypeFilter === 'all' || registrationDivisionTypeLabel(r, rows) === entryTypeFilter;
       const matchCategory  = categoryFilter === 'all'  || r.category === categoryFilter;
       const ad = (r.age_division ?? '').trim();
       const matchAgeDivision =
@@ -901,7 +872,7 @@ export default function RegistrationsAdmin() {
     // data-entry error that Nick should notice).
     for (const g of map.values()) {
       const codes = new Set(
-        g.rows.map((r) => normalizeKey(r.group_link_code)).filter((c) => c !== '')
+        g.rows.map((r) => normalizeRegistrationKey(r.group_link_code)).filter((c) => c !== '')
       );
       g.hasLinkCodeMismatch = codes.size > 1;
     }
@@ -1314,13 +1285,13 @@ export default function RegistrationsAdmin() {
             </SelectContent>
           </Select>
 
-          {/* Entry type filter */}
+          {/* Division type (Solo/Duo/…) — from merged participants / group_members, not category */}
           <Select value={entryTypeFilter} onValueChange={setEntryTypeFilter}>
-            <SelectTrigger className="w-[150px] bg-slate-900 border-slate-700 text-white text-sm h-9">
-              <SelectValue placeholder="Entry type" />
+            <SelectTrigger className="w-[170px] bg-slate-900 border-slate-700 text-white text-sm h-9">
+              <SelectValue placeholder="Division type" />
             </SelectTrigger>
             <SelectContent className="bg-slate-900 border-slate-700">
-              <SelectItem value="all" className="text-white">All entry types</SelectItem>
+              <SelectItem value="all" className="text-white">All division types</SelectItem>
               {['Solo', 'Duo', 'Trio', 'Small Group', 'Large Group', 'Production'].map((t) => (
                 <SelectItem key={t} value={t} className="text-white">{t}</SelectItem>
               ))}
@@ -1434,7 +1405,7 @@ export default function RegistrationsAdmin() {
             const isMultiDancer = g.rows.length > 1;
             // Display an indicator of the entry type family (e.g. Duo/Trio) so
             // Nick can spot groups where dancers disagree on their group_size.
-            const entryTypes = Array.from(new Set(g.rows.map((r) => entryType(r.group_size))));
+            const entryTypes = Array.from(new Set(g.rows.map((r) => registrationDivisionTypeLabel(r, rows))));
             const entryTypeBadge = entryTypes.join(' · ');
             return (
               <div
@@ -1529,7 +1500,7 @@ export default function RegistrationsAdmin() {
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mb-1">
                       <p className="font-bold text-white text-sm leading-tight">{r.contestant_name}</p>
-                      <span className="text-xs text-slate-500">{entryType(r.group_size)}</span>
+                      <span className="text-xs text-slate-500">{registrationDivisionTypeLabel(r, rows)}</span>
                     </div>
                     <p className="text-xs text-slate-400 truncate">{r.studio_name}</p>
                     <p className="text-xs text-slate-500 mt-0.5 truncate">
