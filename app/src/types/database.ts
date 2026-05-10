@@ -184,6 +184,46 @@ export type Database = {
         };
         Relationships: [];
       };
+      /** Scoring app competition entries (may live on scoring Supabase project; synced from registrations). */
+      entries: {
+        Row: {
+          id: string;
+          competition_id: string | null;
+          entry_number: number | null;
+          competitor_name: string | null;
+          studio_name: string | null;
+          dance_type: string | null;
+          group_members: Json | null;
+          division_type: string | null;
+          website_registration_id: string | null;
+          created_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          competition_id?: string | null;
+          entry_number?: number | null;
+          competitor_name?: string | null;
+          studio_name?: string | null;
+          dance_type?: string | null;
+          group_members?: Json | null;
+          division_type?: string | null;
+          website_registration_id?: string | null;
+          created_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          competition_id?: string | null;
+          entry_number?: number | null;
+          competitor_name?: string | null;
+          studio_name?: string | null;
+          dance_type?: string | null;
+          group_members?: Json | null;
+          division_type?: string | null;
+          website_registration_id?: string | null;
+          created_at?: string | null;
+        };
+        Relationships: [];
+      };
       gallery_images: {
         Row: {
           id: string;

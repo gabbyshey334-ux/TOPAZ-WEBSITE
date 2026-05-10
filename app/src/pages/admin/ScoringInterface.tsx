@@ -1,11 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { supabase } from '@/lib/supabase';
-import type { Database } from '@/types/database';
-import {
-  getEntryType,
-  mergedParticipantNamesForRegistration,
-  registrationDivisionTypeLabel,
-} from '@/lib/entryType';
+import { getEntriesSupabaseClient } from '@/lib/supabase';
+import type { Database, Json } from '@/types/database';
 import {
   Select,
   SelectContent,
@@ -15,31 +10,51 @@ import {
 } from '@/components/ui/select';
 import { RefreshCw } from 'lucide-react';
 
-type RegRow = Database['public']['Tables']['registrations']['Row'];
+type EntryRow = Database['public']['Tables']['entries']['Row'];
 
-/** Scoring-style row: category is the dance/category label; division type never uses it. */
-type ScoringEntryPreview = {
-  id: string;
-  competitor_name: string;
-  studio_name: string | null;
-  dance_type: string;
-  group_members: string[];
-  divisionType: string;
-};
+function groupMembersToStrings(gm: Json | null): string[] {
+  if (!Array.isArray(gm)) return [];
+  return gm.filter((x): x is string => typeof x === 'string');
+}
+
+/** Filter by stored `division_type` on scoring `entries` (not category / dance_type). */
+function matchesDivisionFilter(
+  division_type: string | null | undefined,
+  selectedDivision: string,
+): boolean {
+  if (
+    !selectedDivision ||
+    selectedDivision === 'all' ||
+    selectedDivision === 'All Division Types'
+  ) {
+    return true;
+  }
+  return division_type === selectedDivision;
+}
 
 export default function ScoringInterface() {
-  const [rows, setRows] = useState<RegRow[]>([]);
+  const [rows, setRows] = useState<EntryRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [divisionFilter, setDivisionFilter] = useState<string>('all');
 
   const load = useCallback(async () => {
     setLoading(true);
-    const { data, error } = await supabase.from('registrations').select('*').order('created_at', { ascending: false });
+    setLoadError(null);
+    const client = getEntriesSupabaseClient();
+    const { data, error } = await client
+      .from('entries')
+      .select(
+        'id, competition_id, entry_number, competitor_name, studio_name, dance_type, group_members, division_type, website_registration_id',
+      )
+      .order('entry_number', { ascending: true });
+
     if (error) {
       console.error(error);
+      setLoadError(error.message);
       setRows([]);
     } else {
-      setRows((data as RegRow[]) ?? []);
+      setRows((data as EntryRow[]) ?? []);
     }
     setLoading(false);
   }, []);
@@ -48,30 +63,9 @@ export default function ScoringInterface() {
     void load();
   }, [load]);
 
-  const entriesPreview = useMemo((): ScoringEntryPreview[] => {
-    return rows.map((r) => {
-      const mergedNames = mergedParticipantNamesForRegistration(r, rows);
-      const gm =
-        mergedNames.length > 0
-          ? mergedNames
-          : (r.contestant_name?.trim() ? [r.contestant_name.trim()] : []);
-      return {
-        id: r.id,
-        competitor_name: r.contestant_name,
-        studio_name: r.studio_name,
-        dance_type: r.category ?? '',
-        group_members: gm,
-        divisionType: registrationDivisionTypeLabel(r, rows),
-      };
-    });
-  }, [rows]);
-
   const filtered = useMemo(() => {
-    return entriesPreview.filter((e) => {
-      if (divisionFilter === 'all') return true;
-      return e.divisionType === divisionFilter;
-    });
-  }, [entriesPreview, divisionFilter]);
+    return rows.filter((entry) => matchesDivisionFilter(entry.division_type, divisionFilter));
+  }, [rows, divisionFilter]);
 
   if (loading) {
     return (
@@ -85,21 +79,35 @@ export default function ScoringInterface() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-white">Scoring entries preview</h2>
+          <h2 className="text-2xl font-bold text-white">Scoring entries</h2>
           <p className="text-sm text-slate-400 mt-1 max-w-xl">
-            Division type (Solo / Duo / Trio / …) is derived from merged participant names — same rule as the scoring app{' '}
-            <code className="text-[#7EB8E8]">group_members</code>, not from category / dance style.
+            Pulled from the scoring app <code className="text-[#7EB8E8]">entries</code> table.{' '}
+            Division type uses the <code className="text-[#7EB8E8]">division_type</code> column (Solo / Duo / Trio / …), not{' '}
+            <code className="text-[#7EB8E8]">dance_type</code>.
           </p>
+          {loadError && (
+            <p className="text-sm text-amber-400 mt-2">
+              Could not load entries: {loadError}
+              {' '}
+              If <code className="text-amber-200/90">entries</code> lives on another Supabase project, set{' '}
+              <code className="text-amber-200/90">VITE_SCORING_SUPABASE_URL</code> and{' '}
+              <code className="text-amber-200/90">VITE_SCORING_SUPABASE_ANON_KEY</code> in the site env.
+            </p>
+          )}
         </div>
         <div className="flex items-center gap-2">
           <Select value={divisionFilter} onValueChange={setDivisionFilter}>
-            <SelectTrigger className="w-[180px] bg-slate-900 border-slate-700 text-white text-sm h-9">
+            <SelectTrigger className="w-[200px] bg-slate-900 border-slate-700 text-white text-sm h-9">
               <SelectValue placeholder="Filter by division type" />
             </SelectTrigger>
             <SelectContent className="bg-slate-900 border-slate-700">
-              <SelectItem value="all" className="text-white">All division types</SelectItem>
+              <SelectItem value="all" className="text-white">
+                All Division Types
+              </SelectItem>
               {['Solo', 'Duo', 'Trio', 'Small Group', 'Large Group', 'Production'].map((t) => (
-                <SelectItem key={t} value={t} className="text-white">{t}</SelectItem>
+                <SelectItem key={t} value={t} className="text-white">
+                  {t}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -118,38 +126,46 @@ export default function ScoringInterface() {
         <table className="w-full text-sm text-left">
           <thead>
             <tr className="border-b border-slate-700 text-slate-400 uppercase text-[10px] tracking-wider">
+              <th className="px-4 py-3 font-semibold">#</th>
               <th className="px-4 py-3 font-semibold">Competitor</th>
               <th className="px-4 py-3 font-semibold">Studio</th>
               <th className="px-4 py-3 font-semibold">Category (dance type)</th>
               <th className="px-4 py-3 font-semibold">Group members</th>
               <th className="px-4 py-3 font-semibold">Division type</th>
-              <th className="px-4 py-3 font-semibold hidden md:table-cell">getEntryType(members)</th>
             </tr>
           </thead>
           <tbody>
             {filtered.length === 0 ? (
               <tr>
                 <td colSpan={6} className="px-4 py-10 text-center text-slate-500">
-                  No registrations match this filter.
+                  {rows.length === 0 && !loadError
+                    ? 'No entries yet. Sync registrations from the Registrations tab.'
+                    : 'No entries match this division filter.'}
                 </td>
               </tr>
             ) : (
-              filtered.map((e) => (
-                <tr key={e.id} className="border-b border-slate-800/80 hover:bg-slate-800/40">
-                  <td className="px-4 py-3 text-white font-medium">{e.competitor_name}</td>
-                  <td className="px-4 py-3 text-slate-300">{e.studio_name ?? '—'}</td>
-                  <td className="px-4 py-3 text-slate-300">{e.dance_type || '—'}</td>
-                  <td className="px-4 py-3 text-slate-300 max-w-[200px] truncate" title={e.group_members.join(', ')}>
-                    {e.group_members.length ? e.group_members.join(', ') : '—'}
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className="inline-flex rounded-full bg-[#2E75B6]/20 text-[#7EB8E8] px-2.5 py-0.5 text-xs font-bold">
-                      {e.divisionType}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-slate-500 hidden md:table-cell">{getEntryType({ group_members: e.group_members })}</td>
-                </tr>
-              ))
+              filtered.map((e) => {
+                const members = groupMembersToStrings(e.group_members);
+                return (
+                  <tr key={e.id} className="border-b border-slate-800/80 hover:bg-slate-800/40">
+                    <td className="px-4 py-3 text-slate-500 tabular-nums">{e.entry_number ?? '—'}</td>
+                    <td className="px-4 py-3 text-white font-medium">{e.competitor_name ?? '—'}</td>
+                    <td className="px-4 py-3 text-slate-300">{e.studio_name ?? '—'}</td>
+                    <td className="px-4 py-3 text-slate-300">{e.dance_type || '—'}</td>
+                    <td
+                      className="px-4 py-3 text-slate-300 max-w-[200px] truncate"
+                      title={members.join(', ')}
+                    >
+                      {members.length ? members.join(', ') : '—'}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="inline-flex rounded-full bg-[#2E75B6]/20 text-[#7EB8E8] px-2.5 py-0.5 text-xs font-bold">
+                        {e.division_type ?? '—'}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>

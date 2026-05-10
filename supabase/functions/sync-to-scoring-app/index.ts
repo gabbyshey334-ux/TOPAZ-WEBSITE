@@ -92,6 +92,17 @@ function mapDanceType(raw: string | null): string | null {
   return WEBSITE_CATEGORY_TO_SCORING_DANCE_TYPE[key] ?? key;
 }
 
+/** Mirrors scoring app `entries.division_type` enum from website `group_size` label. */
+function divisionTypeFromGroupSize(groupSize: string | null | undefined): string {
+  const size = groupSize || 'Solo';
+  if (size.includes('Duo')) return 'Duo';
+  if (size.includes('Trio')) return 'Trio';
+  if (size.includes('Small')) return 'Small Group';
+  if (size.includes('Large')) return 'Large Group';
+  if (size.includes('Production')) return 'Production';
+  return 'Solo';
+}
+
 type RegParticipantsRow = {
   id: string;
   participants_json: unknown;
@@ -422,6 +433,7 @@ Deno.serve(async (req: Request) => {
     teacher_name: reg.teacher_name ?? null,
     group_members: groupMembers,
     website_registration_id: registrationId,
+    division_type: divisionTypeFromGroupSize(reg.group_size as string | null | undefined),
   };
 
   // Attempt to include age_group — will be ignored gracefully if column absent

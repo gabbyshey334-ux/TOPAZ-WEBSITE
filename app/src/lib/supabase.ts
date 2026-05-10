@@ -4,6 +4,9 @@ import type { Database } from '@/types/database';
 const url = import.meta.env.VITE_SUPABASE_URL ?? '';
 const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY ?? '';
 
+const scoringUrl = import.meta.env.VITE_SCORING_SUPABASE_URL ?? '';
+const scoringAnonKey = import.meta.env.VITE_SCORING_SUPABASE_ANON_KEY ?? '';
+
 export const isSupabaseConfigured = Boolean(url && anonKey);
 
 if (import.meta.env.PROD && typeof window !== 'undefined' && !isSupabaseConfigured) {
@@ -19,6 +22,21 @@ export const supabase: SupabaseClient<Database> = createClient<Database>(url || 
     detectSessionInUrl: true,
   },
 });
+
+/**
+ * Supabase client for the scoring app DB (`entries`, judges, etc.).
+ * When unset, falls back to the main site client (use if `entries` exists on the same project).
+ */
+export const scoringSupabase: SupabaseClient<Database> | null =
+  scoringUrl && scoringAnonKey
+    ? createClient<Database>(scoringUrl, scoringAnonKey, {
+        auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+      })
+    : null;
+
+export function getEntriesSupabaseClient(): SupabaseClient<Database> {
+  return scoringSupabase ?? supabase;
+}
 
 const ADMIN_EMAIL = 'topaz2.0@yahoo.com';
 
