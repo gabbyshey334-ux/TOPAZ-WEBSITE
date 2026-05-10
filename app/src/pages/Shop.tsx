@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase';
 import { useCart } from '@/contexts/CartContext';
 import type { Database } from '@/types/database';
 import { rowsToSiteContentMap, siteContentText, siteContentUrl } from '@/constants/siteContentDefaults';
+import { ImageLightbox } from '@/components/ImageLightbox';
 
 type Product = Database['public']['Tables']['products']['Row'];
 
@@ -28,13 +29,12 @@ function ProductCard({ product }: { product: Product }) {
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [sizeError, setSizeError] = useState(false);
   const [added, setAdded] = useState(false);
-  const [imageIndex, setImageIndex] = useState(0);
+  const [imageIndexRaw, setImageIndex] = useState(0);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
 
-  const galleryUrls = useMemo(() => productGalleryUrls(product), [product.id, product.image_url, product.image_urls]);
+  const galleryUrls = useMemo(() => productGalleryUrls(product), [product]);
 
-  useEffect(() => {
-    setImageIndex(0);
-  }, [product.id]);
+  const imageIndex = galleryUrls.length ? Math.min(imageIndexRaw, galleryUrls.length - 1) : 0;
 
   const displayImage = galleryUrls[imageIndex] ?? galleryUrls[0] ?? null;
 
@@ -60,17 +60,21 @@ function ProductCard({ product }: { product: Product }) {
 
   return (
     <div className="overflow-hidden rounded-xl bg-white shadow-lg transition-all duration-300 hover:shadow-2xl flex flex-col">
+      {lightboxOpen && galleryUrls.length > 0 ? (
+        <ImageLightbox
+          items={galleryUrls.map((url) => ({ src: url, alt: product.name }))}
+          startIndex={imageIndex}
+          onClose={() => setLightboxOpen(false)}
+        />
+      ) : null}
       {/* Image */}
       <div className="relative aspect-square overflow-hidden bg-gray-100">
         {displayImage ? (
           <button
             type="button"
             className="relative block h-full w-full cursor-pointer border-0 bg-transparent p-0 text-left"
-            onClick={() => {
-              if (galleryUrls.length <= 1) return;
-              setImageIndex((i) => (i + 1) % galleryUrls.length);
-            }}
-            aria-label={galleryUrls.length > 1 ? 'Switch product photo' : undefined}
+            onClick={() => setLightboxOpen(true)}
+            aria-label="View product image larger"
           >
             <img
               src={displayImage}

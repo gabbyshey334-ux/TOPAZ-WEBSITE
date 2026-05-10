@@ -353,7 +353,8 @@ export const SITE_CONTENT_TEXT_DEFAULTS = {
   registration_step2_title: 'Upload Media',
   registration_step2_body: 'Upload your high-quality performance music (MP3) directly through the form.',
   registration_step3_title: 'Submit & Pay',
-  registration_step3_body: 'Submit your registration and bring your entry fee (Check/Money Order) to the event.',
+  registration_step3_body:
+    'Submit your registration and mail your entry fee (Cash, Check, or Money Order) to: TOPAZ 2.0, PO BOX 131, BANKS OR 97106. Must be received by registration close date.',
 
   gallery_hero_kicker: 'Memories',
   gallery_hero_title_prefix: 'Photo ',

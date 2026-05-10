@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { parseVideoUrl } from '@/lib/videoEmbed';
 import type { Database } from '@/types/database';
 import { rowsToSiteContentMap, siteContentText, siteContentUrl } from '@/constants/siteContentDefaults';
+import { ImageLightbox } from '@/components/ImageLightbox';
 
 const BASE = import.meta.env.BASE_URL;
 const FALLBACK_HISTORY_IMG = `${BASE}images/gallery/history/founders-duo-striped-pants.jpg`;
@@ -677,34 +678,17 @@ const Gallery = () => {
 
       {/* ── Photo Lightbox ────────────────────────────────────────────────── */}
       {lightboxImage && (
-        <div
-          className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4"
-          onClick={() => setLightboxImage(null)}
-        >
-          <button
-            className="absolute top-4 right-4 w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
-            onClick={() => setLightboxImage(null)}
-            aria-label="Close"
-          >
-            <X className="w-6 h-6" />
-          </button>
-          <div
-            className="flex max-h-[95vh] max-w-full flex-col items-center gap-3"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <img
-              src={lightboxImage.src}
-              alt={lightboxImage.alt}
-              className="max-w-full max-h-[85vh] min-h-[120px] object-contain rounded-lg"
-              onError={historyImageOnError}
-            />
-            {lightboxImage.caption && (
-              <p className="max-w-[min(90vw,640px)] text-sm text-white/80 text-center px-2 py-1 truncate">
-                {lightboxImage.caption}
-              </p>
-            )}
-          </div>
-        </div>
+        <ImageLightbox
+          items={[
+            {
+              src: lightboxImage.src,
+              alt: lightboxImage.alt,
+              caption: lightboxImage.caption || undefined,
+            },
+          ]}
+          onClose={() => setLightboxImage(null)}
+          onImageError={historyImageOnError}
+        />
       )}
 
       {/* ── Gallery Password Modal ─────────────────────────────────────────── */}

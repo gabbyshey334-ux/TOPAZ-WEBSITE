@@ -79,7 +79,9 @@ const PAYMENT_METHODS = ['Zelle', 'Check', 'Money Order', 'Cash'] as const;
 const PAYMENT_INSTRUCTIONS =
   'Payment accepted by Cash, Check, Money Order, or Zelle. See below for cash, Zelle payee, and memo.';
 
-const CASH_MAILING_ADDRESS = 'PO BOX 131, BANKS OR 97106';
+/** Cash / mailed payment copy (form, success screen, and step 4). */
+const CASH_PAYMENT_MAIL_TEXT =
+  'Mail cash, checks, or money orders to: TOPAZ 2.0, PO BOX 131, BANKS OR 97106. All fees must be received by registration close date.';
 
 /** Zelle payee linked to Nick's account (plain text only — no deep links). */
 const ZELLE_EMAIL_DISPLAY = 'topaz2.0@yahoo.com';
@@ -648,21 +650,14 @@ export default function CompetitionRegistrationForm() {
                 <p className="font-display font-black text-lg text-emerald-950 uppercase tracking-tight mb-2">
                   Pay with Cash
                 </p>
-                <p className="text-sm font-medium text-gray-800 leading-relaxed mb-2">
-                  Bring cash payment to the event or mail to:
-                </p>
-                <p className="text-sm font-bold text-gray-900 mb-3">
-                  TOPAZ 2.0
-                  <br />
-                  {CASH_MAILING_ADDRESS}
-                </p>
+                <p className="text-sm font-medium text-gray-800 leading-relaxed mb-2">{CASH_PAYMENT_MAIL_TEXT}</p>
               </div>
             </div>
             <p className="text-gray-700 font-medium leading-relaxed mb-2">
               Amount due: <span className="font-black text-[#2E75B6]">${success.total_fee.toFixed(2)}</span>
               {success.payment_method === 'Cash' ? (
                 <span className="block text-sm text-gray-600 font-medium mt-1">
-                  You selected <strong className="text-gray-900">Cash</strong> — bring or mail payment as above, or pay via Zelle if you prefer.
+                  You selected <strong className="text-gray-900">Cash</strong> — mail payment as above, or pay via Zelle if you prefer.
                 </span>
               ) : null}
             </p>
@@ -1211,13 +1206,7 @@ export default function CompetitionRegistrationForm() {
                             <RadioGroupItem value="Cash" id="pay-Cash" className="size-5 shrink-0" />
                             <span className="font-bold text-gray-800 select-none text-base">💵 Pay with Cash</span>
                           </div>
-                          <p className="text-sm font-medium text-gray-600 leading-relaxed mt-4 pl-8">
-                            Bring cash payment to the event or mail to:
-                            <br />
-                            <span className="font-bold text-gray-900">TOPAZ 2.0</span>
-                            <br />
-                            {CASH_MAILING_ADDRESS}
-                          </p>
+                          <p className="text-sm font-medium text-gray-600 leading-relaxed mt-4 pl-8">{CASH_PAYMENT_MAIL_TEXT}</p>
                           <p className="text-sm font-semibold text-[#2E75B6] mt-3 pl-8">
                             Amount due: <span className="font-black text-lg">${amountDue.toFixed(2)}</span>
                           </p>
