@@ -5,6 +5,9 @@ const SCORING_APP_SERVICE_ROLE_KEY = Deno.env.get('SCORING_APP_SERVICE_ROLE_KEY'
 const WEBSITE_URL = Deno.env.get('SUPABASE_URL')!;
 const WEBSITE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
+/** Verified competition (TOPAZ 2026 — scoring app). */
+const COMPETITION_ID = '60874ab6-341e-4e21-9e62-7fe686530607';
+
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -13,196 +16,111 @@ const CORS_HEADERS = {
 
 const JSON_HEADERS = { 'Content-Type': 'application/json', ...CORS_HEADERS };
 
-// Map website `age_division` labels → scoring app `age_group` values
-function mapAgeGroup(raw: string | null): string | null {
-  if (!raw) return null;
-  const s = raw.trim();
-  if (s.startsWith('3'))  return '3-7';
-  if (s.startsWith('8'))  return '8-12';
-  if (s.startsWith('13')) return '13-18';
-  if (s.startsWith('19') || s.toLowerCase().includes('up')) return '19+';
-  // Legacy divisions (in case old registrations used previous labels)
-  if (s.includes('8–10') || s.includes('8-10')) return '8-12';
-  if (s.includes('11–13') || s.includes('11-13')) return '13-18';
-  if (s.includes('14–18') || s.includes('14-18')) return '13-18';
-  return null;
-}
-
-// Map website ability_level labels (full text) → scoring app values
-function mapAbilityLevel(raw: string | null): string | null {
-  if (!raw) return null;
-  const lower = raw.toLowerCase();
-  if (lower.startsWith('beginning'))    return 'Beginning';
-  if (lower.startsWith('intermediate')) return 'Intermediate';
-  if (lower.startsWith('advanced'))     return 'Advanced';
-  return null;
-}
-
-const getAgeDivisionId = (age: number): string | null => {
-  if (age >= 3 && age <= 7) return 'fd5593b0-dfe5-4329-a00e-964559867a03';
-  if (age >= 8 && age <= 12) return '59295514-2972-4ed2-adf8-6e4ca4d005bb';
-  if (age >= 13 && age <= 18) return 'c8c35166-e1b8-4d7b-a295-e78029cd9111';
-  if (age >= 19) return '7c60b9b7-17d1-471e-a83e-a5dba9bf690c';
-  return null;
+// Age division mapping — exact IDs from scoring app database
+const AGE_DIVISION_MAP: Record<string, string> = {
+  junior_primary: '4f39aaf7-9cb0-44a7-a767-efb4f66b1245', // 3-7
+  junior_advanced: '8eb9859e-2fb0-4589-bac5-0757df006d8e', // 8-12
+  senior_youth: 'cc623271-c9de-4509-b832-92f5483a37be', // 13-18
+  senior_adult: 'dfc6b488-8c58-4d2f-b324-32d28a6c20b0', // 19+
 };
 
-const normalizeDanceType = (type: string): string => {
-  const map: Record<string, string> = {
-    TAP: 'Tap',
-    JAZZ: 'Jazz',
-    BALLET: 'Ballet',
-    'HIP HOP': 'Hip Hop',
-    LYRICAL: 'Lyrical',
-    CONTEMPORARY: 'Contemporary',
-    ACTING: 'Acting',
-    VOCAL: 'Vocal',
-    PRODUCTION: 'Production',
-    'STUDENT CHOREOGRAPHY': 'Student Choreography',
-    'LYRICAL/CONTEMPORARY': 'Lyrical/Contemporary',
-  };
-  return map[type?.toUpperCase()] || type;
+const getAgeDivisionId = (age: number): string => {
+  if (age >= 3 && age <= 7) return AGE_DIVISION_MAP.junior_primary;
+  if (age >= 8 && age <= 12) return AGE_DIVISION_MAP.junior_advanced;
+  if (age >= 13 && age <= 18) return AGE_DIVISION_MAP.senior_youth;
+  return AGE_DIVISION_MAP.senior_adult;
 };
 
-// Map website registration `category` values → scoring app `entries.dance_type`
-// (must match judge filter / category labels in the scoring app DB).
-const WEBSITE_CATEGORY_TO_SCORING_DANCE_TYPE: Record<string, string> = {
-  TAP: 'Tap',
-  BALLET: 'Ballet',
-  JAZZ: 'Jazz',
-  'LYRICAL/CONTEMPORARY': 'Lyrical/Contemporary',
-  VOCAL: 'Vocal',
-  ACTING: 'Acting',
-  'HIP HOP': 'Hip Hop',
-  'VARIETY A (Song & Dance/Character/Combination of Performing Arts)': 'Variety A',
-  'VARIETY B (Dance with Prop)': 'Variety B',
-  'VARIETY C (Dance with Acrobatics)': 'Variety C',
-  'VARIETY D (Dance with Acrobatics & Prop)': 'Variety D',
-  'VARIETY E (Hip Hop)': 'Variety E',
-  'VARIETY F (Ballroom)': 'Variety F',
-  'VARIETY G (Line Dancing)': 'Variety G',
-  PRODUCTION: 'Production',
-  'STUDENT CHOREOGRAPHY': 'Student Choreography',
-  'TEACHER/STUDENT': 'Teacher/Student',
+// Category mapping — exact IDs from scoring app database
+const CATEGORY_MAP: Record<string, string> = {
+  ballet: 'fb9c9d73-f18d-4fdd-adde-5ae63e2b77af',
+  'hip hop': '30509f90-d0e8-48b7-96dd-746b25bcb0f1',
+  production: 'b01e1706-f917-4e4c-aada-dda2ae20d7e4',
+  'student choreography': '01f04932-2667-4692-b2a7-a77ee0e5ae2a',
+  tap: '211d5c0e-3356-43e2-8be0-4da157a8e72d',
+  'teacher/student': 'a00513f1-bb3a-4d73-a265-4b3f85feabda',
+  vocal: '1ca1a436-b0ce-4c4f-ae6d-6ad9f936ed05',
+  'variety a - song & dance, character, or combination': '9d622455-deba-4e24-8e7f-686b62a53cc8',
+  'variety b - dance with prop': '01f54673-1df7-4d88-b47d-ff7e18873697',
+  'variety c - dance with acrobatics': '94b14fe5-f434-449b-a564-2b61610b8a5e',
+  'variety d - dance with acrobatics & prop': 'f4dd7c60-14f7-4dec-ab1e-a9e35a2adafc',
+  'variety e - hip hop with floor work & acrobatics': 'f0d36c14-a80a-4847-9f4f-04485b08c0e5',
+  'variety f - ballroom': 'cac1bbaf-9a58-40ea-b93b-bfabf0f698b5',
+  'variety g - line dancing': '99f91644-cafd-4628-bbc3-d5788e674012',
 };
-
-function mapDanceType(raw: string | null): string | null {
-  if (raw == null) return null;
-  const key = raw.trim();
-  if (!key) return null;
-  return WEBSITE_CATEGORY_TO_SCORING_DANCE_TYPE[key] ?? key;
-}
-
-/** Mirrors scoring app `entries.division_type` enum from website `group_size` label. */
-function divisionTypeFromGroupSize(groupSize: string | null | undefined): string {
-  const size = groupSize || 'Solo';
-  if (size.includes('Duo')) return 'Duo';
-  if (size.includes('Trio')) return 'Trio';
-  if (size.includes('Small')) return 'Small Group';
-  if (size.includes('Large')) return 'Large Group';
-  if (size.includes('Production')) return 'Production';
-  return 'Solo';
-}
-
-type RegParticipantsRow = {
-  id: string;
-  participants_json: unknown;
-  contestant_name: string | null;
-};
-
-/** Collect unique performer names from one registration row. */
-function namesFromParticipantsJson(participants_json: unknown): string[] {
-  if (!Array.isArray(participants_json)) return [];
-  const out: string[] = [];
-  for (const p of participants_json) {
-    if (p && typeof p === 'object' && 'name' in p) {
-      const n = (p as { name?: unknown }).name;
-      if (typeof n === 'string' && n.trim() !== '') out.push(n.trim());
-    }
-  }
-  return out;
-}
 
 /**
- * Fetch all website registrations linked by group_link_code or routine_name
- * (same rules as admin) and merge participant + contestant names for scoring `group_members`.
+ * Lowercased website `reg.category` value → key in CATEGORY_MAP.
+ * (Website stores labels like `TAP`, `VARIETY B (Dance with Prop)`.)
  */
-async function buildMergedGroupMemberNames(
-  websiteClient: ReturnType<typeof createClient>,
-  reg: Record<string, unknown>,
-): Promise<string[]> {
-  const groupSizeStr = typeof reg.group_size === 'string' ? reg.group_size : '';
-  // Solos: never merge by routine/link (different solos could share a routine title).
-  if (groupSizeStr.startsWith('Solo')) {
-    const seen = new Set<string>();
-    const names: string[] = [];
-    for (const n of namesFromParticipantsJson(reg.participants_json)) {
-      const k = n.toLowerCase();
-      if (seen.has(k)) continue;
-      seen.add(k);
-      names.push(n);
-    }
-    const cn = typeof reg.contestant_name === 'string' ? reg.contestant_name.trim() : '';
-    if (cn) {
-      const k = cn.toLowerCase();
-      if (!seen.has(k)) {
-        seen.add(k);
-        names.push(cn);
-      }
-    }
-    return names;
+const WEBSITE_CATEGORY_TO_MAP_KEY: Record<string, string> = {
+  tap: 'tap',
+  ballet: 'ballet',
+  jazz: 'jazz',
+  'lyrical/contemporary': 'lyrical/contemporary',
+  vocal: 'vocal',
+  acting: 'acting',
+  'hip hop': 'hip hop',
+  'variety a (song & dance/character/combination of performing arts)':
+    'variety a - song & dance, character, or combination',
+  'variety b (dance with prop)': 'variety b - dance with prop',
+  'variety c (dance with acrobatics)': 'variety c - dance with acrobatics',
+  'variety d (dance with acrobatics & prop)': 'variety d - dance with acrobatics & prop',
+  'variety e (hip hop)': 'variety e - hip hop with floor work & acrobatics',
+  'variety f (ballroom)': 'variety f - ballroom',
+  'variety g (line dancing)': 'variety g - line dancing',
+  production: 'production',
+  'student choreography': 'student choreography',
+  'teacher/student': 'teacher/student',
+};
+
+const getCategoryId = (category: string): string | null => {
+  const key = category?.toLowerCase().trim() ?? '';
+  const mapKey = WEBSITE_CATEGORY_TO_MAP_KEY[key] ?? key;
+  return CATEGORY_MAP[mapKey] ?? null;
+};
+
+/** Website performance categories that currently have no UUID in CATEGORY_MAP (add to scoring app / map here). */
+const WEBSITE_CATEGORIES_WITHOUT_SCORING_ID: readonly string[] = [
+  'JAZZ',
+  'LYRICAL/CONTEMPORARY',
+  'ACTING',
+];
+
+const getDivisionType = (groupSize: string): string => {
+  const s = groupSize?.toLowerCase() || '';
+  if (s.includes('duo')) return 'Duo';
+  if (s.includes('trio')) return 'Trio';
+  if (s.includes('small')) return 'Small Group';
+  if (s.includes('large')) return 'Large Group';
+  if (s.includes('production')) return 'Production';
+  return 'Solo';
+};
+
+const buildGroupMembers = (reg: Record<string, unknown>): string[] => {
+  const raw = reg.participants_json;
+  if (raw == null) return [];
+  try {
+    const participants =
+      typeof raw === 'string' ? JSON.parse(raw) : raw;
+    if (!Array.isArray(participants)) return [];
+    return participants
+      .map((p: unknown) => {
+        if (p && typeof p === 'object' && 'name' in p) {
+          const n = (p as { name?: unknown }).name;
+          if (typeof n === 'string' && n.trim() !== '') return n.trim();
+        }
+        if (p && typeof p === 'object' && 'competitor_name' in p) {
+          const n = (p as { competitor_name?: unknown }).competitor_name;
+          if (typeof n === 'string' && n.trim() !== '') return n.trim();
+        }
+        return typeof p === 'string' ? p : '';
+      })
+      .filter(Boolean);
+  } catch {
+    return [];
   }
-
-  const code = typeof reg.group_link_code === 'string' ? reg.group_link_code.trim() : '';
-  const routine = typeof reg.routine_name === 'string' ? reg.routine_name.trim() : '';
-
-  let siblings: RegParticipantsRow[] = [];
-
-  if (code !== '') {
-    const { data, error } = await websiteClient
-      .from('registrations')
-      .select('id, participants_json, contestant_name')
-      .eq('group_link_code', code);
-    if (!error && data) siblings = data as RegParticipantsRow[];
-  } else if (routine !== '') {
-    const { data, error } = await websiteClient
-      .from('registrations')
-      .select('id, participants_json, contestant_name')
-      .eq('routine_name', routine);
-    if (!error && data) siblings = data as RegParticipantsRow[];
-  }
-
-  const selfId = typeof reg.id === 'string' ? reg.id : '';
-  const everyone: RegParticipantsRow[] = [...siblings];
-  const hasSelf = everyone.some((r) => r.id === selfId);
-  if (!hasSelf) {
-    everyone.push({
-      id: selfId,
-      participants_json: reg.participants_json,
-      contestant_name: typeof reg.contestant_name === 'string' ? reg.contestant_name : null,
-    });
-  }
-
-  const seen = new Set<string>();
-  const names: string[] = [];
-  for (const row of everyone) {
-    for (const n of namesFromParticipantsJson(row.participants_json)) {
-      const k = n.toLowerCase();
-      if (seen.has(k)) continue;
-      seen.add(k);
-      names.push(n);
-    }
-    const cn = (row.contestant_name ?? '').trim();
-    if (cn) {
-      const k = cn.toLowerCase();
-      if (!seen.has(k)) {
-        seen.add(k);
-        names.push(cn);
-      }
-    }
-  }
-
-  return names;
-}
+};
 
 async function updateSyncStatus(
   client: ReturnType<typeof createClient>,
@@ -220,7 +138,6 @@ async function updateSyncStatus(
 }
 
 Deno.serve(async (req: Request) => {
-  // CORS preflight — browsers send this before the POST. Must return 204.
   if (req.method === 'OPTIONS') {
     return new Response(null, { status: 204, headers: CORS_HEADERS });
   }
@@ -256,7 +173,6 @@ Deno.serve(async (req: Request) => {
 
   const websiteClient = createClient(WEBSITE_URL, WEBSITE_SERVICE_ROLE_KEY);
 
-  // Persist scoring-app misconfiguration on the registration row (admin UI reads this).
   if (!SCORING_APP_URL || !SCORING_APP_SERVICE_ROLE_KEY) {
     const msg =
       'SCORING_APP_URL and SCORING_APP_SERVICE_ROLE_KEY secrets are not configured. Add them in the Supabase dashboard under Edge Function secrets, then retry sync.';
@@ -264,7 +180,6 @@ Deno.serve(async (req: Request) => {
     return new Response(JSON.stringify({ error: msg }), { status: 500, headers: JSON_HEADERS });
   }
 
-  // ── 1. Fetch the registration ────────────────────────────────────────────────
   const { data: reg, error: regErr } = await websiteClient
     .from('registrations')
     .select('*')
@@ -281,164 +196,87 @@ Deno.serve(async (req: Request) => {
   }
 
   const scoringClient = createClient(SCORING_APP_URL, SCORING_APP_SERVICE_ROLE_KEY);
+  const competitionId = COMPETITION_ID;
 
-  // ── 3. Find the competition in the scoring app ───────────────────────────────
-  // Lookup strategy (most-specific → least-specific):
-  //   A. non-archived AND (name ILIKE '%topaz%' OR date = 2026-08-22)
-  //   B. non-archived AND date = 2026-08-22     (date-only fallback; tolerates renames)
-  //   C. any row with date = 2026-08-22         (last-resort, even if archived)
-  // Date is treated as the stable identifier because the competition name has
-  // varied in production ("The Return Of Topaz2.0", "The Return of TOPAZ 2.0", etc.).
-  const TARGET_DATE = '2026-08-22';
+  const categoryRaw = typeof reg.category === 'string' ? reg.category : '';
+  const categoryId = getCategoryId(categoryRaw);
 
-  type CompetitionRow = { id: string; name: string; date: string; is_archived?: boolean };
-
-  let competition: CompetitionRow | null = null;
-  let lookupStage = 'A';
-
-  // Stage A — current behavior
-  {
-    const { data, error } = await scoringClient
-      .from('competitions')
-      .select('id, name, date, is_archived')
-      .eq('is_archived', false)
-      .or(`name.ilike.%topaz%,date.eq.${TARGET_DATE}`);
-    if (error) {
-      const msg = `Failed to query scoring app competitions: ${error.message}`;
-      await updateSyncStatus(websiteClient, registrationId, 'failed', null, msg);
-      return new Response(JSON.stringify({ error: msg }), { status: 500, headers: JSON_HEADERS });
-    }
-    if (data && data.length > 0) {
-      const rows = data as CompetitionRow[];
-      competition =
-        rows.find((c) => c.date === TARGET_DATE) ??
-        rows[0];
-    }
-  }
-
-  // Stage B — date-only among non-archived competitions
-  if (!competition) {
-    lookupStage = 'B';
-    const { data, error } = await scoringClient
-      .from('competitions')
-      .select('id, name, date, is_archived')
-      .eq('is_archived', false)
-      .eq('date', TARGET_DATE);
-    if (!error && data && data.length > 0) {
-      competition = (data as CompetitionRow[])[0];
-    }
-  }
-
-  // Stage C — include archived rows on the target date as a last resort
-  if (!competition) {
-    lookupStage = 'C';
-    const { data, error } = await scoringClient
-      .from('competitions')
-      .select('id, name, date, is_archived')
-      .eq('date', TARGET_DATE)
-      .order('is_archived', { ascending: true });
-    if (!error && data && data.length > 0) {
-      competition = (data as CompetitionRow[])[0];
-    }
-  }
-
-  if (!competition) {
-    const msg = `No competition found in scoring app for date ${TARGET_DATE}. Create the "The Return of TOPAZ 2.0" competition (with date = ${TARGET_DATE}) in the scoring app, then click Sync Now.`;
+  if (!categoryId) {
+    const msg =
+      `No scoring category_id for website category "${categoryRaw}". Add this category to the scoring app competition and extend CATEGORY_MAP in sync-to-scoring-app. Known unmapped labels: ${WEBSITE_CATEGORIES_WITHOUT_SCORING_ID.join(', ')}.`;
     await updateSyncStatus(websiteClient, registrationId, 'failed', null, msg);
-    return new Response(JSON.stringify({ error: msg }), { status: 404, headers: JSON_HEADERS });
+    return new Response(JSON.stringify({ error: msg, category: categoryRaw }), {
+      status: 422,
+      headers: JSON_HEADERS,
+    });
   }
 
-  console.log(
-    `[sync-to-scoring-app] registration=${registrationId} matched competition ` +
-    `id=${competition.id} name="${competition.name}" date=${competition.date} ` +
-    `archived=${competition.is_archived ?? 'n/a'} stage=${lookupStage}`,
-  );
+  const age = parseInt(String(reg.age), 10) || 0;
+  const groupSize = typeof reg.group_size === 'string' ? reg.group_size : 'Solo';
+  const groupMembers = buildGroupMembers(reg as Record<string, unknown>);
+  const divisionType = getDivisionType(groupSize);
 
-  // ── 4. Determine entry name ──────────────────────────────────────────────────
-  // For group entries (Duo/Trio/Small Group/Large Group/Production), each dancer
-  // registers separately but they're all part of the same routine. We surface
-  // the routine name as the scoring app's competitor_name so judges see the act
-  // name ("Smith Family Trio") instead of an individual dancer's name. Solos
-  // continue to use the dancer's name.
-  const groupSize: string = reg.group_size ?? '';
-  const isGroupEntry = groupSize !== '' && !groupSize.startsWith('Solo');
-  const routineName = typeof reg.routine_name === 'string' ? reg.routine_name.trim() : '';
-  const entryName = (isGroupEntry && routineName !== '')
-    ? routineName
-    : reg.contestant_name;
+  const competitorName =
+    divisionType === 'Solo'
+      ? String(reg.contestant_name ?? '').trim()
+      : String(
+        (typeof reg.routine_name === 'string' && reg.routine_name.trim()) ||
+          reg.contestant_name ||
+          '',
+      ).trim();
 
-  // ── 5. Duplicate check ───────────────────────────────────────────────────────
-  // Skip only when the same website registration + same competitor_name already exists
-  // (allows multiple entries per registration, e.g. group members, with distinct names).
-  const { data: existingSameRegAndName } = await scoringClient
+  if (!competitorName) {
+    const msg = 'Missing competitor_name: need contestant_name (solo) or routine_name / contestant_name (group).';
+    await updateSyncStatus(websiteClient, registrationId, 'failed', null, msg);
+    return new Response(JSON.stringify({ error: msg }), { status: 422, headers: JSON_HEADERS });
+  }
+
+  const { data: existing } = await scoringClient
     .from('entries')
     .select('id')
-    .eq('competition_id', competition.id)
+    .eq('competition_id', competitionId)
     .eq('website_registration_id', reg.id)
-    .eq('competitor_name', entryName)
+    .eq('competitor_name', competitorName)
     .maybeSingle();
 
-  if (existingSameRegAndName) {
-    await updateSyncStatus(websiteClient, registrationId, 'synced', existingSameRegAndName.id, null);
-    return new Response(
-      JSON.stringify({ success: true, alreadySynced: true, contestantId: existingSameRegAndName.id }),
-      { status: 200, headers: JSON_HEADERS },
-    );
+  if (existing) {
+    await updateSyncStatus(websiteClient, registrationId, 'synced', existing.id, null);
+    return new Response(JSON.stringify({ success: true, alreadySynced: true }), {
+      status: 200,
+      headers: JSON_HEADERS,
+    });
   }
 
-  // ── 6. Calculate next entry number ──────────────────────────────────────────
   const { data: maxEntry } = await scoringClient
     .from('entries')
     .select('entry_number')
-    .eq('competition_id', competition.id)
+    .eq('competition_id', competitionId)
     .order('entry_number', { ascending: false })
     .limit(1)
     .maybeSingle();
 
-  const entryNumber = (maxEntry?.entry_number ?? 0) + 1;
+  const nextEntryNumber = (maxEntry?.entry_number ?? 0) + 1;
 
-  // ── 7. Build group_members array (merge linked Duo/Trio registrations) ─────
-  let groupMembers: string[] | null = null;
-  const mergedNames = await buildMergedGroupMemberNames(websiteClient, reg as Record<string, unknown>);
-  if (mergedNames.length > 0) {
-    groupMembers = mergedNames;
-  } else if (reg.participants_json && Array.isArray(reg.participants_json)) {
-    const names = namesFromParticipantsJson(reg.participants_json);
-    if (names.length > 0) groupMembers = names;
-  }
-
-  // ── 8. Insert entry into scoring app ─────────────────────────────────────────
-  // competitor_name:
-  //   • Solo → dancer's name (reg.contestant_name)
-  //   • Group (Duo/Trio/Small/Large/Production) → routine_name, so the scoring
-  //     app displays the act name rather than an individual dancer's name.
-  // Build the payload with only columns known to exist in the scoring app entries table.
-  // age_group and group_size are included conditionally — if the scoring app DB doesn't
-  // have these columns yet the insert will fail; they can be added via migration later.
-  const ageNum = reg.age != null && reg.age !== '' ? parseInt(String(reg.age), 10) : NaN;
-  const categoryStr = typeof reg.category === 'string' ? reg.category : null;
-  const mappedDance = mapDanceType(categoryStr);
-  const danceTypeRaw = normalizeDanceType(mappedDance ?? categoryStr ?? '');
-  const dance_type = danceTypeRaw.trim() ? danceTypeRaw : null;
-
-  const entryPayload: Record<string, unknown> = {
-    competition_id: competition.id,
-    entry_number: entryNumber,
-    competitor_name: entryName,
-    age: Number.isFinite(ageNum) ? ageNum : null,
-    age_division_id: Number.isFinite(ageNum) ? getAgeDivisionId(ageNum) : null,
-    dance_type,
-    ability_level: mapAbilityLevel(reg.ability_level),
-    studio_name: reg.studio_name ?? null,
-    teacher_name: reg.teacher_name ?? null,
-    group_members: groupMembers,
-    website_registration_id: registrationId,
-    division_type: divisionTypeFromGroupSize(reg.group_size as string | null | undefined),
+  const entryPayload = {
+    competition_id: competitionId,
+    entry_number: nextEntryNumber,
+    competitor_name: competitorName,
+    category_id: categoryId,
+    age_division_id: getAgeDivisionId(age),
+    age,
+    dance_type: categoryRaw,
+    ability_level: reg.ability_level || 'Intermediate',
+    studio_name: reg.studio_name || '',
+    teacher_name: reg.teacher_name || '',
+    group_members: groupMembers.length > 0 ? groupMembers : null,
+    division_type: divisionType,
+    is_medal_program: true,
+    medal_points: 0,
+    current_medal_level: 'None',
+    website_registration_id: reg.id,
   };
 
-  // Attempt to include age_group — will be ignored gracefully if column absent
-  const ageGroup = mapAgeGroup(typeof reg.age_division === 'string' ? reg.age_division : null);
-  if (ageGroup) entryPayload.age_group = ageGroup;
+  console.log('[sync-to-scoring-app] entryPayload:', JSON.stringify(entryPayload));
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 10_000);
@@ -467,20 +305,22 @@ Deno.serve(async (req: Request) => {
   if (insertErr || !insertData) {
     const msg = insertErr?.message ?? 'Insert returned no data';
     await updateSyncStatus(websiteClient, registrationId, 'failed', null, msg);
-    return new Response(JSON.stringify({ error: msg }), { status: 500, headers: JSON_HEADERS });
+    return new Response(JSON.stringify({ error: msg, entryPayload }), {
+      status: 500,
+      headers: JSON_HEADERS,
+    });
   }
 
-  // ── 9. Mark registration as synced ──────────────────────────────────────────
   await updateSyncStatus(websiteClient, registrationId, 'synced', insertData.id, null);
 
   return new Response(
     JSON.stringify({
       success: true,
       contestantId: insertData.id,
-      entryNumber,
-      competitionId: competition.id,
-      competitionName: competition.name,
+      entryNumber: nextEntryNumber,
+      competitionId,
+      entryPayload,
     }),
-    { status: 200, headers: JSON_HEADERS }
+    { status: 200, headers: JSON_HEADERS },
   );
 });
