@@ -3,7 +3,6 @@ import { createClient } from "jsr:@supabase/supabase-js@2";
 
 // ─── Config ──────────────────────────────────────────────────────────────────
 const ADMIN_EMAIL = 'topaz2.0@yahoo.com';
-const BREVO_API_KEY = Deno.env.get('BREVO_API_KEY') ?? '';
 const BATCH_SIZE = 50;
 const BATCH_DELAY_MS = 1100; // Rate limits: space requests between batches (Brevo).
 
@@ -108,31 +107,31 @@ async function sendOne(
   html: string,
   text: string
 ): Promise<{ ok: true } | { ok: false; error: string }> {
-  if (!BREVO_API_KEY) {
+  if (!Deno.env.get('BREVO_API_KEY')) {
     return { ok: false, error: 'No email provider configured' };
   }
+  const recipientEmail = to;
+  const htmlContent = html;
   try {
-    const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+    const res = await fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
       headers: {
-        'api-key': BREVO_API_KEY,
+        'api-key': Deno.env.get('BREVO_API_KEY') ?? '',
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        sender: {
-          name: 'TOPAZ 2.0',
-          email: 'Topaz2.0@dancetopaz.com',
-        },
-        to: [{ email: to }],
+        sender: { name: 'TOPAZ 2.0', email: 'Topaz2.0@dancetopaz.com' },
+        to: [{ email: recipientEmail }],
         subject,
-        htmlContent: html,
+        htmlContent,
         textContent: text,
       }),
     });
-
-    if (response.ok) return { ok: true };
-    const errBody = await response.text();
-    return { ok: false, error: `Brevo HTTP ${response.status}: ${errBody.slice(0, 200)}` };
+    if (!res.ok) {
+      const errorText = await res.text();
+      throw new Error(`Brevo error ${res.status}: ${errorText}`);
+    }
+    return { ok: true };
   } catch (err) {
     return { ok: false, error: err instanceof Error ? err.message : String(err) };
   }
@@ -195,7 +194,7 @@ Deno.serve(async (req: Request) => {
   if (!subject) return jsonResponse({ error: 'Missing required field: subject' }, 400);
   if (!message) return jsonResponse({ error: 'Missing required field: message' }, 400);
 
-  if (!BREVO_API_KEY) {
+  if (!Deno.env.get('BREVO_API_KEY')) {
     console.error('[send-broadcast-email] Missing BREVO_API_KEY');
     return jsonResponse({ error: 'Email provider not configured (BREVO_API_KEY missing)' }, 500);
   }

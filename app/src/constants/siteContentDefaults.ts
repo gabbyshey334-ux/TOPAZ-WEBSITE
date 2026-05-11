@@ -13,6 +13,8 @@ export const SITE_CONTENT_DEFAULTS = {
   hero_video_url:
     'https://video.wixstatic.com/video/187f75_27990c00a54e450aa41497ecc3f40b68/480p/mp4/file.mp4',
   home_official_banner: `${BASE}images/homepage/topaz-2-0-banner.png`,
+  /** Fixed full-viewport background behind public routes (editable in `site_content`). */
+  public_layout_background: `${BASE}images/homepage/topaz-2-0-banner.png`,
   home_promo_masterclass: `${BASE}images/homepage/duo-trophy.png`,
   home_promo_sponsors: `${BASE}images/homepage/group-dancers-trophy.png`,
   home_promo_panel: `${BASE}images/homepage/boy-tuxedo-trophy.png`,

@@ -37,7 +37,6 @@ const About = () => {
 
   const aboutHeroBg = siteContentUrl(siteContent, 'about_hero_background');
   const aboutImage1 = siteContentUrl(siteContent, 'about_image_1');
-  const aboutImage2 = siteContentUrl(siteContent, 'about_image_2');
   const aboutImage3 = siteContentUrl(siteContent, 'about_image_3');
   const performersVisible = useMemo(
     () => aboutPerformersSectionVisible(siteContent, siteContentReady),
@@ -259,17 +258,18 @@ const About = () => {
           <div className="mt-20 lg:mt-32">
             <div className="grid lg:grid-cols-2 gap-12 items-center">
               <div className="story-animate order-2 lg:order-1 space-y-4">
-                <div className="relative rounded-[2rem] overflow-hidden shadow-2xl">
-                  <img
-                    src={aboutImage2}
-                    alt={siteContentText(siteContent, 'about_image_2_alt')}
-                    loading="lazy"
-                    className="w-full h-auto object-contain"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
+                <div className="relative rounded-[2rem] overflow-hidden border border-gray-200 bg-white shadow-2xl">
+                  <div className="aspect-[3/4] bg-gradient-to-br from-gray-100 to-gray-50">
+                    <img
+                      src={ricPortrait}
+                      alt={siteContentText(siteContent, 'about_ric_portrait_alt')}
+                      loading="lazy"
+                      className="h-full w-full object-contain"
+                    />
+                  </div>
                 </div>
                 <p className="text-center font-display font-bold text-lg text-gray-700 px-2">
-                  {siteContentText(siteContent, 'about_image_2_caption')}
+                  {siteContentText(siteContent, 'about_ric_name')}
                 </p>
               </div>
 

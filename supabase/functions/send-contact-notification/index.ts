@@ -2,8 +2,6 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 
 const TO_EMAIL = 'topaz2.0@yahoo.com';
 
-const BREVO_API_KEY = Deno.env.get('BREVO_API_KEY') ?? '';
-
 Deno.serve(async (req: Request) => {
   if (req.method !== 'POST') {
     return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405 });
@@ -25,7 +23,7 @@ Deno.serve(async (req: Request) => {
     return new Response(JSON.stringify({ error: String(e) }), { status: 400 });
   }
 
-  if (!BREVO_API_KEY) {
+  if (!Deno.env.get('BREVO_API_KEY')) {
     console.error('[send-contact-notification] BREVO_API_KEY not set');
     return new Response(JSON.stringify({ error: 'Email service not configured' }), { status: 500 });
   }
@@ -100,32 +98,36 @@ Deno.serve(async (req: Request) => {
     .filter(Boolean)
     .join('\n');
 
-  const res = await fetch('https://api.brevo.com/v3/smtp/email', {
-    method: 'POST',
-    headers: {
-      'api-key': BREVO_API_KEY,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      sender: {
-        name: 'TOPAZ 2.0',
-        email: 'Topaz2.0@dancetopaz.com',
+  const recipientEmail = TO_EMAIL;
+  const subject = 'New Contact Message — TOPAZ 2.0 Website';
+  const htmlContent = html;
+
+  try {
+    const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: {
+        'api-key': Deno.env.get('BREVO_API_KEY') ?? '',
+        'Content-Type': 'application/json',
       },
-      to: [{ email: TO_EMAIL }],
-      subject: 'New Contact Message — TOPAZ 2.0 Website',
-      htmlContent: html,
-      textContent: textPlain,
-      replyTo: { email: body.email, name: body.name },
-    }),
-  });
-
-  if (res.ok) {
+      body: JSON.stringify({
+        sender: { name: 'TOPAZ 2.0', email: 'Topaz2.0@dancetopaz.com' },
+        to: [{ email: recipientEmail }],
+        subject,
+        htmlContent,
+        textContent: textPlain,
+        replyTo: { email: body.email, name: body.name },
+      }),
+    });
+    if (!res.ok) {
+      const errorText = await res.text();
+      throw new Error(`Brevo error ${res.status}: ${errorText}`);
+    }
     return new Response(JSON.stringify({ success: true, provider: 'brevo' }), { status: 200 });
+  } catch (e) {
+    const errText = e instanceof Error ? e.message : String(e);
+    console.error('[send-contact-notification] Brevo error:', errText);
+    return new Response(JSON.stringify({ error: 'Email delivery failed', provider: 'brevo', details: errText }), {
+      status: 500,
+    });
   }
-
-  const errText = await res.text();
-  console.error('[send-contact-notification] Brevo error:', errText);
-  return new Response(JSON.stringify({ error: 'Email delivery failed', provider: 'brevo', details: errText }), {
-    status: 500,
-  });
 });

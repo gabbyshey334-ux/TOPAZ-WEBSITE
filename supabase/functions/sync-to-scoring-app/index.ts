@@ -80,13 +80,6 @@ const getCategoryId = (category: string): string | null => {
   return CATEGORY_MAP[mapKey] ?? null;
 };
 
-/** Website performance categories that currently have no UUID in CATEGORY_MAP (add to scoring app / map here). */
-const WEBSITE_CATEGORIES_WITHOUT_SCORING_ID: readonly string[] = [
-  'JAZZ',
-  'LYRICAL/CONTEMPORARY',
-  'ACTING',
-];
-
 const getDivisionType = (groupSize: string): string => {
   const s = groupSize?.toLowerCase() || '';
   if (s.includes('duo')) return 'Duo';
@@ -199,11 +192,26 @@ Deno.serve(async (req: Request) => {
   const competitionId = COMPETITION_ID;
 
   const categoryRaw = typeof reg.category === 'string' ? reg.category : '';
-  const categoryId = getCategoryId(categoryRaw);
+  const websiteCategory = categoryRaw.trim();
+  let categoryId = getCategoryId(categoryRaw);
+
+  if (!categoryId && websiteCategory) {
+    const { data: cat } = await scoringClient
+      .from('categories')
+      .select('id, name')
+      .eq('competition_id', competitionId)
+      .ilike('name', websiteCategory)
+      .maybeSingle();
+    if (cat?.id) {
+      categoryId = cat.id;
+    }
+  }
 
   if (!categoryId) {
     const msg =
-      `No scoring category_id for website category "${categoryRaw}". Add this category to the scoring app competition and extend CATEGORY_MAP in sync-to-scoring-app. Known unmapped labels: ${WEBSITE_CATEGORIES_WITHOUT_SCORING_ID.join(', ')}.`;
+      `No scoring category_id for website category "${websiteCategory}". ` +
+      `Add this category to the scoring app competition and re-sync. ` +
+      `Known unmapped: JAZZ, LYRICAL/CONTEMPORARY, ACTING.`;
     await updateSyncStatus(websiteClient, registrationId, 'failed', null, msg);
     return new Response(JSON.stringify({ error: msg, category: categoryRaw }), {
       status: 422,

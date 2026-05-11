@@ -156,11 +156,12 @@ function perPersonRate(groupSize: string): number {
 }
 
 /** Whether `age` (whole years on competition day) fits the selected division label. */
-function divisionAcceptsAge(division: string, age: number): boolean {
-  if (division === '3–7 years of age') return age >= 3 && age <= 7;
-  if (division === '8–12 years of age') return age >= 8 && age <= 12;
-  if (division === '13–18 years of age') return age >= 13 && age <= 18;
-  if (division === '19 years of age and up') return age >= 19;
+function validateAgeDivision(selectedDivision: string, age: number): boolean {
+  const d = selectedDivision;
+  if (d.includes('3–7') || d.includes('3-7')) return age >= 3 && age <= 7;
+  if (d.includes('8–12') || d.includes('8-12')) return age >= 8 && age <= 12;
+  if (d.includes('13–18') || d.includes('13-18')) return age >= 13 && age <= 18;
+  if (d.includes('19+') || (d.includes('19') && d.toLowerCase().includes('up'))) return age >= 19;
   return false;
 }
 
@@ -353,8 +354,8 @@ export default function CompetitionRegistrationForm() {
   const ageDivisionError = useMemo(() => {
     if (!ageDivision || !dateOfBirth) return null;
     const age = ageAsOf(dateOfBirth, COMPETITION_DATE);
-    if (divisionAcceptsAge(ageDivision, age)) return null;
-    return `Your age does not match the selected division. Please select the correct age group for a ${age} year old dancer.`;
+    if (validateAgeDivision(ageDivision, age)) return null;
+    return `Your age (${age}) doesn't match the selected division. Please select the correct age group.`;
   }, [ageDivision, dateOfBirth]);
 
   function syncParticipantsToGroupSize(gs: string) {
@@ -395,8 +396,8 @@ export default function CompetitionRegistrationForm() {
       if (!ageDivision) return 'Select an age division.';
       if (dateOfBirth) {
         const stepAge = ageAsOf(dateOfBirth, COMPETITION_DATE);
-        if (!divisionAcceptsAge(ageDivision, stepAge)) {
-          return `Your age does not match the selected division. Please select the correct age group for a ${stepAge} year old dancer.`;
+        if (!validateAgeDivision(ageDivision, stepAge)) {
+          return `Your age (${stepAge}) doesn't match the selected division. Please select the correct age group.`;
         }
       }
       if (!abilityLevel) return 'Select an ability level.';
