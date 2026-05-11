@@ -1,0 +1,21 @@
+-- ─── Operational note: Brevo + Squarespace DNS for dancetopaz.com ─────────────
+-- This migration documents DNS records for deliverability. No schema changes.
+--
+-- Tell the developer to add in Squarespace: Settings → Domains → dancetopaz.com
+-- → DNS Settings → Custom Records → Add Record:
+--
+-- 1) Brevo SPF (merge with existing Google SPF)
+--    Type: TXT
+--    Name: @
+--    Value: v=spf1 include:_spf.google.com include:spf.brevo.com ~all
+--    Note: The existing SPF "v=spf1 include:_spf.google.com ~all" must include
+--    "include:spf.brevo.com" before "~all".
+--
+-- 2) Brevo DKIM (CNAMEs from Brevo dashboard for dancetopaz.com)
+--    Type: CNAME, Name: brevo1._domainkey, Value: b1.dancetopaz-com.dkim.brevo.com
+--    Type: CNAME, Name: brevo2._domainkey, Value: b2.dancetopaz-com.dkim.brevo.com
+--
+-- Edge Functions send mail via Brevo API using secret BREVO_API_KEY and sender
+-- TOPAZ 2.0 <Topaz2.0@dancetopaz.com>.
+
+SELECT 1;

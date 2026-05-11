@@ -1,6 +1,6 @@
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 import { buildRegistrationBodies } from './mail.ts';
-import { sendViaBrevo, sendViaResend } from './providers.ts';
+import { sendViaBrevo } from './providers.ts';
 
 interface RegistrationEmailPayload {
   registrationId?: string;
@@ -162,46 +162,16 @@ export async function handleRegistrationRequest(req: Request): Promise<Response>
       ? undefined
       : [ADMIN_NOTIFICATION_BCC];
 
-  let brevoFailureDetail: string | null = null;
-  if (Deno.env.get('BREVO_API_KEY')) {
-    const br = await sendViaBrevo(to, contestant_name, htmlBody, textBody, bccForAdmin);
-    if (br.ok) {
-      console.log('[send-registration-confirmation] Brevo:', br.id);
-      if (registrationId) await markEmailSent(registrationId);
-      return new Response(JSON.stringify({ success: true, id: br.id }), { status: 200, headers: jsonHdr });
-    }
-    brevoFailureDetail = br.detail;
-    console.error('[send-registration-confirmation]', br.detail);
+  const br = await sendViaBrevo(to, contestant_name, htmlBody, textBody, bccForAdmin);
+  if (br.ok) {
+    console.log('[send-registration-confirmation] Brevo:', br.id);
+    if (registrationId) await markEmailSent(registrationId);
+    return new Response(JSON.stringify({ success: true, id: br.id }), { status: 200, headers: jsonHdr });
   }
-
-  if (Deno.env.get('RESEND_API_KEY')) {
-    const rs = await sendViaResend(to, contestant_name, htmlBody, textBody, bccForAdmin);
-    if (rs.ok) {
-      console.log('[send-registration-confirmation] Resend:', rs.id);
-      if (registrationId) await markEmailSent(registrationId);
-      return new Response(JSON.stringify({ success: true, id: rs.id }), { status: 200, headers: jsonHdr });
-    }
-    if (registrationId) await markEmailFailed(registrationId, rs.detail);
-    return new Response(JSON.stringify({ error: 'Email delivery failed', details: rs.detail }), {
-      status: 502,
-      headers: jsonHdr,
-    });
-  }
-
-  if (brevoFailureDetail) {
-    if (registrationId) await markEmailFailed(registrationId, brevoFailureDetail.slice(0, 500));
-    return new Response(JSON.stringify({ error: 'Email delivery failed', details: brevoFailureDetail }), {
-      status: 502,
-      headers: jsonHdr,
-    });
-  }
-
-  const missingProviderMsg =
-    'No email provider configured (set BREVO_API_KEY or RESEND_API_KEY on Supabase).';
-  console.warn('[send-registration-confirmation] ' + missingProviderMsg);
-  if (registrationId) await markEmailFailed(registrationId, missingProviderMsg);
-  return new Response(JSON.stringify({ success: true, warning: missingProviderMsg }), {
-    status: 200,
+  console.error('[send-registration-confirmation]', br.detail);
+  if (registrationId) await markEmailFailed(registrationId, br.detail.slice(0, 500));
+  return new Response(JSON.stringify({ error: 'Email delivery failed', details: br.detail }), {
+    status: 502,
     headers: jsonHdr,
   });
 }

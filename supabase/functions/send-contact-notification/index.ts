@@ -2,6 +2,8 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 
 const TO_EMAIL = 'topaz2.0@yahoo.com';
 
+const BREVO_API_KEY = Deno.env.get('BREVO_API_KEY') ?? '';
+
 Deno.serve(async (req: Request) => {
   if (req.method !== 'POST') {
     return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405 });
@@ -23,10 +25,8 @@ Deno.serve(async (req: Request) => {
     return new Response(JSON.stringify({ error: String(e) }), { status: 400 });
   }
 
-  const brevoApiKey = Deno.env.get('BREVO_API_KEY');
-  const resendApiKey = Deno.env.get('RESEND_API_KEY');
-  if (!brevoApiKey && !resendApiKey) {
-    console.error('[send-contact-notification] BREVO_API_KEY and RESEND_API_KEY not set');
+  if (!BREVO_API_KEY) {
+    console.error('[send-contact-notification] BREVO_API_KEY not set');
     return new Response(JSON.stringify({ error: 'Email service not configured' }), { status: 500 });
   }
 
@@ -85,68 +85,47 @@ Deno.serve(async (req: Request) => {
 </body>
 </html>`;
 
-  let brevoErrorText: string | null = null;
-  if (brevoApiKey) {
-    const res = await fetch('https://api.brevo.com/v3/smtp/email', {
-      method: 'POST',
-      headers: {
-        'api-key': brevoApiKey,
-        'Content-Type': 'application/json',
+  const textPlain = [
+    'New contact message — TOPAZ 2.0 Website',
+    '',
+    `Name: ${body.name}`,
+    `Email: ${body.email}`,
+    body.phone ? `Phone: ${body.phone}` : '',
+    `Subject: ${subjectLabel}`,
+    '',
+    'Message:',
+    body.message,
+    body.submissionId ? `\nSubmission ID: ${body.submissionId}` : '',
+  ]
+    .filter(Boolean)
+    .join('\n');
+
+  const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+    method: 'POST',
+    headers: {
+      'api-key': BREVO_API_KEY,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      sender: {
+        name: 'TOPAZ 2.0',
+        email: 'Topaz2.0@dancetopaz.com',
       },
-      body: JSON.stringify({
-        sender: { name: 'TOPAZ 2.0', email: 'noreply@dancetopaz.com' },
-        to: [{ email: TO_EMAIL }],
-        subject: 'New Contact Message — TOPAZ 2.0 Website',
-        htmlContent: html,
-        replyTo: { email: body.email, name: body.name },
-      }),
-    });
-    if (res.ok) {
-      return new Response(JSON.stringify({ success: true, provider: 'brevo' }), { status: 200 });
-    }
-    const text = await res.text();
-    brevoErrorText = text;
-    console.error('[send-contact-notification] Brevo error:', text);
+      to: [{ email: TO_EMAIL }],
+      subject: 'New Contact Message — TOPAZ 2.0 Website',
+      htmlContent: html,
+      textContent: textPlain,
+      replyTo: { email: body.email, name: body.name },
+    }),
+  });
+
+  if (res.ok) {
+    return new Response(JSON.stringify({ success: true, provider: 'brevo' }), { status: 200 });
   }
 
-  if (resendApiKey) {
-    const res = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${resendApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: 'TOPAZ 2.0 Website <noreply@dancetopaz.com>',
-        to: [TO_EMAIL],
-        subject: 'New Contact Message — TOPAZ 2.0 Website',
-        html,
-        reply_to: body.email,
-      }),
-    });
-
-    if (!res.ok) {
-      const text = await res.text();
-      console.error('[send-contact-notification] Resend error:', text);
-      return new Response(
-        JSON.stringify({
-          error: 'Email delivery failed',
-          provider: 'resend',
-          brevo_error: brevoErrorText,
-          resend_error: text,
-        }),
-        { status: 500 },
-      );
-    }
-
-    return new Response(
-      JSON.stringify({ success: true, provider: 'resend', brevo_error: brevoErrorText }),
-      { status: 200 },
-    );
-  }
-
-  return new Response(
-    JSON.stringify({ error: 'Email delivery failed', provider: 'brevo', brevo_error: brevoErrorText }),
-    { status: 500 },
-  );
+  const errText = await res.text();
+  console.error('[send-contact-notification] Brevo error:', errText);
+  return new Response(JSON.stringify({ error: 'Email delivery failed', provider: 'brevo', details: errText }), {
+    status: 500,
+  });
 });

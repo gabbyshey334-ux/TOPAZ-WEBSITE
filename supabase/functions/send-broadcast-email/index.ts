@@ -2,10 +2,10 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
 // ─── Config ──────────────────────────────────────────────────────────────────
-const FROM_EMAIL = 'TOPAZ 2.0 <noreply@dancetopaz.com>';
 const ADMIN_EMAIL = 'topaz2.0@yahoo.com';
+const BREVO_API_KEY = Deno.env.get('BREVO_API_KEY') ?? '';
 const BATCH_SIZE = 50;
-const BATCH_DELAY_MS = 1100; // Rate limits: space requests between batches (Brevo / Resend).
+const BATCH_DELAY_MS = 1100; // Rate limits: space requests between batches (Brevo).
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -103,70 +103,39 @@ topaz2.0@yahoo.com`;
 }
 
 async function sendOne(
-  brevoApiKey: string | undefined,
-  resendApiKey: string | undefined,
   to: string,
   subject: string,
   html: string,
   text: string
 ): Promise<{ ok: true } | { ok: false; error: string }> {
-  if (brevoApiKey) {
-    try {
-      const response = await fetch('https://api.brevo.com/v3/smtp/email', {
-        method: 'POST',
-        headers: {
-          'api-key': brevoApiKey,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          sender: { name: 'TOPAZ 2.0', email: 'noreply@dancetopaz.com' },
-          to: [{ email: to }],
-          subject,
-          htmlContent: html,
-          textContent: text,
-        }),
-      });
-
-      if (response.ok) return { ok: true };
-      const errBody = await response.text();
-      if (!resendApiKey) {
-        return { ok: false, error: `Brevo HTTP ${response.status}: ${errBody.slice(0, 200)}` };
-      }
-    } catch (err) {
-      if (!resendApiKey) {
-        return { ok: false, error: err instanceof Error ? err.message : String(err) };
-      }
-    }
+  if (!BREVO_API_KEY) {
+    return { ok: false, error: 'No email provider configured' };
   }
-
-  if (resendApiKey) {
-    try {
-      const response = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${resendApiKey}`,
-          'Content-Type': 'application/json',
+  try {
+    const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: {
+        'api-key': BREVO_API_KEY,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        sender: {
+          name: 'TOPAZ 2.0',
+          email: 'Topaz2.0@dancetopaz.com',
         },
-        body: JSON.stringify({
-          from: FROM_EMAIL,
-          to: [to],
-          subject,
-          html,
-          text,
-        }),
-      });
+        to: [{ email: to }],
+        subject,
+        htmlContent: html,
+        textContent: text,
+      }),
+    });
 
-      if (!response.ok) {
-        const errBody = await response.text();
-        return { ok: false, error: `HTTP ${response.status}: ${errBody.slice(0, 200)}` };
-      }
-      return { ok: true };
-    } catch (err) {
-      return { ok: false, error: err instanceof Error ? err.message : String(err) };
-    }
+    if (response.ok) return { ok: true };
+    const errBody = await response.text();
+    return { ok: false, error: `Brevo HTTP ${response.status}: ${errBody.slice(0, 200)}` };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : String(err) };
   }
-
-  return { ok: false, error: 'No email provider configured' };
 }
 
 function sleep(ms: number): Promise<void> {
@@ -226,11 +195,9 @@ Deno.serve(async (req: Request) => {
   if (!subject) return jsonResponse({ error: 'Missing required field: subject' }, 400);
   if (!message) return jsonResponse({ error: 'Missing required field: message' }, 400);
 
-  const brevoApiKey = Deno.env.get('BREVO_API_KEY') ?? undefined;
-  const resendApiKey = Deno.env.get('RESEND_API_KEY') ?? undefined;
-  if (!brevoApiKey && !resendApiKey) {
-    console.error('[send-broadcast-email] Missing BREVO_API_KEY and RESEND_API_KEY');
-    return jsonResponse({ error: 'Email provider not configured (BREVO_API_KEY or RESEND_API_KEY missing)' }, 500);
+  if (!BREVO_API_KEY) {
+    console.error('[send-broadcast-email] Missing BREVO_API_KEY');
+    return jsonResponse({ error: 'Email provider not configured (BREVO_API_KEY missing)' }, 500);
   }
 
   // ── Fetch subscribers using service role (bypasses RLS) ───────────────────
@@ -275,7 +242,7 @@ Deno.serve(async (req: Request) => {
   for (let i = 0; i < subscribers.length; i += BATCH_SIZE) {
     const batch = subscribers.slice(i, i + BATCH_SIZE);
     const results = await Promise.all(
-      batch.map((s) => sendOne(brevoApiKey, resendApiKey, s.email, subject, html, text))
+      batch.map((s) => sendOne(s.email, subject, html, text))
     );
     for (let j = 0; j < results.length; j++) {
       const r = results[j];

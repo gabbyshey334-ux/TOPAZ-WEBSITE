@@ -1,7 +1,8 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 
 const ADMIN_EMAIL = 'topaz2.0@yahoo.com';
-const FROM_EMAIL = 'TOPAZ 2.0 <noreply@dancetopaz.com>';
+
+const BREVO_API_KEY = Deno.env.get('BREVO_API_KEY') ?? '';
 
 interface OrderItem {
   product_id: string;
@@ -111,57 +112,33 @@ Total: $${total_amount.toFixed(2)}
 
 Action needed: Contact ${customer_name} at ${customer_email} to arrange payment and pickup/delivery.`;
 
-    const brevoApiKey = Deno.env.get('BREVO_API_KEY');
-    const resendApiKey = Deno.env.get('RESEND_API_KEY');
-
-    let sentViaBrevoOk = false;
-    if (brevoApiKey) {
+    if (!BREVO_API_KEY) {
+      console.warn('[send-order-notification] BREVO_API_KEY not set — order notification email skipped');
+      console.log('Order notification would have been sent:', textBody);
+    } else {
       const res = await fetch('https://api.brevo.com/v3/smtp/email', {
         method: 'POST',
         headers: {
-          'api-key': brevoApiKey,
+          'api-key': BREVO_API_KEY,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          sender: { name: 'TOPAZ 2.0', email: 'noreply@dancetopaz.com' },
+          sender: {
+            name: 'TOPAZ 2.0',
+            email: 'Topaz2.0@dancetopaz.com',
+          },
           to: [{ email: ADMIN_EMAIL }],
           subject: `New Order from ${customer_name} — $${total_amount.toFixed(2)}`,
           htmlContent: htmlBody,
           textContent: textBody,
         }),
       });
-      sentViaBrevoOk = res.ok;
       if (!res.ok) {
         const err = await res.text();
         console.error('Brevo error:', err);
       } else {
         console.log('Order notification sent via Brevo');
       }
-    }
-
-    if (resendApiKey && !sentViaBrevoOk) {
-      const res = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${resendApiKey}`,
-        },
-        body: JSON.stringify({
-          from: FROM_EMAIL,
-          to: [ADMIN_EMAIL],
-          subject: `New Order from ${customer_name} — $${total_amount.toFixed(2)}`,
-          html: htmlBody,
-          text: textBody,
-        }),
-      });
-
-      if (!res.ok) {
-        const err = await res.text();
-        console.error('Resend error:', err);
-      }
-    } else if (!brevoApiKey && !resendApiKey) {
-      console.warn('BREVO_API_KEY / RESEND_API_KEY not set — order notification email skipped');
-      console.log('Order notification would have been sent:', textBody);
     }
 
     return new Response(JSON.stringify({ success: true }), {
