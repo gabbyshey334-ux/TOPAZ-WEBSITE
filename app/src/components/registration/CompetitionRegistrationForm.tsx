@@ -81,7 +81,7 @@ const PAYMENT_INSTRUCTIONS =
 
 /** Cash / mailed payment copy (form, success screen, and step 4). */
 const CASH_PAYMENT_MAIL_TEXT =
-  'Mail cash, checks, or money orders to: TOPAZ 2.0, PO BOX 131, BANKS OR 97106. All fees must be received by registration close date.';
+  'Mail cash, checks, or money orders to: TOPAZ 2.0, PO BOX 131, BANKS OR 97106. All fees must be received by registration close date (July 30, 2026).';
 
 /** Zelle payee linked to Nick's account (plain text only — no deep links). */
 const ZELLE_EMAIL_DISPLAY = 'topaz2.0@yahoo.com';
