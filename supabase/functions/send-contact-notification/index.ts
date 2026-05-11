@@ -23,9 +23,13 @@ Deno.serve(async (req: Request) => {
     return new Response(JSON.stringify({ error: String(e) }), { status: 400 });
   }
 
-  if (!Deno.env.get('BREVO_API_KEY')) {
+  const brevoKey = Deno.env.get('BREVO_API_KEY') ?? '';
+  if (!brevoKey) {
     console.error('[send-contact-notification] BREVO_API_KEY not set');
-    return new Response(JSON.stringify({ error: 'Email service not configured' }), { status: 500 });
+    return new Response(JSON.stringify({ error: 'Email service not configured' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 
   const subjectLabel = body.subject
@@ -102,32 +106,33 @@ Deno.serve(async (req: Request) => {
   const subject = 'New Contact Message — TOPAZ 2.0 Website';
   const htmlContent = html;
 
-  try {
-    const res = await fetch('https://api.brevo.com/v3/smtp/email', {
-      method: 'POST',
-      headers: {
-        'api-key': Deno.env.get('BREVO_API_KEY') ?? '',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        sender: { name: 'TOPAZ 2.0', email: 'Topaz2.0@dancetopaz.com' },
-        to: [{ email: recipientEmail }],
-        subject,
-        htmlContent,
-        textContent: textPlain,
-        replyTo: { email: body.email, name: body.name },
-      }),
-    });
-    if (!res.ok) {
-      const errorText = await res.text();
-      throw new Error(`Brevo error ${res.status}: ${errorText}`);
-    }
-    return new Response(JSON.stringify({ success: true, provider: 'brevo' }), { status: 200 });
-  } catch (e) {
-    const errText = e instanceof Error ? e.message : String(e);
-    console.error('[send-contact-notification] Brevo error:', errText);
-    return new Response(JSON.stringify({ error: 'Email delivery failed', provider: 'brevo', details: errText }), {
-      status: 500,
-    });
+  const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+    method: 'POST',
+    headers: {
+      'api-key': brevoKey,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      sender: { name: 'TOPAZ 2.0', email: 'Topaz2.0@dancetopaz.com' },
+      to: [{ email: recipientEmail }],
+      subject,
+      htmlContent,
+      textContent: textPlain,
+      replyTo: { email: body.email, name: body.name },
+    }),
+  });
+
+  if (!res.ok) {
+    const errorBody = await res.text();
+    console.error('Brevo error:', res.status, errorBody);
+    return new Response(
+      JSON.stringify({ error: 'Email delivery failed', detail: errorBody }),
+      { status: 500, headers: { 'Content-Type': 'application/json' } },
+    );
   }
+
+  return new Response(JSON.stringify({ success: true }), {
+    status: 200,
+    headers: { 'Content-Type': 'application/json' },
+  });
 });

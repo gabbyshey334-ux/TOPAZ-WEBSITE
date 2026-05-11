@@ -170,8 +170,8 @@ export async function handleRegistrationRequest(req: Request): Promise<Response>
   }
   console.error('[send-registration-confirmation]', br.detail);
   if (registrationId) await markEmailFailed(registrationId, br.detail.slice(0, 500));
-  return new Response(JSON.stringify({ error: 'Email delivery failed', details: br.detail }), {
-    status: 502,
+  return new Response(JSON.stringify({ error: 'Email delivery failed', detail: br.detail }), {
+    status: 500,
     headers: jsonHdr,
   });
 }

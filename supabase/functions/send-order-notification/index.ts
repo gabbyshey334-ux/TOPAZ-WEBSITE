@@ -110,32 +110,41 @@ Total: $${total_amount.toFixed(2)}
 
 Action needed: Contact ${customer_name} at ${customer_email} to arrange payment and pickup/delivery.`;
 
-    if (!Deno.env.get('BREVO_API_KEY')) {
-      console.warn('[send-order-notification] BREVO_API_KEY not set — order notification email skipped');
-      console.log('Order notification would have been sent:', textBody);
-    } else {
-      const recipientEmail = ADMIN_EMAIL;
-      const subject = `New Order from ${customer_name} — $${total_amount.toFixed(2)}`;
-      const htmlContent = htmlBody;
-      const res = await fetch('https://api.brevo.com/v3/smtp/email', {
-        method: 'POST',
-        headers: {
-          'api-key': Deno.env.get('BREVO_API_KEY') ?? '',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          sender: { name: 'TOPAZ 2.0', email: 'Topaz2.0@dancetopaz.com' },
-          to: [{ email: recipientEmail }],
-          subject,
-          htmlContent,
-          textContent: textBody,
-        }),
+    const brevoKey = Deno.env.get('BREVO_API_KEY') ?? '';
+    if (!brevoKey) {
+      console.error('[send-order-notification] BREVO_API_KEY not set');
+      return new Response(JSON.stringify({ error: 'Email service not configured' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
-      if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(`Brevo error ${res.status}: ${errorText}`);
-      }
-      console.log('Order notification sent via Brevo');
+    }
+
+    const recipientEmail = ADMIN_EMAIL;
+    const subject = `New Order from ${customer_name} — $${total_amount.toFixed(2)}`;
+    const htmlContent = htmlBody;
+
+    const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: {
+        'api-key': brevoKey,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        sender: { name: 'TOPAZ 2.0', email: 'Topaz2.0@dancetopaz.com' },
+        to: [{ email: recipientEmail }],
+        subject,
+        htmlContent,
+        textContent: textBody,
+      }),
+    });
+
+    if (!res.ok) {
+      const errorBody = await res.text();
+      console.error('Brevo error:', res.status, errorBody);
+      return new Response(
+        JSON.stringify({ error: 'Email delivery failed', detail: errorBody }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      );
     }
 
     return new Response(JSON.stringify({ success: true }), {

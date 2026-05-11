@@ -107,34 +107,34 @@ async function sendOne(
   html: string,
   text: string
 ): Promise<{ ok: true } | { ok: false; error: string }> {
-  if (!Deno.env.get('BREVO_API_KEY')) {
-    return { ok: false, error: 'No email provider configured' };
+  const brevoKey = Deno.env.get('BREVO_API_KEY') ?? '';
+  if (!brevoKey) {
+    return { ok: false, error: 'BREVO_API_KEY not set' };
   }
   const recipientEmail = to;
   const htmlContent = html;
-  try {
-    const res = await fetch('https://api.brevo.com/v3/smtp/email', {
-      method: 'POST',
-      headers: {
-        'api-key': Deno.env.get('BREVO_API_KEY') ?? '',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        sender: { name: 'TOPAZ 2.0', email: 'Topaz2.0@dancetopaz.com' },
-        to: [{ email: recipientEmail }],
-        subject,
-        htmlContent,
-        textContent: text,
-      }),
-    });
-    if (!res.ok) {
-      const errorText = await res.text();
-      throw new Error(`Brevo error ${res.status}: ${errorText}`);
-    }
-    return { ok: true };
-  } catch (err) {
-    return { ok: false, error: err instanceof Error ? err.message : String(err) };
+
+  const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+    method: 'POST',
+    headers: {
+      'api-key': brevoKey,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      sender: { name: 'TOPAZ 2.0', email: 'Topaz2.0@dancetopaz.com' },
+      to: [{ email: recipientEmail }],
+      subject,
+      htmlContent,
+      textContent: text,
+    }),
+  });
+
+  if (!res.ok) {
+    const errorBody = await res.text();
+    console.error('Brevo error:', res.status, errorBody);
+    return { ok: false, error: errorBody };
   }
+  return { ok: true };
 }
 
 function sleep(ms: number): Promise<void> {
