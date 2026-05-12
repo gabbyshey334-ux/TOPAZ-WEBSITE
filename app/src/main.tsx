@@ -7,18 +7,21 @@ import { Toaster } from 'sonner';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { AuthModalProvider } from '@/contexts/AuthModalContext';
 import { CartProvider } from '@/contexts/CartContext';
+import { SiteContentProvider } from '@/contexts/SiteContentContext';
 
 inject();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <AuthProvider>
-      <AuthModalProvider>
-        <CartProvider>
-          <App />
-          <Toaster theme="dark" richColors position="top-right" />
-        </CartProvider>
-      </AuthModalProvider>
-    </AuthProvider>
+    <SiteContentProvider>
+      <AuthProvider>
+        <AuthModalProvider>
+          <CartProvider>
+            <App />
+            <Toaster theme="dark" richColors position="top-right" />
+          </CartProvider>
+        </AuthModalProvider>
+      </AuthProvider>
+    </SiteContentProvider>
   </StrictMode>,
 );

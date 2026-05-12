@@ -20,11 +20,11 @@ import MailingListSection from '../components/MailingListSection';
 import { supabase } from '@/lib/supabase';
 import type { Database } from '@/types/database';
 import {
-  rowsToSiteContentMap,
   siteContentText,
   siteContentUrl,
   type SiteContentTextKey,
 } from '@/constants/siteContentDefaults';
+import { useSiteContentMap } from '@/contexts/SiteContentContext';
 
 type TestimonialRow = Database['public']['Tables']['testimonials']['Row'];
 type InstructorRow = Database['public']['Tables']['instructors']['Row'];
@@ -54,7 +54,7 @@ const Home = () => {
   const [activeTestimonial, setActiveTestimonial] = useState(0);
   const [masterclassInstructors, setMasterclassInstructors] = useState<InstructorRow[]>([]);
   const [judges, setJudges] = useState<InstructorRow[]>([]);
-  const [siteContent, setSiteContent] = useState<Record<string, string | null>>({});
+  const siteContent = useSiteContentMap();
 
   const heritagePhotos = HERITAGE_GRID.map((p) => ({
     src: siteContentUrl(siteContent, p.key),
@@ -131,7 +131,7 @@ const Home = () => {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const [t, i, c] = await Promise.all([
+      const [t, i] = await Promise.all([
         supabase
           .from('testimonials')
           .select('*')
@@ -144,15 +144,12 @@ const Home = () => {
           .eq('is_visible', true)
           .order('display_order', { ascending: true })
           .order('created_at', { ascending: false }),
-        supabase.from('site_content').select('key, value'),
       ]);
       if (cancelled) return;
       setTestimonials((t.data as TestimonialRow[]) ?? []);
       const instructors = (i.data as InstructorRow[]) ?? [];
       setMasterclassInstructors(instructors.filter((x) => x.type === 'masterclass'));
       setJudges(instructors.filter((x) => x.type === 'judge'));
-
-      setSiteContent(rowsToSiteContentMap(c.data as { key: string; value: string | null }[] | null));
     })();
     return () => { cancelled = true; };
   }, []);

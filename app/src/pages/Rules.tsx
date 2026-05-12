@@ -24,8 +24,8 @@ import {
   Info,
   Medal,
 } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
-import { rowsToSiteContentMap, siteContentText, siteContentUrl } from '@/constants/siteContentDefaults';
+import { siteContentText, siteContentUrl } from '@/constants/siteContentDefaults';
+import { useSiteContentMap } from '@/contexts/SiteContentContext';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -222,7 +222,7 @@ const OTHER_RULES = [
 
 const Rules = () => {
   const [activeTab, setActiveTab] = useState('categories');
-  const [siteContent, setSiteContent] = useState<Record<string, string | null>>({});
+  const siteContent = useSiteContentMap();
   const heroRef = useRef<HTMLDivElement>(null);
   const categoriesRef = useRef<HTMLDivElement>(null);
   const ageRef = useRef<HTMLDivElement>(null);
@@ -241,18 +241,6 @@ const Rules = () => {
     { id: 'medal', label: 'Medal Program' },
     { id: 'general', label: 'Other Rules' },
   ] as const;
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      const { data } = await supabase.from('site_content').select('key, value').order('key');
-      if (cancelled) return;
-      setSiteContent(rowsToSiteContentMap(data as { key: string; value: string | null }[] | null));
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   const rulesHeroBg = siteContentUrl(siteContent, 'rules_hero_background');
   const rulesCtaBg = siteContentUrl(siteContent, 'rules_cta_background');

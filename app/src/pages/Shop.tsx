@@ -3,7 +3,8 @@ import { ShoppingBag, ImageOff, CheckCircle2, XCircle } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useCart } from '@/contexts/CartContext';
 import type { Database } from '@/types/database';
-import { rowsToSiteContentMap, siteContentText, siteContentUrl } from '@/constants/siteContentDefaults';
+import { siteContentText, siteContentUrl } from '@/constants/siteContentDefaults';
+import { useSiteContentMap } from '@/contexts/SiteContentContext';
 import { ImageLightbox } from '@/components/ImageLightbox';
 
 type Product = Database['public']['Tables']['products']['Row'];
@@ -225,20 +226,8 @@ const Shop = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [paymentBanner, setPaymentBanner] = useState<'success' | 'cancelled' | null>(null);
-  const [siteContent, setSiteContent] = useState<Record<string, string | null>>({});
+  const siteContent = useSiteContentMap();
   const { count, openCart, clearCart } = useCart();
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      const { data } = await supabase.from('site_content').select('key, value').order('key');
-      if (cancelled) return;
-      setSiteContent(rowsToSiteContentMap(data as { key: string; value: string | null }[] | null));
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   const shopHeroBg = siteContentUrl(siteContent, 'shop_hero_background');
   const shopEmail = siteContentText(siteContent, 'contact_email');

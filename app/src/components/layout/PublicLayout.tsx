@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Outlet } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import CartDrawer from '@/components/CartDrawer';
-import { supabase } from '@/lib/supabase';
-import { rowsToSiteContentMap, siteContentUrl, type SiteContentMediaKey } from '@/constants/siteContentDefaults';
+import { siteContentUrl, type SiteContentMediaKey } from '@/constants/siteContentDefaults';
+import { useSiteContentMap } from '@/contexts/SiteContentContext';
 
 const LAYOUT_BG_KEY = 'public_layout_background' satisfies SiteContentMediaKey;
 
@@ -37,25 +37,20 @@ function LayoutBackground({ url }: { url: string }) {
 }
 
 export default function PublicLayout() {
-  // Initial value comes from the static defaults map so the first paint
-  // already shows the correct image — no late-fetch swap that would flash.
-  const [layoutBgUrl, setLayoutBgUrl] = useState(() => siteContentUrl({}, LAYOUT_BG_KEY));
+  // The background URL comes from a single global fetch (SiteContentProvider).
+  // Because it's shared across every route, the URL is stable from the first
+  // paint of the very first page, and never changes on subsequent navigations.
+  // That's what kills the per-page hero "switch" effect.
+  const map = useSiteContentMap();
+  const layoutBgUrl = useMemo(() => siteContentUrl(map, LAYOUT_BG_KEY), [map]);
 
+  // Warm the browser cache for the background image so the very first paint
+  // on a hard refresh isn't a brief #0a0a0a flash.
   useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      const { data } = await supabase.from('site_content').select('key, value').order('key');
-      if (cancelled) return;
-      const map = rowsToSiteContentMap(data as { key: string; value: string | null }[] | null);
-      const next = siteContentUrl(map, LAYOUT_BG_KEY);
-      // Only set state when the URL actually differs to avoid an extra
-      // render / layer repaint that can manifest as a brief flash.
-      setLayoutBgUrl((prev) => (prev === next ? prev : next));
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+    if (!layoutBgUrl) return;
+    const img = new Image();
+    img.src = layoutBgUrl;
+  }, [layoutBgUrl]);
 
   return (
     <div

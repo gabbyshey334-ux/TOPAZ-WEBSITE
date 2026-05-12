@@ -6,8 +6,8 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Search, ChevronDown, Calendar } from 'lucide-react';
 import CompetitionCard, { type CompetitionCardProps } from '../components/CompetitionCard';
 import { useActiveEvent } from '@/hooks/useActiveEvent';
-import { supabase } from '@/lib/supabase';
-import { rowsToSiteContentMap, siteContentText, siteContentUrl } from '@/constants/siteContentDefaults';
+import { siteContentText, siteContentUrl } from '@/constants/siteContentDefaults';
+import { useSiteContentMap } from '@/contexts/SiteContentContext';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -15,22 +15,10 @@ const Schedule = () => {
   const { event: activeEvent, loading: eventLoading } = useActiveEvent();
   const heroRef = useRef<HTMLDivElement>(null);
   const upcomingRef = useRef<HTMLDivElement>(null);
-  const [siteContent, setSiteContent] = useState<Record<string, string | null>>({});
+  const siteContent = useSiteContentMap();
   const [filter, setFilter] = useState<'all' | 'open' | 'upcoming' | 'past'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [showPast, setShowPast] = useState(false);
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      const { data } = await supabase.from('site_content').select('key, value').order('key');
-      if (cancelled) return;
-      setSiteContent(rowsToSiteContentMap(data as { key: string; value: string | null }[] | null));
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   useEffect(() => {
     const previousTitle = document.title;

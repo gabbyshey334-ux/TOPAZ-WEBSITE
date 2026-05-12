@@ -4,7 +4,8 @@ import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
 import { supabase } from '@/lib/supabase';
 import { parseVideoUrl } from '@/lib/videoEmbed';
 import type { Database } from '@/types/database';
-import { rowsToSiteContentMap, siteContentText, siteContentUrl } from '@/constants/siteContentDefaults';
+import { siteContentText, siteContentUrl } from '@/constants/siteContentDefaults';
+import { useSiteContentMap } from '@/contexts/SiteContentContext';
 import { ImageLightbox } from '@/components/ImageLightbox';
 
 const BASE = import.meta.env.BASE_URL;
@@ -312,19 +313,7 @@ const Gallery = () => {
   );
   const [passwordConfigured, setPasswordConfigured] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
-  const [siteContent, setSiteContent] = useState<Record<string, string | null>>({});
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      const { data } = await supabase.from('site_content').select('key, value').order('key');
-      if (cancelled) return;
-      setSiteContent(rowsToSiteContentMap(data as { key: string; value: string | null }[] | null));
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const siteContent = useSiteContentMap();
 
   const galleryHeroBg = siteContentUrl(siteContent, 'gallery_hero_background');
 

@@ -18,30 +18,18 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import CompetitionRegistrationForm from '@/components/registration/CompetitionRegistrationForm';
-import { supabase } from '@/lib/supabase';
-import { rowsToSiteContentMap, siteContentText, siteContentUrl, faqListFromSiteContentJson, REGISTRATION_PAGE_FAQ_DEFAULTS } from '@/constants/siteContentDefaults';
+import { siteContentText, siteContentUrl, faqListFromSiteContentJson, REGISTRATION_PAGE_FAQ_DEFAULTS } from '@/constants/siteContentDefaults';
+import { useSiteContentMap } from '@/contexts/SiteContentContext';
 
 gsap.registerPlugin(ScrollTrigger);
 
 const Registration = () => {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
-  const [siteContent, setSiteContent] = useState<Record<string, string | null>>({});
+  const siteContent = useSiteContentMap();
 
   const heroRef = useRef<HTMLDivElement>(null);
   const stepsRef = useRef<HTMLDivElement>(null);
   const infoRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      const { data } = await supabase.from('site_content').select('key, value').order('key');
-      if (cancelled) return;
-      setSiteContent(rowsToSiteContentMap(data as { key: string; value: string | null }[] | null));
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   const registrationHeroBg = siteContentUrl(siteContent, 'registration_hero_background');
   const supportEmail = siteContentText(siteContent, 'contact_email');

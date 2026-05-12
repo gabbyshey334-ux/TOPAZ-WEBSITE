@@ -1,12 +1,12 @@
-import { useRef, useEffect, useState, useMemo } from 'react';
+import { useRef, useEffect, useMemo } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Star, Award, Heart, Sparkles, Quote } from 'lucide-react';
 import TextSection from '../components/TextSection';
 import TeamSection from '../components/TeamSection';
-import { supabase } from '@/lib/supabase';
-import { rowsToSiteContentMap, siteContentText, siteContentUrl } from '@/constants/siteContentDefaults';
+import { siteContentText, siteContentUrl } from '@/constants/siteContentDefaults';
+import { useSiteContent } from '@/contexts/SiteContentContext';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -28,8 +28,7 @@ const About = () => {
   const storyRef = useRef<HTMLDivElement>(null);
   const quoteRef = useRef<HTMLDivElement>(null);
 
-  const [siteContent, setSiteContent] = useState<Record<string, string | null>>({});
-  const [siteContentReady, setSiteContentReady] = useState(false);
+  const { map: siteContent, ready: siteContentReady } = useSiteContent();
 
   const aboutUsBody = siteContentText(siteContent, 'about_us_text');
   const ourStoryBody = siteContentText(siteContent, 'about_our_story_text');
@@ -56,27 +55,6 @@ const About = () => {
   const aboutUsFallback = siteContentUrl(siteContent, 'about_us_fallback');
   const ricPortrait = siteContentUrl(siteContent, 'about_ric_portrait');
   const teamPhoto = siteContentUrl(siteContent, 'about_team_photo');
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      const { data, error } = await supabase
-        .from('site_content')
-        .select('key, value')
-        .order('key');
-      if (cancelled) return;
-      if (error) {
-        setSiteContent({});
-        setSiteContentReady(true);
-        return;
-      }
-      setSiteContent(rowsToSiteContentMap(data as { key: string; value: string | null }[] | null));
-      setSiteContentReady(true);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   useEffect(() => {
     const section = heroRef.current;

@@ -13,8 +13,8 @@ import {
 } from 'lucide-react';
 import ContactForm from '../components/ContactForm';
 import { TikTokIcon } from '../components/icons/TikTokIcon';
-import { supabase } from '@/lib/supabase';
-import { rowsToSiteContentMap, siteContentText, siteContentUrl, faqListFromSiteContentJson, CONTACT_PAGE_FAQ_DEFAULTS } from '@/constants/siteContentDefaults';
+import { siteContentText, siteContentUrl, faqListFromSiteContentJson, CONTACT_PAGE_FAQ_DEFAULTS } from '@/constants/siteContentDefaults';
+import { useSiteContentMap } from '@/contexts/SiteContentContext';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -24,19 +24,7 @@ const Contact = () => {
   const infoRef = useRef<HTMLDivElement>(null);
   const faqRef = useRef<HTMLDivElement>(null);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
-  const [siteContent, setSiteContent] = useState<Record<string, string | null>>({});
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      const { data } = await supabase.from('site_content').select('key, value').order('key');
-      if (cancelled) return;
-      setSiteContent(rowsToSiteContentMap(data as { key: string; value: string | null }[] | null));
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const siteContent = useSiteContentMap();
 
   const contactHeroBg = siteContentUrl(siteContent, 'contact_hero_background');
   const contactEmail = siteContentText(siteContent, 'contact_email');

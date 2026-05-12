@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Facebook, Instagram, Twitter, Mail, MapPin, Phone } from 'lucide-react';
 import { TikTokIcon } from './icons/TikTokIcon';
-import { supabase } from '@/lib/supabase';
-import { rowsToSiteContentMap, siteContentText } from '@/constants/siteContentDefaults';
+import { siteContentText } from '@/constants/siteContentDefaults';
+import { useSiteContentMap } from '@/contexts/SiteContentContext';
 
 const footerLinks = [
   {
@@ -36,19 +36,7 @@ const footerLinks = [
 ];
 
 const Footer = () => {
-  const [siteContent, setSiteContent] = useState<Record<string, string | null>>({});
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      const { data } = await supabase.from('site_content').select('key, value').order('key');
-      if (cancelled) return;
-      setSiteContent(rowsToSiteContentMap(data as { key: string; value: string | null }[] | null));
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const siteContent = useSiteContentMap();
 
   const tagline = siteContentText(siteContent, 'footer_tagline');
   const address = siteContentText(siteContent, 'footer_address');

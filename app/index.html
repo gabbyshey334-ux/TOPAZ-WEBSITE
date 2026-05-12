@@ -4,6 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Topaz 2.0 - Dance Competition</title>
+    <!-- Preload the fallback fixed background so the first paint on every
+         route already has the hero backdrop in place. The DB-driven URL (if
+         different) is fetched once via SiteContentProvider and cached. -->
+    <link rel="preload" as="image" href="/images/homepage/topaz-2-0-banner.png" fetchpriority="high" />
   </head>
   <body>
     <div id="root"></div>
