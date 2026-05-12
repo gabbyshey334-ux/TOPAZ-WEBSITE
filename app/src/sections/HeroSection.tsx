@@ -126,7 +126,7 @@ const HeroSection = ({ videoUrl, emblemSrc, heroTitle, heroSubtitle }: HeroSecti
 
         <h1
           ref={headingRef}
-          className="font-display font-black text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl tracking-tighter text-white leading-[0.95] mb-4 max-w-[min(100%,56rem)] mx-auto px-2"
+          className="font-display font-black text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl tracking-tighter text-white leading-[0.95] mb-4 max-w-[min(100%,56rem)] mx-auto px-2 break-words"
         >
           {resolvedTitle}
         </h1>

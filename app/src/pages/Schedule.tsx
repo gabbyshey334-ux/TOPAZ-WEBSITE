@@ -172,7 +172,7 @@ const Schedule = () => {
           <p className="hero-animate font-mono text-primary font-bold tracking-[0.3em] uppercase mb-6">
             {siteContentText(siteContent, 'schedule_hero_kicker')}
           </p>
-          <h1 className="hero-animate font-display font-black text-5xl sm:text-6xl lg:text-8xl text-white mb-8 tracking-tighter uppercase">
+          <h1 className="hero-animate font-display font-black text-5xl sm:text-6xl lg:text-8xl text-white mb-8 tracking-tighter uppercase break-words">
             {siteContentText(siteContent, 'schedule_hero_heading_prefix')}
             <span className="text-primary italic">{siteContentText(siteContent, 'schedule_hero_heading_accent')}</span>
           </h1>
@@ -220,7 +220,7 @@ const Schedule = () => {
       <section ref={upcomingRef} className="py-20 lg:py-32 bg-gray-50">
         <div className="max-w-7xl mx-auto px-6 lg:px-12">
           <div className="mb-16 text-center lg:text-left">
-            <h2 className="text-4xl lg:text-5xl font-black text-gray-900 mb-4">
+            <h2 className="text-4xl lg:text-5xl font-black text-gray-900 mb-4 break-words">
               {siteContentText(siteContent, 'schedule_upcoming_heading')}
             </h2>
             <p className="text-lg lg:text-xl text-gray-600 max-w-2xl">
@@ -298,7 +298,7 @@ const Schedule = () => {
         </div>
         
         <div className="w-full px-4 sm:px-6 lg:px-12 max-w-4xl mx-auto text-center relative z-10">
-          <h2 className="font-display font-black text-4xl lg:text-6xl text-white mb-8 leading-tight tracking-tighter uppercase">
+          <h2 className="font-display font-black text-4xl lg:text-6xl text-white mb-8 leading-tight tracking-tighter uppercase break-words">
             {siteContentText(siteContent, 'schedule_cta_heading_prefix')}
             <span className="italic text-secondary">{siteContentText(siteContent, 'schedule_cta_heading_accent')}</span>
           </h2>

@@ -81,7 +81,7 @@ const TeamSection = ({
       <div className="w-full px-4 sm:px-6 lg:px-12 max-w-6xl mx-auto text-center relative z-10">
         <h2
           id="team-heading"
-          className="font-display font-black text-4xl md:text-6xl lg:text-7xl mb-24 uppercase tracking-tighter"
+          className="font-display font-black text-4xl md:text-6xl lg:text-7xl mb-24 uppercase tracking-tighter break-words"
         >
           {headingMain}
           {headingAccent ? (
@@ -117,15 +117,15 @@ const TeamSection = ({
           aria-label="Team roles, left to right: Vice President, Founder, President"
         >
           {members.map((member, index) => (
-            <div key={index} className="group text-center" role="listitem">
+            <div key={index} className="group min-w-0 text-center" role="listitem">
               <div className="mb-2 sm:mb-4">
-                <p className="font-display font-black text-base sm:text-xl lg:text-2xl uppercase tracking-tight text-white group-hover:text-primary transition-colors duration-500 leading-tight">
+                <p className="font-display font-black text-sm sm:text-xl lg:text-2xl uppercase tracking-tight text-white group-hover:text-primary transition-colors duration-500 leading-tight break-words hyphens-auto">
                   {member.role}
                 </p>
                 <div className="mx-auto mt-2 h-1 max-w-[4rem] bg-primary scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-center sm:origin-center" />
               </div>
               {member.name ? (
-                <p className="text-xs sm:text-lg font-mono text-white/40 uppercase tracking-widest mt-2">
+                <p className="text-xs sm:text-lg font-mono text-white/40 uppercase tracking-widest mt-2 break-words">
                   {member.name}
                 </p>
               ) : null}

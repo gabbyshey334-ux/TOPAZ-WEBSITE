@@ -79,7 +79,7 @@ const Footer = () => {
                 TOPAZ<span className="text-[#2E75B6]">2.0</span>
               </span>
             </Link>
-            <p className="text-white/60 leading-relaxed mb-6 max-w-sm">{tagline}</p>
+            <p className="text-white/60 leading-relaxed mb-6 max-w-sm break-words">{tagline}</p>
 
             <div className="flex gap-3">
               {socialLinks.map((link) => (
@@ -117,23 +117,23 @@ const Footer = () => {
         </div>
 
         <div className="mt-12 pt-8 border-t border-white/10">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex flex-wrap items-center gap-6 text-sm text-white/60">
-              <a href={`tel:${phoneDigits}`} className="flex items-center gap-2 hover:text-[#2E75B6] transition-colors">
-                <Phone className="w-4 h-4" />
-                {phone}
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+            <div className="flex flex-wrap items-start gap-x-6 gap-y-3 text-sm text-white/60 min-w-0 w-full md:w-auto">
+              <a href={`tel:${phoneDigits}`} className="flex min-w-0 max-w-full items-center gap-2 hover:text-[#2E75B6] transition-colors">
+                <Phone className="w-4 h-4 shrink-0" />
+                <span className="min-w-0 break-words">{phone}</span>
               </a>
-              <a href={`mailto:${email}`} className="flex items-center gap-2 hover:text-[#2E75B6] transition-colors">
-                <Mail className="w-4 h-4" />
-                {email}
+              <a href={`mailto:${email}`} className="flex min-w-0 max-w-full items-center gap-2 hover:text-[#2E75B6] transition-colors">
+                <Mail className="w-4 h-4 shrink-0" />
+                <span className="min-w-0 break-all">{email}</span>
               </a>
-              <span className="flex items-center gap-2">
-                <MapPin className="w-4 h-4" />
-                {address}
+              <span className="flex min-w-0 max-w-full items-start gap-2">
+                <MapPin className="w-4 h-4 mt-0.5 shrink-0" />
+                <span className="min-w-0 break-words">{address}</span>
               </span>
             </div>
 
-            <div className="flex items-center gap-6 text-sm">
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
               <Link to="/" className="text-white/60 hover:text-[#2E75B6] transition-colors">
                 Privacy Policy
               </Link>
@@ -147,9 +147,9 @@ const Footer = () => {
 
       <div className="bg-black/50 border-t border-white/5">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-white/40 text-sm">{copyrightLine}</p>
-            <p className="text-white/40 text-sm font-mono tracking-wider">{estLine}</p>
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <p className="text-white/40 text-sm break-words">{copyrightLine}</p>
+            <p className="text-white/40 text-sm font-mono tracking-wider break-words">{estLine}</p>
           </div>
         </div>
       </div>

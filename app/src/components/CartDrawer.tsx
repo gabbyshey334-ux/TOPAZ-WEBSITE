@@ -154,8 +154,8 @@ export default function CartDrawer() {
 
                       {/* Details */}
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-bold text-gray-900 leading-tight">{item.productName}</p>
-                        <p className="text-xs text-gray-500 mt-0.5">Size: {item.size}</p>
+                        <p className="text-sm font-bold text-gray-900 leading-tight break-words">{item.productName}</p>
+                        <p className="text-xs text-gray-500 mt-0.5 break-words">Size: {item.size}</p>
                         <p className="text-sm font-black text-[#2E75B6] mt-1">
                           ${(item.unitPrice * item.quantity).toFixed(2)}
                         </p>
@@ -235,9 +235,9 @@ export default function CartDrawer() {
               <div className="bg-gray-50 rounded-xl p-4 mb-6">
                 <h3 className="text-sm font-bold text-gray-700 mb-3">Order Summary</h3>
                 {items.map((item) => (
-                  <div key={`${item.productId}:${item.size}`} className="flex justify-between text-sm text-gray-600 mb-1">
-                    <span>{item.productName} ({item.size}) ×{item.quantity}</span>
-                    <span className="font-semibold">${(item.unitPrice * item.quantity).toFixed(2)}</span>
+                  <div key={`${item.productId}:${item.size}`} className="flex justify-between items-baseline gap-3 text-sm text-gray-600 mb-1">
+                    <span className="min-w-0 flex-1 break-words">{item.productName} ({item.size}) ×{item.quantity}</span>
+                    <span className="font-semibold shrink-0 whitespace-nowrap">${(item.unitPrice * item.quantity).toFixed(2)}</span>
                   </div>
                 ))}
                 <div className="border-t border-gray-200 mt-3 pt-3 flex justify-between font-black text-gray-900">
@@ -341,7 +341,7 @@ export default function CartDrawer() {
             </p>
             <p className="text-gray-600 leading-relaxed">
               A confirmation will be sent to{' '}
-              <strong className="text-[#2E75B6]">{form.email}</strong>.
+              <strong className="text-[#2E75B6] break-all">{form.email}</strong>.
             </p>
             <Button
               onClick={handleClose}

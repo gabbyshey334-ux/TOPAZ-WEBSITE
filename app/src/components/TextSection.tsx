@@ -93,11 +93,11 @@ const TextSection = ({
     >
       <h2
         id={headingId}
-        className="font-display font-black text-4xl md:text-5xl lg:text-6xl mb-10 leading-tight uppercase tracking-tighter"
+        className="font-display font-black text-4xl md:text-5xl lg:text-6xl mb-10 leading-tight uppercase tracking-tighter break-words"
       >
         {heading.split(' ').map((word, i) => i === 1 ? <span key={i} className="text-primary italic">{word} </span> : word + ' ')}
       </h2>
-      <p className="text-xl leading-relaxed text-gray-500 font-medium whitespace-pre-line">{content}</p>
+      <p className="text-xl leading-relaxed text-gray-500 font-medium whitespace-pre-line break-words">{content}</p>
     </div>
   );
 
@@ -137,7 +137,7 @@ const TextSection = ({
         ) : null}
       </div>
       {imageCaption != null && imageCaption.trim() !== '' ? (
-        <p className="mt-4 text-center font-display font-bold text-lg text-gray-400">{imageCaption.trim()}</p>
+        <p className="mt-4 text-center font-display font-bold text-lg text-gray-400 break-words">{imageCaption.trim()}</p>
       ) : null}
     </div>
   ) : null;

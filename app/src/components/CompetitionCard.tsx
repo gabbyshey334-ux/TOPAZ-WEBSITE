@@ -80,13 +80,13 @@ const CompetitionCard = ({
       </div>
 
       {/* Title */}
-      <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-gray-900 mb-4 leading-tight">
+      <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-gray-900 mb-4 leading-tight break-words">
         {name}
       </h2>
 
       {/* Subtitle */}
       {(subtitle || description) && (
-        <p className="text-base lg:text-lg text-gray-600 mb-8 leading-relaxed line-clamp-2">
+        <p className="text-base lg:text-lg text-gray-600 mb-8 leading-relaxed line-clamp-2 break-words">
           {subtitle || description}
         </p>
       )}
@@ -101,8 +101,8 @@ const CompetitionCard = ({
             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
               Date
             </p>
-            <p className="text-base font-bold text-gray-900">{date}</p>
-            {time && <p className="text-sm text-gray-600 mt-1">{time}</p>}
+            <p className="text-base font-bold text-gray-900 break-words">{date}</p>
+            {time && <p className="text-sm text-gray-600 mt-1 break-words">{time}</p>}
           </div>
         </div>
 
@@ -110,12 +110,12 @@ const CompetitionCard = ({
           <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-blue-50">
             <MapPin className="h-6 w-6 text-blue-600" />
           </div>
-          <div className="min-w-0 max-w-md">
+          <div className="min-w-0 max-w-md w-full">
             <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-gray-500">
               Location
             </p>
-            <p className="text-base font-bold text-gray-900">{location}</p>
-            {address && <p className="mt-1 text-sm text-gray-600">{address}</p>}
+            <p className="text-base font-bold text-gray-900 break-words">{location}</p>
+            {address && <p className="mt-1 text-sm text-gray-600 break-words">{address}</p>}
           </div>
         </div>
 
@@ -127,7 +127,7 @@ const CompetitionCard = ({
             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
               Deadline
             </p>
-            <p className="text-base font-bold text-gray-900">{registrationDeadline}</p>
+            <p className="text-base font-bold text-gray-900 break-words">{registrationDeadline}</p>
           </div>
         </div>
       </div>
@@ -201,24 +201,24 @@ const CompetitionCard = ({
           {statusStyle.label}
         </span>
       </div>
-      <h2 className="text-2xl lg:text-3xl font-black text-gray-900 mb-4 leading-tight">
+      <h2 className="text-2xl lg:text-3xl font-black text-gray-900 mb-4 leading-tight break-words">
         {name}
       </h2>
       {description && (
-        <p className="text-gray-600 text-base mb-6 line-clamp-2">{description}</p>
+        <p className="text-gray-600 text-base mb-6 line-clamp-2 break-words">{description}</p>
       )}
       <div className="space-y-3 mb-6">
-        <div className="flex items-center gap-3 text-gray-700">
-          <Calendar className="w-5 h-5 text-blue-600 flex-shrink-0" />
-          <span className="font-semibold text-sm">{date}</span>
+        <div className="flex items-start gap-3 text-gray-700">
+          <Calendar className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+          <span className="font-semibold text-sm min-w-0 break-words">{date}</span>
         </div>
         <div className="flex items-start gap-3 text-gray-700">
           <MapPin className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-          <span className="font-semibold text-sm">{location}</span>
+          <span className="font-semibold text-sm min-w-0 break-words">{location}</span>
         </div>
-        <div className="flex items-center gap-3 text-gray-700">
-          <Clock className="w-5 h-5 text-blue-600 flex-shrink-0" />
-          <span className="font-semibold text-sm">Deadline: {registrationDeadline}</span>
+        <div className="flex items-start gap-3 text-gray-700">
+          <Clock className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+          <span className="font-semibold text-sm min-w-0 break-words">Deadline: {registrationDeadline}</span>
         </div>
       </div>
       <div className="mt-auto">

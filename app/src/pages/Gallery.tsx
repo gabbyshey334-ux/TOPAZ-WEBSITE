@@ -425,7 +425,7 @@ const Gallery = () => {
           <p className="font-mono text-primary font-bold tracking-[0.3em] uppercase mb-6">
             {siteContentText(siteContent, 'gallery_hero_kicker')}
           </p>
-          <h1 className="font-display font-black text-5xl sm:text-6xl lg:text-[8rem] text-white leading-[0.85] tracking-tighter uppercase mb-8">
+          <h1 className="font-display font-black text-5xl sm:text-6xl md:text-7xl lg:text-[8rem] text-white leading-[0.85] tracking-tighter uppercase mb-8 break-words">
             {siteContentText(siteContent, 'gallery_hero_title_prefix')}
             <span className="text-primary italic">{siteContentText(siteContent, 'gallery_hero_title_accent')}</span>
           </h1>

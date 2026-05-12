@@ -293,7 +293,7 @@ const Shop = () => {
           <p className="mb-6 font-mono text-sm font-bold uppercase tracking-[0.3em] text-primary">
             {siteContentText(siteContent, 'shop_hero_kicker')}
           </p>
-          <h1 className="mb-8 font-display text-5xl font-black uppercase leading-[0.85] tracking-tighter text-white sm:text-6xl lg:text-7xl xl:text-8xl">
+          <h1 className="mb-8 font-display text-5xl font-black uppercase leading-[0.85] tracking-tighter text-white sm:text-6xl lg:text-7xl xl:text-8xl break-words">
             {siteContentText(siteContent, 'shop_hero_heading_prefix')}
             <span className="text-primary italic">{siteContentText(siteContent, 'shop_hero_heading_accent')}</span>
           </h1>

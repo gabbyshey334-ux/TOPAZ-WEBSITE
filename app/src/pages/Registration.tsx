@@ -140,7 +140,7 @@ const Registration = () => {
             </span>
           </div>
           
-          <h1 className="hero-animate font-display font-black text-5xl sm:text-6xl md:text-8xl lg:text-[9rem] text-white leading-[0.85] tracking-tighter uppercase mb-8">
+          <h1 className="hero-animate font-display font-black text-5xl sm:text-6xl md:text-8xl lg:text-[9rem] text-white leading-[0.85] tracking-tighter uppercase mb-8 break-words">
             {siteContentText(siteContent, 'registration_hero_title_line1')} <br/>
             <span className="text-[#2E75B6] italic relative inline-block">
               {siteContentText(siteContent, 'registration_hero_title_accent')}
@@ -223,7 +223,7 @@ const Registration = () => {
       <section ref={stepsRef} className="py-32 overflow-hidden relative">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center max-w-3xl mx-auto mb-20">
-            <h2 className="font-display font-black text-4xl md:text-5xl text-[#0a0a0a] mb-6 uppercase tracking-tighter">
+            <h2 className="font-display font-black text-4xl md:text-5xl text-[#0a0a0a] mb-6 uppercase tracking-tighter break-words">
               {siteContentText(siteContent, 'registration_process_heading_main')}
               <span className="text-[#2E75B6]">{siteContentText(siteContent, 'registration_process_heading_accent')}</span>
             </h2>
@@ -292,7 +292,7 @@ const Registration = () => {
         <div className="absolute inset-0 bg-[#fafafa]/50" />
         <div className="max-w-4xl mx-auto px-4 sm:px-6 relative z-10">
           <div className="text-center mb-16">
-            <h2 className="font-display font-black text-4xl text-[#0a0a0a] mb-4 uppercase tracking-tighter">
+            <h2 className="font-display font-black text-4xl text-[#0a0a0a] mb-4 uppercase tracking-tighter break-words">
               Online <span className="text-[#2E75B6]">Registration</span>
             </h2>
             <p className="text-gray-500 font-medium">Please fill out all required fields carefully.</p>
@@ -383,7 +383,7 @@ const Registration = () => {
       <section className="py-32 bg-white border-t border-gray-100">
         <div className="max-w-3xl mx-auto px-6">
           <div className="text-center mb-16">
-            <h2 className="font-display font-black text-4xl text-[#0a0a0a] mb-6 uppercase tracking-tighter">
+            <h2 className="font-display font-black text-4xl text-[#0a0a0a] mb-6 uppercase tracking-tighter break-words">
               Common <span className="text-[#2E75B6]">Questions</span>
             </h2>
             <p className="text-lg text-gray-500 font-medium">Everything you need to know about registration.</p>
@@ -397,9 +397,9 @@ const Registration = () => {
               >
                 <button
                   onClick={() => setOpenFaq(openFaq === index ? null : index)}
-                  className="w-full px-8 py-6 flex items-center justify-between text-left"
+                  className="w-full px-6 sm:px-8 py-6 flex items-center justify-between gap-4 text-left"
                 >
-                  <span className="text-lg font-bold text-[#0a0a0a] pr-8">
+                  <span className="flex-1 min-w-0 text-base sm:text-lg font-bold text-[#0a0a0a] break-words">
                     {faq.question}
                   </span>
                   <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-all duration-500 ${openFaq === index ? 'bg-[#0a0a0a] text-white rotate-180' : 'bg-white border border-gray-200 text-gray-500'}`}>
@@ -411,7 +411,7 @@ const Registration = () => {
                     openFaq === index ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
                   }`}
                 >
-                  <div className="px-8 pb-8 text-gray-500 font-medium leading-relaxed">
+                  <div className="px-6 sm:px-8 pb-8 text-gray-500 font-medium leading-relaxed break-words">
                     {faq.answer}
                   </div>
                 </div>
@@ -439,14 +439,14 @@ const Registration = () => {
                 Our support team is ready to help you with the registration process. We typically respond within 24 hours.
               </p>
               
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
-                <a href={`mailto:${supportEmail}`} className="group flex items-center gap-3 bg-white/5 border border-white/10 px-8 py-4 rounded-full backdrop-blur-sm hover:bg-white hover:text-[#0a0a0a] transition-all duration-300 w-full sm:w-auto">
-                  <Mail className="w-5 h-5 group-hover:text-[#2E75B6] transition-colors" />
-                  <span className="font-bold tracking-wide text-sm">{supportEmail}</span>
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-4 sm:gap-6">
+                <a href={`mailto:${supportEmail}`} className="group flex min-w-0 items-center justify-center gap-3 bg-white/5 border border-white/10 px-6 sm:px-8 py-4 rounded-full backdrop-blur-sm hover:bg-white hover:text-[#0a0a0a] transition-all duration-300 w-full sm:w-auto max-w-full">
+                  <Mail className="w-5 h-5 shrink-0 group-hover:text-[#2E75B6] transition-colors" />
+                  <span className="min-w-0 font-bold tracking-wide text-sm break-all">{supportEmail}</span>
                 </a>
-                <a href={`tel:${supportPhoneDigits}`} className="group flex items-center gap-3 bg-white/5 border border-white/10 px-8 py-4 rounded-full backdrop-blur-sm hover:bg-white hover:text-[#0a0a0a] transition-all duration-300 w-full sm:w-auto">
-                  <Phone className="w-5 h-5 group-hover:text-[#2E75B6] transition-colors" />
-                  <span className="font-bold tracking-wide text-sm">{supportPhone}</span>
+                <a href={`tel:${supportPhoneDigits}`} className="group flex min-w-0 items-center justify-center gap-3 bg-white/5 border border-white/10 px-6 sm:px-8 py-4 rounded-full backdrop-blur-sm hover:bg-white hover:text-[#0a0a0a] transition-all duration-300 w-full sm:w-auto max-w-full">
+                  <Phone className="w-5 h-5 shrink-0 group-hover:text-[#2E75B6] transition-colors" />
+                  <span className="min-w-0 font-bold tracking-wide text-sm break-all">{supportPhone}</span>
                 </a>
               </div>
             </div>

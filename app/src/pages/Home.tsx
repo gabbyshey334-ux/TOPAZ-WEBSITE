@@ -371,7 +371,7 @@ const Home = () => {
             <span className="font-mono text-sm font-bold uppercase tracking-[0.2em] text-[#2E75B6]">
               {siteContentText(siteContent, 'home_whats_coming_kicker')}
             </span>
-            <h2 className="mt-3 font-display text-3xl font-black tracking-tight text-gray-900 sm:text-4xl lg:text-5xl">
+            <h2 className="mt-3 font-display text-3xl font-black tracking-tight text-gray-900 sm:text-4xl lg:text-5xl break-words">
               {siteContentText(siteContent, 'home_whats_coming_heading')}
             </h2>
           </div>
@@ -461,7 +461,7 @@ const Home = () => {
               <span className="font-mono text-sm font-bold uppercase tracking-[0.2em] text-violet-600">
                 {siteContentText(siteContent, 'home_masterclass_kicker')}
               </span>
-              <h2 className="mt-3 font-display text-3xl font-black tracking-tight text-gray-900 sm:text-4xl lg:text-5xl">
+              <h2 className="mt-3 font-display text-3xl font-black tracking-tight text-gray-900 sm:text-4xl lg:text-5xl break-words">
                 {siteContentText(siteContent, 'home_masterclass_heading_main')}
                 <span className="italic text-violet-600">
                   {siteContentText(siteContent, 'home_masterclass_heading_accent')}
@@ -508,7 +508,7 @@ const Home = () => {
               <span className="font-mono text-sm font-bold uppercase tracking-[0.2em] text-amber-600">
                 {siteContentText(siteContent, 'home_judges_kicker')}
               </span>
-              <h2 className="mt-3 font-display text-3xl font-black tracking-tight text-gray-900 sm:text-4xl lg:text-5xl">
+              <h2 className="mt-3 font-display text-3xl font-black tracking-tight text-gray-900 sm:text-4xl lg:text-5xl break-words">
                 {siteContentText(siteContent, 'home_judges_heading_main')}
                 <span className="italic text-amber-600">
                   {siteContentText(siteContent, 'home_judges_heading_accent')}
@@ -572,7 +572,7 @@ const Home = () => {
               <Star className="w-4 h-4" />
               {siteContentText(siteContent, 'home_legacy_kicker')}
             </span>
-            <h2 className="about-animate font-display font-black text-4xl md:text-5xl lg:text-6xl text-gray-900 tracking-tight">
+            <h2 className="about-animate font-display font-black text-4xl md:text-5xl lg:text-6xl text-gray-900 tracking-tight break-words">
               {siteContentText(siteContent, 'home_legacy_heading_main')}
               <span className="text-[#2E75B6] italic">
                 {siteContentText(siteContent, 'home_legacy_heading_accent')}
@@ -625,7 +625,7 @@ const Home = () => {
               {siteContentText(siteContent, 'home_tour_eyebrow')}
             </span>
 
-            <h1 className="font-display font-black text-6xl sm:text-7xl md:text-8xl lg:text-[10rem] text-white leading-[0.85] tracking-tighter uppercase">
+            <h1 className="font-display font-black text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-[10rem] text-white leading-[0.85] tracking-tighter uppercase break-words">
               {siteContentText(siteContent, 'home_tour_title_prefix')}
               <span className="text-[#2E75B6] italic">{siteContentText(siteContent, 'home_tour_title_accent')}</span>
             </h1>
@@ -687,7 +687,7 @@ const Home = () => {
             <span className="inline-block px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 font-mono text-white/80 text-sm tracking-[0.2em] uppercase font-bold mb-4">
               {siteContentText(siteContent, 'home_testimonials_kicker')}
             </span>
-            <h2 className="font-display font-black text-4xl md:text-5xl lg:text-6xl text-white tracking-tight">
+            <h2 className="font-display font-black text-4xl md:text-5xl lg:text-6xl text-white tracking-tight break-words">
               {siteContentText(siteContent, 'home_testimonials_heading')}
             </h2>
           </div>
@@ -759,7 +759,7 @@ const Home = () => {
             {siteContentText(siteContent, 'home_final_cta_kicker')}
           </span>
           
-          <h2 className="font-display font-black text-4xl md:text-5xl lg:text-6xl text-white mb-6 leading-tight">
+          <h2 className="font-display font-black text-4xl md:text-5xl lg:text-6xl text-white mb-6 leading-tight break-words">
             {siteContentText(siteContent, 'home_final_cta_heading_prefix')}
             <span className="text-[#7EB8E8] italic">{siteContentText(siteContent, 'home_final_cta_heading_accent')}</span>
           </h2>

@@ -83,7 +83,7 @@ const MailingListSection = () => {
                 <Sparkles className="w-3.5 h-3.5" />
                 Newsletter
               </span>
-              <h2 className="font-display font-black text-4xl md:text-5xl lg:text-6xl text-[#0F2847] tracking-tight leading-[0.95]">
+              <h2 className="font-display font-black text-4xl md:text-5xl lg:text-6xl text-[#0F2847] tracking-tight leading-[0.95] break-words">
                 STAY IN THE <span className="italic text-[#2E75B6]">LOOP</span>
               </h2>
               <p className="mt-5 text-base md:text-lg text-slate-600 max-w-xl mx-auto leading-relaxed">

@@ -657,12 +657,12 @@ export default function CompetitionRegistrationForm() {
           </div>
         </div>
 
-        <div className="p-8 sm:p-12">
-          <div
-            className="mb-10 rounded-2xl border border-gray-100 bg-[#fafafa] p-6 sm:p-8 border-l-4 border-l-purple-600 shadow-sm"
-            role="status"
-          >
-            <p className="font-display font-black text-lg text-[#0a0a0a] uppercase tracking-tight mb-4">
+          <div className="p-6 sm:p-12">
+            <div
+              className="mb-10 rounded-2xl border border-gray-100 bg-[#fafafa] p-6 sm:p-8 border-l-4 border-l-purple-600 shadow-sm"
+              role="status"
+            >
+            <p className="font-display font-black text-lg text-[#0a0a0a] uppercase tracking-tight mb-4 break-words">
               💳 Payment Required to Confirm Your Spot
             </p>
             <p className="text-gray-700 font-medium leading-relaxed mb-4">{PAYMENT_INSTRUCTIONS}</p>
@@ -704,32 +704,32 @@ export default function CompetitionRegistrationForm() {
           </div>
 
           <div className="grid sm:grid-cols-2 gap-x-8 gap-y-6 mb-10">
-            <div>
+            <div className="min-w-0">
               <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1">Category</p>
-              <p className="font-bold text-[#0a0a0a] text-lg">{success.category}</p>
+              <p className="font-bold text-[#0a0a0a] text-lg break-words">{success.category}</p>
             </div>
-            <div>
+            <div className="min-w-0">
               <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1">Entry Type</p>
-              <p className="font-bold text-[#0a0a0a] text-lg">{success.group_size}</p>
+              <p className="font-bold text-[#0a0a0a] text-lg break-words">{success.group_size}</p>
             </div>
             {success.song_title && (
-              <div className="sm:col-span-2">
+              <div className="sm:col-span-2 min-w-0">
                 <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1">Song</p>
-                <p className="font-bold text-[#0a0a0a] text-lg">
+                <p className="font-bold text-[#0a0a0a] text-lg break-words">
                   {success.song_title}{success.artist_name ? ` — ${success.artist_name}` : ''}
                 </p>
               </div>
             )}
-            <div>
+            <div className="min-w-0">
               <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1">Amount due</p>
-              <p className="font-black text-3xl text-[#2E75B6]">${success.total_fee.toFixed(2)}</p>
-              <p className="text-xs font-medium text-gray-500 mt-1">
+              <p className="font-black text-3xl text-[#2E75B6] break-words">${success.total_fee.toFixed(2)}</p>
+              <p className="text-xs font-medium text-gray-500 mt-1 break-words">
                 {success.payment_type === 'individual' ? 'Individual share' : 'Full group / routine total'}
               </p>
             </div>
-            <div>
+            <div className="min-w-0">
               <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1">Confirmation Email</p>
-              <p className="font-bold text-[#0a0a0a] text-base truncate">{success.email}</p>
+              <p className="font-bold text-[#0a0a0a] text-base break-all">{success.email}</p>
             </div>
           </div>
 
@@ -1316,39 +1316,39 @@ export default function CompetitionRegistrationForm() {
               <p className="text-gray-500 font-medium mt-2">Verify your information before submitting.</p>
             </div>
 
-            <div className="bg-[#fafafa] rounded-[2rem] p-8 sm:p-12 border border-gray-100 mb-10">
+            <div className="bg-[#fafafa] rounded-[2rem] p-6 sm:p-12 border border-gray-100 mb-10">
               <div className="grid sm:grid-cols-2 gap-y-8 gap-x-12">
-                <div><span className="text-gray-400 text-xs font-bold uppercase tracking-widest">Dancer</span><p className="font-black text-xl text-[#0a0a0a] mt-1">{contestantName}</p></div>
-                <div><span className="text-gray-400 text-xs font-bold uppercase tracking-widest">Age</span><p className="font-black text-xl text-[#0a0a0a] mt-1">{computedAge}</p></div>
-                <div><span className="text-gray-400 text-xs font-bold uppercase tracking-widest">Studio</span><p className="font-bold text-lg text-gray-800 mt-1">{studioName}</p></div>
-                <div><span className="text-gray-400 text-xs font-bold uppercase tracking-widest">Teacher</span><p className="font-bold text-lg text-gray-800 mt-1">{teacherName}</p></div>
-                
+                <div className="min-w-0"><span className="text-gray-400 text-xs font-bold uppercase tracking-widest">Dancer</span><p className="font-black text-xl text-[#0a0a0a] mt-1 break-words">{contestantName}</p></div>
+                <div className="min-w-0"><span className="text-gray-400 text-xs font-bold uppercase tracking-widest">Age</span><p className="font-black text-xl text-[#0a0a0a] mt-1 break-words">{computedAge}</p></div>
+                <div className="min-w-0"><span className="text-gray-400 text-xs font-bold uppercase tracking-widest">Studio</span><p className="font-bold text-lg text-gray-800 mt-1 break-words">{studioName}</p></div>
+                <div className="min-w-0"><span className="text-gray-400 text-xs font-bold uppercase tracking-widest">Teacher</span><p className="font-bold text-lg text-gray-800 mt-1 break-words">{teacherName}</p></div>
+
                 <div className="sm:col-span-2 h-px bg-gray-200 my-2" />
-                
-                <div><span className="text-gray-400 text-xs font-bold uppercase tracking-widest">Category</span><p className="font-bold text-lg text-gray-800 mt-1">{category}</p></div>
-                <div><span className="text-gray-400 text-xs font-bold uppercase tracking-widest">Division</span><p className="font-bold text-lg text-gray-800 mt-1">{ageDivision}</p></div>
-                <div><span className="text-gray-400 text-xs font-bold uppercase tracking-widest">Ability</span><p className="font-bold text-lg text-gray-800 mt-1">{abilityLevel}</p></div>
-                <div><span className="text-gray-400 text-xs font-bold uppercase tracking-widest">Entry Type</span><p className="font-bold text-lg text-gray-800 mt-1">{groupSize}</p></div>
-                
+
+                <div className="min-w-0"><span className="text-gray-400 text-xs font-bold uppercase tracking-widest">Category</span><p className="font-bold text-lg text-gray-800 mt-1 break-words">{category}</p></div>
+                <div className="min-w-0"><span className="text-gray-400 text-xs font-bold uppercase tracking-widest">Division</span><p className="font-bold text-lg text-gray-800 mt-1 break-words">{ageDivision}</p></div>
+                <div className="min-w-0"><span className="text-gray-400 text-xs font-bold uppercase tracking-widest">Ability</span><p className="font-bold text-lg text-gray-800 mt-1 break-words">{abilityLevel}</p></div>
+                <div className="min-w-0"><span className="text-gray-400 text-xs font-bold uppercase tracking-widest">Entry Type</span><p className="font-bold text-lg text-gray-800 mt-1 break-words">{groupSize}</p></div>
+
                 <div className="sm:col-span-2 h-px bg-gray-200 my-2" />
-                
-                <div><span className="text-gray-400 text-xs font-bold uppercase tracking-widest">Song</span><p className="font-bold text-lg text-gray-800 mt-1">{songTitle} {artistName && <span className="text-gray-500 font-medium">— {artistName}</span>}</p></div>
-                <div><span className="text-gray-400 text-xs font-bold uppercase tracking-widest">Delivery</span><p className="font-bold text-lg text-gray-800 mt-1 capitalize">{musicDeliveryMethod === 'upload' ? 'Digital Upload' : 'USB'}</p></div>
-                
+
+                <div className="min-w-0"><span className="text-gray-400 text-xs font-bold uppercase tracking-widest">Song</span><p className="font-bold text-lg text-gray-800 mt-1 break-words">{songTitle} {artistName && <span className="text-gray-500 font-medium">— {artistName}</span>}</p></div>
+                <div className="min-w-0"><span className="text-gray-400 text-xs font-bold uppercase tracking-widest">Delivery</span><p className="font-bold text-lg text-gray-800 mt-1 capitalize break-words">{musicDeliveryMethod === 'upload' ? 'Digital Upload' : 'USB'}</p></div>
+
                 <div className="sm:col-span-2 h-px bg-gray-200 my-2" />
-                
-                <div><span className="text-gray-400 text-xs font-bold uppercase tracking-widest">Payment Method</span><p className="font-bold text-lg text-gray-800 mt-1">{paymentMethod}</p></div>
-                <div>
+
+                <div className="min-w-0"><span className="text-gray-400 text-xs font-bold uppercase tracking-widest">Payment Method</span><p className="font-bold text-lg text-gray-800 mt-1 break-words">{paymentMethod}</p></div>
+                <div className="min-w-0">
                   <span className="text-gray-400 text-xs font-bold uppercase tracking-widest">Who is paying</span>
-                  <p className="font-bold text-lg text-gray-800 mt-1">
+                  <p className="font-bold text-lg text-gray-800 mt-1 break-words">
                     {paymentType === 'individual' ? 'My share only' : 'Full routine / group total'}
                   </p>
                 </div>
-                <div className="sm:col-span-2">
+                <div className="sm:col-span-2 min-w-0">
                   <span className="text-gray-400 text-xs font-bold uppercase tracking-widest">Amount due</span>
-                  <p className="font-black text-3xl text-[#2E75B6] mt-1">${amountDue.toFixed(2)}</p>
-                  <p className="text-sm text-gray-500 font-medium mt-2">{feeShareLabel}</p>
-                  <p className="text-sm text-gray-500 font-medium">{feeTotalExplainer}</p>
+                  <p className="font-black text-3xl text-[#2E75B6] mt-1 break-words">${amountDue.toFixed(2)}</p>
+                  <p className="text-sm text-gray-500 font-medium mt-2 break-words">{feeShareLabel}</p>
+                  <p className="text-sm text-gray-500 font-medium break-words">{feeTotalExplainer}</p>
                 </div>
               </div>
 
@@ -1357,8 +1357,10 @@ export default function CompetitionRegistrationForm() {
                   <h4 className="font-bold text-gray-900 mb-4 uppercase tracking-widest text-xs">Performers</h4>
                   <div className="flex flex-wrap gap-3">
                     {participants.map((p, i) => (
-                      <div key={i} className="bg-white px-4 py-2 rounded-full border border-gray-200 text-sm font-bold text-gray-800 shadow-sm flex items-center gap-2">
-                        <span className="text-[#2E75B6]">{i+1}.</span> {p.name} <span className="text-gray-400 font-medium font-mono text-xs ml-1">({p.age})</span>
+                      <div key={i} className="bg-white px-4 py-2 rounded-2xl border border-gray-200 text-sm font-bold text-gray-800 shadow-sm inline-flex items-center gap-2 max-w-full break-words">
+                        <span className="text-[#2E75B6] shrink-0">{i+1}.</span>
+                        <span className="min-w-0 break-words">{p.name}</span>
+                        <span className="text-gray-400 font-medium font-mono text-xs ml-1 shrink-0">({p.age})</span>
                       </div>
                     ))}
                   </div>

@@ -360,7 +360,7 @@ const Rules = () => {
               {siteContentText(siteContent, 'rules_hero_kicker')}
             </span>
           </div>
-          <h1 className="hero-animate font-display font-black text-6xl sm:text-7xl lg:text-[8rem] text-white mb-6 tracking-tighter uppercase leading-[0.85]">
+          <h1 className="hero-animate font-display font-black text-5xl sm:text-6xl md:text-7xl lg:text-[8rem] text-white mb-6 tracking-tighter uppercase leading-[0.85] break-words">
             {siteContentText(siteContent, 'rules_hero_title_main')}
             <span className="text-[#2E75B6] italic relative">
               {siteContentText(siteContent, 'rules_hero_title_accent')}
@@ -414,7 +414,7 @@ const Rules = () => {
         <div className="w-full px-4 sm:px-6 lg:px-12 max-w-7xl mx-auto relative z-10">
           <div className="max-w-3xl mb-16 lg:mb-24">
             <p className="section-animate font-mono text-[#2E75B6] font-bold tracking-[0.2em] uppercase mb-4">01. The Styles</p>
-            <h2 className="section-animate font-display font-black text-4xl sm:text-5xl lg:text-6xl text-[#0a0a0a] leading-[1.1] mb-6">
+            <h2 className="section-animate font-display font-black text-4xl sm:text-5xl lg:text-6xl text-[#0a0a0a] leading-[1.1] mb-6 break-words">
               Competition <span className="text-[#2E75B6] italic relative">Categories<div className="absolute -bottom-2 left-0 w-full h-2 bg-[#2E75B6]/20 rounded-full" /></span>
             </h2>
             <p className="section-animate text-lg text-gray-500 leading-relaxed font-medium">
@@ -537,7 +537,7 @@ const Rules = () => {
           <div ref={ageRef} className="mb-24 lg:mb-32">
             <div className="text-center mb-16 max-w-3xl mx-auto">
               <p className="section-animate font-mono text-[#2E75B6] font-bold tracking-[0.2em] uppercase mb-4">02. Demographics</p>
-              <h2 className="section-animate font-display font-black text-4xl sm:text-5xl lg:text-6xl text-[#0a0a0a] leading-[1.1] mb-6">
+              <h2 className="section-animate font-display font-black text-4xl sm:text-5xl lg:text-6xl text-[#0a0a0a] leading-[1.1] mb-6 break-words">
                 Age <span className="text-[#2E75B6] italic">Divisions</span>
               </h2>
               <p className="section-animate text-lg text-gray-500 leading-relaxed">
@@ -573,7 +573,7 @@ const Rules = () => {
           <div ref={abilityRef}>
             <div className="text-center mb-16 max-w-3xl mx-auto">
               <p className="section-animate font-mono text-[#2E75B6] font-bold tracking-[0.2em] uppercase mb-4">03. Skill Tiers</p>
-              <h2 className="section-animate font-display font-black text-4xl sm:text-5xl lg:text-6xl text-[#0a0a0a] leading-[1.1] mb-6">
+              <h2 className="section-animate font-display font-black text-4xl sm:text-5xl lg:text-6xl text-[#0a0a0a] leading-[1.1] mb-6 break-words">
                 Ability <span className="text-[#2E75B6] italic">Levels</span>
               </h2>
               <p className="section-animate text-lg text-gray-500 leading-relaxed">
@@ -612,7 +612,7 @@ const Rules = () => {
             
             <div className="lg:col-span-5 lg:sticky lg:top-32">
               <p className="section-animate font-mono text-[#2E75B6] font-bold tracking-[0.2em] uppercase mb-4">04. Logistics</p>
-              <h2 className="section-animate font-display font-black text-4xl sm:text-5xl lg:text-6xl text-[#0a0a0a] leading-[1.1] mb-6">
+              <h2 className="section-animate font-display font-black text-4xl sm:text-5xl lg:text-6xl text-[#0a0a0a] leading-[1.1] mb-6 break-words">
                 Group Size, <br/><span className="text-[#2E75B6] italic">Limits & Fees</span>
               </h2>
               <p className="section-animate text-lg text-gray-500 leading-relaxed mb-8">
@@ -669,7 +669,7 @@ const Rules = () => {
         <div className="w-full px-4 sm:px-6 lg:px-12 max-w-7xl mx-auto">
           <div className="text-center mb-16 max-w-3xl mx-auto">
             <p className="section-animate font-mono text-[#2E75B6] font-bold tracking-[0.2em] uppercase mb-4">05. Evaluation</p>
-            <h2 className="section-animate font-display font-black text-4xl sm:text-5xl lg:text-6xl text-[#0a0a0a] leading-[1.1] mb-6">
+            <h2 className="section-animate font-display font-black text-4xl sm:text-5xl lg:text-6xl text-[#0a0a0a] leading-[1.1] mb-6 break-words">
               Judging <span className="text-[#2E75B6] italic">& Awards</span>
             </h2>
           </div>
@@ -739,7 +739,7 @@ const Rules = () => {
         <div className="w-full px-4 sm:px-6 lg:px-12 max-w-7xl mx-auto">
           <div className="text-center mb-16 max-w-3xl mx-auto">
             <p className="section-animate font-mono text-[#2E75B6] font-bold tracking-[0.2em] uppercase mb-4">06. Long-Term</p>
-            <h2 className="section-animate font-display font-black text-4xl sm:text-5xl lg:text-6xl text-[#0a0a0a] leading-[1.1] mb-6">
+            <h2 className="section-animate font-display font-black text-4xl sm:text-5xl lg:text-6xl text-[#0a0a0a] leading-[1.1] mb-6 break-words">
               TOPAZ <span className="text-[#2E75B6] italic">Medal Program</span>
             </h2>
             <p className="section-animate text-lg text-gray-500 leading-relaxed max-w-2xl mx-auto">
@@ -780,7 +780,7 @@ const Rules = () => {
         <div className="w-full px-4 sm:px-6 lg:px-12 max-w-7xl mx-auto">
           <div className="max-w-3xl mb-16">
             <p className="section-animate font-mono text-[#2E75B6] font-bold tracking-[0.2em] uppercase mb-4">07. Guidelines</p>
-            <h2 className="section-animate font-display font-black text-4xl sm:text-5xl lg:text-6xl text-white leading-[1.1] mb-6">
+            <h2 className="section-animate font-display font-black text-4xl sm:text-5xl lg:text-6xl text-white leading-[1.1] mb-6 break-words">
               General <span className="text-[#2E75B6] italic">Policies</span>
             </h2>
           </div>
@@ -832,7 +832,7 @@ const Rules = () => {
           style={{ backgroundImage: `url(${rulesCtaBg})` }}
         />
         <div className="w-full px-4 sm:px-6 lg:px-12 max-w-4xl mx-auto text-center relative z-10">
-          <h2 className="font-display font-black text-4xl sm:text-5xl lg:text-6xl text-white mb-6 uppercase leading-[1.1]">
+          <h2 className="font-display font-black text-4xl sm:text-5xl lg:text-6xl text-white mb-6 uppercase leading-[1.1] break-words">
             Need a <span className="italic font-light">Physical Copy</span>?
           </h2>
           <p className="text-white/90 text-lg sm:text-xl mb-10 max-w-2xl mx-auto font-medium">

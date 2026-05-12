@@ -188,7 +188,7 @@ const Contact = () => {
           <p className="hero-animate font-mono text-primary font-bold tracking-[0.3em] uppercase mb-6">
             {siteContentText(siteContent, 'contact_hero_kicker')}
           </p>
-          <h1 className="hero-animate font-display font-black text-5xl sm:text-6xl lg:text-8xl text-white mb-8 tracking-tighter uppercase">
+          <h1 className="hero-animate font-display font-black text-5xl sm:text-6xl lg:text-8xl text-white mb-8 tracking-tighter uppercase break-words">
             {siteContentText(siteContent, 'contact_hero_heading_prefix')}
             <span className="text-primary italic">{siteContentText(siteContent, 'contact_hero_heading_accent')}</span>
           </h1>
@@ -203,7 +203,7 @@ const Contact = () => {
             {/* Left Column - Contact Form (60%) */}
             <div ref={formRef} className="lg:col-span-3">
               <div className="max-w-2xl">
-                <h2 className="font-display font-black text-3xl lg:text-4xl text-[#0a0a0a] mb-8 uppercase tracking-tight">
+                <h2 className="font-display font-black text-3xl lg:text-4xl text-[#0a0a0a] mb-8 uppercase tracking-tight break-words">
                   {siteContentText(siteContent, 'contact_form_heading_prefix')}
                   <span className="text-primary">{siteContentText(siteContent, 'contact_form_heading_accent')}</span>
                 </h2>
@@ -218,7 +218,7 @@ const Contact = () => {
 
             {/* Right Column - Contact Info (40%) */}
             <div ref={infoRef} className="lg:col-span-2 space-y-10">
-              <h2 className="font-display font-black text-3xl lg:text-4xl text-[#0a0a0a] mb-8 uppercase tracking-tight">
+              <h2 className="font-display font-black text-3xl lg:text-4xl text-[#0a0a0a] mb-8 uppercase tracking-tight break-words">
                 {siteContentText(siteContent, 'contact_details_heading_prefix')}
                 <span className="text-primary">{siteContentText(siteContent, 'contact_details_heading_accent')}</span>
               </h2>
@@ -233,11 +233,11 @@ const Contact = () => {
                       <div className="w-14 h-14 bg-primary/5 rounded-2xl flex items-center justify-center flex-shrink-0 group-hover:bg-primary group-hover:scale-110 transition-all duration-500">
                         <info.icon className="w-6 h-6 text-primary group-hover:text-white transition-colors" />
                       </div>
-                      <div className="flex-1">
-                        <h3 className="font-display font-bold text-xl text-[#0a0a0a] mb-2 group-hover:text-primary transition-colors">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-display font-bold text-xl text-[#0a0a0a] mb-2 group-hover:text-primary transition-colors break-words">
                           {info.title}
                         </h3>
-                        <p className="text-gray-500 text-lg leading-relaxed whitespace-pre-line">
+                        <p className="text-gray-500 text-lg leading-relaxed whitespace-pre-line break-words">
                           {info.content}
                         </p>
                         {info.action && (
@@ -258,7 +258,7 @@ const Contact = () => {
               {/* Social Media Card */}
               <div className="info-card bg-[#0a0a0a] rounded-3xl p-10 overflow-hidden relative group">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-1000" />
-                <h3 className="font-display font-black text-2xl text-white mb-3 uppercase tracking-wider relative z-10">
+                <h3 className="font-display font-black text-2xl text-white mb-3 uppercase tracking-wider relative z-10 break-words">
                   {siteContentText(siteContent, 'contact_social_heading_prefix')}
                   <span className="text-primary italic">{siteContentText(siteContent, 'contact_social_heading_accent')}</span>
                 </h3>
@@ -289,7 +289,7 @@ const Contact = () => {
       <section ref={faqRef} className="py-24 lg:py-40 bg-[#fcfcfc] border-t border-gray-100 relative overflow-hidden">
         <div className="w-full px-4 sm:px-6 lg:px-12 max-w-4xl mx-auto relative z-10">
           <div className="text-center mb-24 max-w-3xl mx-auto">
-            <h2 className="font-display font-black text-4xl lg:text-6xl text-[#0a0a0a] mb-8 uppercase tracking-tighter">
+            <h2 className="font-display font-black text-4xl lg:text-6xl text-[#0a0a0a] mb-8 uppercase tracking-tighter break-words">
               {siteContentText(siteContent, 'contact_faq_section_heading_prefix')}
               <span className="text-primary italic">{siteContentText(siteContent, 'contact_faq_section_heading_accent')}</span>
             </h2>
@@ -306,12 +306,12 @@ const Contact = () => {
               >
                 <button
                   onClick={() => setOpenFaq(openFaq === index ? null : index)}
-                  className="w-full px-10 py-8 flex items-center justify-between text-left transition-colors"
+                  className="w-full px-6 sm:px-10 py-8 flex items-center justify-between gap-4 text-left transition-colors"
                 >
-                  <span className="text-xl font-bold text-gray-800 pr-8 group-hover:text-primary transition-colors">
+                  <span className="flex-1 min-w-0 text-lg sm:text-xl font-bold text-gray-800 group-hover:text-primary transition-colors break-words">
                     {faq.question}
                   </span>
-                  <div className={`w-10 h-10 rounded-full border border-gray-100 flex items-center justify-center transition-all duration-500 ${openFaq === index ? 'bg-primary text-white border-primary rotate-180' : 'text-gray-400 group-hover:border-primary/20 group-hover:text-primary'}`}>
+                  <div className={`flex-shrink-0 w-10 h-10 rounded-full border border-gray-100 flex items-center justify-center transition-all duration-500 ${openFaq === index ? 'bg-primary text-white border-primary rotate-180' : 'text-gray-400 group-hover:border-primary/20 group-hover:text-primary'}`}>
                     <ChevronDown className="w-5 h-5" />
                   </div>
                 </button>
@@ -320,9 +320,9 @@ const Contact = () => {
                     openFaq === index ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
                   }`}
                 >
-                  <div className="px-10 pb-10">
+                  <div className="px-6 sm:px-10 pb-10">
                     <div className="w-12 h-1 bg-primary/20 mb-6 rounded-full" />
-                    <p className="text-gray-500 text-lg leading-relaxed font-medium">
+                    <p className="text-gray-500 text-base sm:text-lg leading-relaxed font-medium break-words">
                       {faq.answer}
                     </p>
                   </div>

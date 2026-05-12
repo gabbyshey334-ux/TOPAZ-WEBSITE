@@ -166,7 +166,7 @@ const About = () => {
 
           <h1
             id="about-hero-heading"
-            className="hero-animate font-display font-black text-5xl sm:text-6xl md:text-7xl lg:text-[9rem] text-white leading-[0.85] tracking-tighter uppercase mb-8"
+            className="hero-animate font-display font-black text-5xl sm:text-6xl md:text-7xl lg:text-[9rem] text-white leading-[0.85] tracking-tighter uppercase mb-8 break-words"
           >
             {siteContentText(siteContent, 'about_page_title_main')}
             <span className="text-[#2E75B6] italic">{siteContentText(siteContent, 'about_page_title_accent')}</span>
@@ -213,7 +213,7 @@ const About = () => {
                 <Sparkles className="w-4 h-4" />
                 {siteContentText(siteContent, 'about_story_kicker')}
               </span>
-              <h2 className="font-display font-black text-4xl md:text-5xl lg:text-6xl mb-8 leading-tight uppercase tracking-tighter">
+              <h2 className="font-display font-black text-4xl md:text-5xl lg:text-6xl mb-8 leading-tight uppercase tracking-tighter break-words">
                 {siteContentText(siteContent, 'about_story_heading_main')}
                 <span className="text-[#2E75B6] italic">{siteContentText(siteContent, 'about_story_heading_accent')}</span>
               </h2>
@@ -278,7 +278,7 @@ const About = () => {
                   <Heart className="w-4 h-4" />
                   {siteContentText(siteContent, 'about_next_gen_kicker')}
                 </span>
-                <h3 className="font-display font-black text-3xl md:text-4xl text-gray-900 mb-6">
+                <h3 className="font-display font-black text-3xl md:text-4xl text-gray-900 mb-6 break-words">
                   {siteContentText(siteContent, 'about_next_gen_heading_main')}
                   <span className="text-[#2E75B6] italic">{siteContentText(siteContent, 'about_next_gen_heading_accent')}</span>
                 </h3>
@@ -300,7 +300,7 @@ const About = () => {
                 <Award className="w-4 h-4" />
                 {siteContentText(siteContent, 'about_heritage_kicker')}
               </span>
-              <h2 className="font-display font-black text-3xl md:text-4xl lg:text-5xl text-gray-900 tracking-tight">
+              <h2 className="font-display font-black text-3xl md:text-4xl lg:text-5xl text-gray-900 tracking-tight break-words">
                 {siteContentText(siteContent, 'about_heritage_heading_main')}
                 <span className="text-[#2E75B6] italic">{siteContentText(siteContent, 'about_heritage_heading_accent')}</span>
               </h2>
@@ -321,8 +321,8 @@ const About = () => {
               </div>
 
               {aboutImage3CaptionDisplay ? (
-                <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-white rounded-full shadow-xl px-6 py-3 border border-gray-100 max-w-[min(100vw-2rem,42rem)]">
-                  <p className="font-display font-bold text-gray-900 text-center text-sm sm:text-base sm:whitespace-nowrap">
+                <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-white rounded-2xl sm:rounded-full shadow-xl px-6 py-3 border border-gray-100 max-w-[min(100vw-2rem,42rem)]">
+                  <p className="font-display font-bold text-gray-900 text-center text-sm sm:text-base break-words">
                     {aboutImage3CaptionDisplay}
                   </p>
                 </div>
@@ -347,7 +347,7 @@ const About = () => {
         <div className="absolute bottom-10 right-10 w-60 h-60 bg-[#2E75B6]/30 rounded-full blur-[80px]" />
 
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="font-display font-black text-4xl md:text-5xl lg:text-6xl text-white mb-6 leading-tight">
+          <h2 className="font-display font-black text-4xl md:text-5xl lg:text-6xl text-white mb-6 leading-tight break-words">
             {siteContentText(siteContent, 'about_cta_heading_prefix')}
             <span className="text-[#7EB8E8] italic">{siteContentText(siteContent, 'about_cta_heading_accent')}</span>
           </h2>

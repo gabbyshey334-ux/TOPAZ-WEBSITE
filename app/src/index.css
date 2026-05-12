@@ -54,6 +54,30 @@
   h1, h2, h3, h4, h5, h6 {
     @apply tracking-tight font-display;
   }
+
+  /* ─── Global overflow safety net ───────────────────────────────────────
+     `overflow-wrap: anywhere` lets the browser break long unbreakable
+     strings (URLs, emails, long names, admin-entered copy) at the last
+     resort instead of pushing them past their container. It only kicks
+     in when the line has no other breakable point, so normal prose still
+     wraps on spaces as usual. We scope this to user-visible text nodes
+     to avoid affecting input/select internals. */
+  h1, h2, h3, h4, h5, h6,
+  p, li, dd, dt, blockquote, figcaption,
+  span, a, button, label, summary {
+    overflow-wrap: anywhere;
+    word-break: normal;
+  }
+
+  /* Form controls keep their native single-line behavior */
+  input, select, textarea {
+    overflow-wrap: normal;
+  }
+
+  /* Flex/grid item that holds text shouldn't force its parent to grow */
+  .min-w-safe {
+    min-width: 0;
+  }
 }
 
 /* Premium Typography */
