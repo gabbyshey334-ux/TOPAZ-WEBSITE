@@ -35,6 +35,9 @@ const getAgeDivisionId = (age: number): string => {
 const CATEGORY_MAP: Record<string, string> = {
   ballet: 'fb9c9d73-f18d-4fdd-adde-5ae63e2b77af',
   'hip hop': '30509f90-d0e8-48b7-96dd-746b25bcb0f1',
+  jazz: 'f33b2718-1502-422d-b724-79f6054eb2f9',
+  'lyrical/contemporary': '3302f445-1e1f-4ca6-aec1-7d5c06e11a68',
+  acting: '8e4e3051-8e3b-4aac-b342-fc27dbe51a01',
   production: 'b01e1706-f917-4e4c-aada-dda2ae20d7e4',
   'student choreography': '01f04932-2667-4692-b2a7-a77ee0e5ae2a',
   tap: '211d5c0e-3356-43e2-8be0-4da157a8e72d',
@@ -47,6 +50,21 @@ const CATEGORY_MAP: Record<string, string> = {
   'variety e - hip hop with floor work & acrobatics': 'f0d36c14-a80a-4847-9f4f-04485b08c0e5',
   'variety f - ballroom': 'cac1bbaf-9a58-40ea-b93b-bfabf0f698b5',
   'variety g - line dancing': '99f91644-cafd-4628-bbc3-d5788e674012',
+};
+
+/**
+ * Scoring app `entries.ability_level` has a CHECK constraint that allows
+ * only the bare labels: 'Beginning' | 'Intermediate' | 'Advanced'. The
+ * website stores the long form ("ADVANCED (Starting the 5th year or more
+ * of training)"), so we collapse to the first word here.
+ */
+const normalizeAbilityLevel = (raw: unknown): 'Beginning' | 'Intermediate' | 'Advanced' => {
+  if (typeof raw !== 'string' || !raw.trim()) return 'Intermediate';
+  const lower = raw.toLowerCase().trim();
+  if (lower.startsWith('beginning')) return 'Beginning';
+  if (lower.startsWith('intermediate')) return 'Intermediate';
+  if (lower.startsWith('advanced')) return 'Advanced';
+  return 'Intermediate';
 };
 
 /**
@@ -195,6 +213,8 @@ Deno.serve(async (req: Request) => {
   const websiteCategory = categoryRaw.trim();
   let categoryId = getCategoryId(categoryRaw);
 
+  // Dynamic fallback: if static map misses, look up by name in scoring app
+  // so newly added categories sync without redeploying this function.
   if (!categoryId && websiteCategory) {
     const { data: cat } = await scoringClient
       .from('categories')
@@ -209,9 +229,8 @@ Deno.serve(async (req: Request) => {
 
   if (!categoryId) {
     const msg =
-      `No scoring category_id for website category "${websiteCategory}". ` +
-      `Add this category to the scoring app competition and re-sync. ` +
-      `Known unmapped: JAZZ, LYRICAL/CONTEMPORARY, ACTING.`;
+      'No scoring category for "' + websiteCategory + '". ' +
+      'Add it to the scoring app competition first.';
     await updateSyncStatus(websiteClient, registrationId, 'failed', null, msg);
     return new Response(JSON.stringify({ error: msg, category: categoryRaw }), {
       status: 422,
@@ -273,7 +292,7 @@ Deno.serve(async (req: Request) => {
     age_division_id: getAgeDivisionId(age),
     age,
     dance_type: categoryRaw,
-    ability_level: reg.ability_level || 'Intermediate',
+    ability_level: normalizeAbilityLevel(reg.ability_level),
     studio_name: reg.studio_name || '',
     teacher_name: reg.teacher_name || '',
     group_members: groupMembers.length > 0 ? groupMembers : null,

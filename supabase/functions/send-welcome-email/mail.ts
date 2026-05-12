@@ -11,13 +11,21 @@ export async function sendWelcomeViaProviders(
   const brevoKey = Deno.env.get('BREVO_API_KEY') ?? '';
   if (!brevoKey) {
     console.error('[send-welcome-email] BREVO_API_KEY not set');
-    return new Response(JSON.stringify({ error: 'Email service not configured' }), {
+    return new Response(JSON.stringify({ error: 'Email configuration missing' }), {
       status: 500,
       headers: RESPONSE_HEADERS,
     });
   }
 
-  const recipientEmail = to.trim();
+  const recipientEmail = (to ?? '').trim();
+  if (!recipientEmail || !recipientEmail.includes('@')) {
+    console.error('[send-welcome-email] Invalid recipient email:', recipientEmail);
+    return new Response(JSON.stringify({ error: 'Invalid recipient email' }), {
+      status: 400,
+      headers: RESPONSE_HEADERS,
+    });
+  }
+
   const subject = SUBJECT;
   const htmlContent = htmlBody;
 
@@ -37,10 +45,10 @@ export async function sendWelcomeViaProviders(
   });
 
   if (!res.ok) {
-    const errorBody = await res.text();
-    console.error('Brevo error:', res.status, errorBody);
+    const errText = await res.text();
+    console.error('Brevo failed:', res.status, errText);
     return new Response(
-      JSON.stringify({ error: 'Email delivery failed', detail: errorBody }),
+      JSON.stringify({ error: 'Email delivery failed', detail: errText }),
       { status: 500, headers: RESPONSE_HEADERS },
     );
   }

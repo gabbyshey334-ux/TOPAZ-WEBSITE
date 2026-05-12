@@ -113,13 +113,21 @@ Action needed: Contact ${customer_name} at ${customer_email} to arrange payment 
     const brevoKey = Deno.env.get('BREVO_API_KEY') ?? '';
     if (!brevoKey) {
       console.error('[send-order-notification] BREVO_API_KEY not set');
-      return new Response(JSON.stringify({ error: 'Email service not configured' }), {
+      return new Response(JSON.stringify({ error: 'Email configuration missing' }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    const recipientEmail = ADMIN_EMAIL;
+    const recipientEmail = (ADMIN_EMAIL ?? '').trim();
+    if (!recipientEmail || !recipientEmail.includes('@')) {
+      console.error('[send-order-notification] Invalid recipient email:', recipientEmail);
+      return new Response(
+        JSON.stringify({ error: 'Invalid recipient email' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      );
+    }
+
     const subject = `New Order from ${customer_name} — $${total_amount.toFixed(2)}`;
     const htmlContent = htmlBody;
 
@@ -139,15 +147,16 @@ Action needed: Contact ${customer_name} at ${customer_email} to arrange payment 
     });
 
     if (!res.ok) {
-      const errorBody = await res.text();
-      console.error('Brevo error:', res.status, errorBody);
+      const errText = await res.text();
+      console.error('Brevo failed:', res.status, errText);
       return new Response(
-        JSON.stringify({ error: 'Email delivery failed', detail: errorBody }),
+        JSON.stringify({ error: 'Email delivery failed', detail: errText }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
       );
     }
 
     return new Response(JSON.stringify({ success: true }), {
+      status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (err) {

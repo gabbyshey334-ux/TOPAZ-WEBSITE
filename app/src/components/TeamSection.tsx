@@ -89,18 +89,25 @@ const TeamSection = ({
           ) : null}
         </h2>
 
-        {/* PLACEHOLDER - Replace with real team photo */}
+        {/* Team / founder photo. Source comes from `site_content` (no
+            hardcoded URL). Uses object-contain inside a flexible-height
+            container so the full image — including faces — stays visible
+            at every breakpoint. The previous `aspect-[16/9] object-cover`
+            crop chopped the founder/VP off on wide desktop viewports and
+            made the result look like a horizontal banner strip. */}
         <div
           ref={imageRef}
-          className="relative overflow-hidden rounded-[3rem] border border-white/10 shadow-2xl mb-24 max-w-5xl mx-auto group"
+          className="relative overflow-hidden rounded-[3rem] border border-white/10 shadow-2xl mb-24 max-w-5xl mx-auto group bg-[#0a0a0a]"
         >
-          <img
-            src={teamImageSrc}
-            alt={teamImageAlt}
-            loading="lazy"
-            className="w-full aspect-[16/9] object-cover object-center transition-transform duration-[2s] group-hover:scale-110"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+          <div className="flex w-full items-center justify-center">
+            <img
+              src={teamImageSrc}
+              alt={teamImageAlt}
+              loading="lazy"
+              className="h-auto w-full max-h-[min(70vh,640px)] object-contain object-center transition-transform duration-[2s] group-hover:scale-105"
+            />
+          </div>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
         </div>
 
         <div

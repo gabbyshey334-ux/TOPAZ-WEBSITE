@@ -26,8 +26,17 @@ Deno.serve(async (req: Request) => {
   const brevoKey = Deno.env.get('BREVO_API_KEY') ?? '';
   if (!brevoKey) {
     console.error('[send-contact-notification] BREVO_API_KEY not set');
-    return new Response(JSON.stringify({ error: 'Email service not configured' }), {
+    return new Response(JSON.stringify({ error: 'Email configuration missing' }), {
       status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  const recipientEmail = (TO_EMAIL ?? '').trim();
+  if (!recipientEmail || !recipientEmail.includes('@')) {
+    console.error('[send-contact-notification] Invalid recipient email:', recipientEmail);
+    return new Response(JSON.stringify({ error: 'Invalid recipient email' }), {
+      status: 400,
       headers: { 'Content-Type': 'application/json' },
     });
   }
@@ -102,7 +111,6 @@ Deno.serve(async (req: Request) => {
     .filter(Boolean)
     .join('\n');
 
-  const recipientEmail = TO_EMAIL;
   const subject = 'New Contact Message — TOPAZ 2.0 Website';
   const htmlContent = html;
 
@@ -123,10 +131,10 @@ Deno.serve(async (req: Request) => {
   });
 
   if (!res.ok) {
-    const errorBody = await res.text();
-    console.error('Brevo error:', res.status, errorBody);
+    const errText = await res.text();
+    console.error('Brevo failed:', res.status, errText);
     return new Response(
-      JSON.stringify({ error: 'Email delivery failed', detail: errorBody }),
+      JSON.stringify({ error: 'Email delivery failed', detail: errText }),
       { status: 500, headers: { 'Content-Type': 'application/json' } },
     );
   }

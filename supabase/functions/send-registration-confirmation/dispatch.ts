@@ -130,6 +130,12 @@ export async function handleRegistrationRequest(req: Request): Promise<Response>
     });
   }
 
+  if (typeof to !== 'string' || !to.trim() || !to.includes('@')) {
+    const detail = `Invalid recipient email: "${to}"`;
+    if (registrationId) await markEmailFailed(registrationId, detail);
+    return new Response(JSON.stringify({ error: detail }), { status: 400, headers: jsonHdr });
+  }
+
   const paymentTypeResolved = payment_type === 'group_full' ? 'group_full' : 'individual';
   const paymentTypeLabel =
     paymentTypeResolved === 'group_full'

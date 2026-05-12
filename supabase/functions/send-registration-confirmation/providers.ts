@@ -9,10 +9,14 @@ export async function sendViaBrevo(
 ): Promise<{ ok: true; id: string } | { ok: false; detail: string }> {
   const brevoKey = Deno.env.get('BREVO_API_KEY') ?? '';
   if (!brevoKey) {
+    console.error('[send-registration-confirmation] BREVO_API_KEY not set');
     return { ok: false, detail: 'BREVO_API_KEY not set' };
   }
 
-  const recipientEmail = to.trim();
+  const recipientEmail = (to ?? '').trim();
+  if (!recipientEmail || !recipientEmail.includes('@')) {
+    return { ok: false, detail: `Invalid recipient email: "${to}"` };
+  }
   const subject = `TOPAZ 2.0 — Registration Confirmed: ${contestant_name}`;
   const htmlContent = htmlBody;
 

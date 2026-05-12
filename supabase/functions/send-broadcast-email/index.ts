@@ -111,7 +111,10 @@ async function sendOne(
   if (!brevoKey) {
     return { ok: false, error: 'BREVO_API_KEY not set' };
   }
-  const recipientEmail = to;
+  const recipientEmail = (to ?? '').trim();
+  if (!recipientEmail || !recipientEmail.includes('@')) {
+    return { ok: false, error: `Invalid recipient email: "${to}"` };
+  }
   const htmlContent = html;
 
   const res = await fetch('https://api.brevo.com/v3/smtp/email', {
@@ -130,9 +133,9 @@ async function sendOne(
   });
 
   if (!res.ok) {
-    const errorBody = await res.text();
-    console.error('Brevo error:', res.status, errorBody);
-    return { ok: false, error: errorBody };
+    const errText = await res.text();
+    console.error('Brevo failed:', res.status, errText);
+    return { ok: false, error: errText };
   }
   return { ok: true };
 }

@@ -155,14 +155,36 @@ function perPersonRate(groupSize: string): number {
   return 60;
 }
 
-/** Whether `age` (whole years on competition day) fits the selected division label. */
-function validateAgeDivision(selectedDivision: string, age: number): boolean {
+/**
+ * Whether `age` (whole years on competition day) fits the selected
+ * division label. Supports both the form's display labels (en-dash and
+ * hyphen variants like "3–7" / "3-7") and the named divisions used by
+ * the scoring app (Junior Primary, Junior Advanced, Senior Youth,
+ * Senior Adult).
+ *
+ * Returns `true` when no age has been entered yet so the form does not
+ * surface an error before the dancer fills in their date of birth.
+ */
+function validateAgeDivision(selectedDivision: string, age: number | null): boolean {
+  if (age == null || !Number.isFinite(age) || age <= 0) return true;
   const d = selectedDivision;
-  if (d.includes('3–7') || d.includes('3-7')) return age >= 3 && age <= 7;
-  if (d.includes('8–12') || d.includes('8-12')) return age >= 8 && age <= 12;
-  if (d.includes('13–18') || d.includes('13-18')) return age >= 13 && age <= 18;
-  if (d.includes('19+') || (d.includes('19') && d.toLowerCase().includes('up'))) return age >= 19;
-  return false;
+  if (d.includes('3–7') || d.includes('3-7') || d.includes('Junior Primary')) {
+    return age >= 3 && age <= 7;
+  }
+  if (d.includes('8–12') || d.includes('8-12') || d.includes('Junior Advanced')) {
+    return age >= 8 && age <= 12;
+  }
+  if (d.includes('13–18') || d.includes('13-18') || d.includes('Senior Youth')) {
+    return age >= 13 && age <= 18;
+  }
+  if (
+    d.includes('19+') ||
+    d.includes('Senior Adult') ||
+    (d.includes('19') && d.toLowerCase().includes('up'))
+  ) {
+    return age >= 19;
+  }
+  return true;
 }
 
 function emptyParticipant(): RegistrationParticipant {
@@ -354,8 +376,9 @@ export default function CompetitionRegistrationForm() {
   const ageDivisionError = useMemo(() => {
     if (!ageDivision || !dateOfBirth) return null;
     const age = ageAsOf(dateOfBirth, COMPETITION_DATE);
+    if (!Number.isFinite(age) || age <= 0) return null;
     if (validateAgeDivision(ageDivision, age)) return null;
-    return `Your age (${age}) doesn't match the selected division. Please select the correct age group.`;
+    return `Your age (${age}) doesn't match this division. Please select the correct age group.`;
   }, [ageDivision, dateOfBirth]);
 
   function syncParticipantsToGroupSize(gs: string) {
@@ -397,7 +420,7 @@ export default function CompetitionRegistrationForm() {
       if (dateOfBirth) {
         const stepAge = ageAsOf(dateOfBirth, COMPETITION_DATE);
         if (!validateAgeDivision(ageDivision, stepAge)) {
-          return `Your age (${stepAge}) doesn't match the selected division. Please select the correct age group.`;
+          return `Your age (${stepAge}) doesn't match this division. Please select the correct age group.`;
         }
       }
       if (!abilityLevel) return 'Select an ability level.';
