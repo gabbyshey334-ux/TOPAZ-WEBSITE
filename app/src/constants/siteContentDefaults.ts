@@ -100,7 +100,7 @@ export const REGISTRATION_PAGE_FAQ_DEFAULTS: SiteFaqItem[] = [
   },
   {
     question: 'What payment methods are accepted?',
-    answer: 'We accept cash, check, credit card, and PayPal. Checks should be made payable to Topaz 2.0 LLC.',
+    answer: 'We accept cash, check, credit card, and Zelle. Checks should be made payable to Topaz 2.0 LLC.',
   },
   {
     question: 'Can I make changes after submitting?',
