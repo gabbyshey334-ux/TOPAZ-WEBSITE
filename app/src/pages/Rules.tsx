@@ -714,7 +714,7 @@ const Rules = () => {
                 </div>
                 <h3 className="font-display font-black text-2xl text-[#0a0a0a] mb-3">Trophies & Ribbons</h3>
                 <p className="text-gray-600 leading-relaxed text-[15px]">
-                  Winning <strong>solos</strong> receive a trophy. <strong>Duos/Trios</strong> receive 1 trophy + ribbons for all. <strong>Groups</strong> receive 1 trophy + ribbons for all. <strong>Production:</strong> 1st place receives a trophy.
+                  Winning <strong>solos</strong> receive a trophy. <strong>Duos/Trios</strong> receive 1 trophy + ribbons for all. <strong>Groups</strong> receive 1 trophy + ribbons for all. <strong>Production:</strong> 1st place receives a trophy and ribbons for all.
                 </p>
               </div>
             </div>

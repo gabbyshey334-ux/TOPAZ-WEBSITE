@@ -71,7 +71,7 @@ export const CONTACT_PAGE_FAQ_DEFAULTS: SiteFaqItem[] = [
       'Bring your costume, shoes, music backup (USB drive), registration confirmation, water, snacks, and any necessary makeup or hair supplies. Arrive at least 1 hour before your scheduled performance time.',
   },
   {
-    question: 'How is the scoring system work?',
+    question: 'How does the scoring system work?',
     answer:
       'Performances are judged on four criteria: Technique (25 points), Creativity & Choreography (25 points), Presentation (25 points), and Appearance & Costume (25 points), for a total of 100 points. Decimals are allowed for precise scoring.',
   },
@@ -299,11 +299,11 @@ export const SITE_CONTENT_TEXT_DEFAULTS = {
   schedule_hero_heading_prefix: 'Competition ',
   schedule_hero_heading_accent: 'Events',
   schedule_upcoming_heading: 'Upcoming Competitions',
-  schedule_upcoming_subtitle: "Don't miss your chance to shine on the TOPAZ stage.",
+  schedule_upcoming_subtitle: "Don't miss your chance to shine on the TOPAZ 2.0 stage.",
   schedule_cta_heading_prefix: 'Ready to ',
   schedule_cta_heading_accent: 'Compete?',
   schedule_cta_body:
-    'Register early to secure your spot and take advantage of early bird pricing. Join the TOPAZ family today.',
+    'Register early to secure your spot. Join the TOPAZ 2.0 family today.',
   schedule_cta_rules_btn: 'View Competition Rules',
   schedule_cta_top_btn: 'Back to Top',
   schedule_fallback_event_name: 'The Return of TOPAZ 2.0',
