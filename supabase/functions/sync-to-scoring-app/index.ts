@@ -53,21 +53,6 @@ const CATEGORY_MAP: Record<string, string> = {
 };
 
 /**
- * Scoring app `entries.ability_level` has a CHECK constraint that allows
- * only the bare labels: 'Beginning' | 'Intermediate' | 'Advanced'. The
- * website stores the long form ("ADVANCED (Starting the 5th year or more
- * of training)"), so we collapse to the first word here.
- */
-const normalizeAbilityLevel = (raw: unknown): 'Beginning' | 'Intermediate' | 'Advanced' => {
-  if (typeof raw !== 'string' || !raw.trim()) return 'Intermediate';
-  const lower = raw.toLowerCase().trim();
-  if (lower.startsWith('beginning')) return 'Beginning';
-  if (lower.startsWith('intermediate')) return 'Intermediate';
-  if (lower.startsWith('advanced')) return 'Advanced';
-  return 'Intermediate';
-};
-
-/**
  * Lowercased website `reg.category` value → key in CATEGORY_MAP.
  * (Website stores labels like `TAP`, `VARIETY B (Dance with Prop)`.)
  */
@@ -98,13 +83,33 @@ const getCategoryId = (category: string): string | null => {
   return CATEGORY_MAP[mapKey] ?? null;
 };
 
-const getDivisionType = (groupSize: string): string => {
+/**
+ * Scoring app `entries.ability_level` has a CHECK constraint that allows
+ * ONLY the bare labels: 'Beginning' | 'Intermediate' | 'Advanced'. The
+ * website registration form stores the long descriptive form like
+ * "BEGINNING (Less than 2 years training)" or
+ * "ADVANCED (Starting the 5th year or more of training)". Sending the
+ * raw value triggers the `entries_ability_level_check` constraint and
+ * the sync fails. Always pass values through this normalizer before
+ * inserting into either `performances.ability_level` or
+ * `entries.ability_level`.
+ */
+const normalizeAbilityLevel = (raw: unknown): 'Beginning' | 'Intermediate' | 'Advanced' => {
+  if (typeof raw !== 'string' || !raw.trim()) return 'Intermediate';
+  const lower = raw.toLowerCase().trim();
+  if (lower.startsWith('beginning')) return 'Beginning';
+  if (lower.startsWith('intermediate')) return 'Intermediate';
+  if (lower.startsWith('advanced')) return 'Advanced';
+  return 'Intermediate';
+};
+
+/** Scoring DB only uses Solo | Duo | Trio | Production for division_type. */
+const getDivisionType = (groupSize: string): 'Solo' | 'Duo' | 'Trio' | 'Production' => {
   const s = groupSize?.toLowerCase() || '';
   if (s.includes('duo')) return 'Duo';
   if (s.includes('trio')) return 'Trio';
-  if (s.includes('small')) return 'Small Group';
-  if (s.includes('large')) return 'Large Group';
   if (s.includes('production')) return 'Production';
+  if (s.includes('small') || s.includes('large')) return 'Production';
   return 'Solo';
 };
 
@@ -214,7 +219,7 @@ Deno.serve(async (req: Request) => {
   let categoryId = getCategoryId(categoryRaw);
 
   // Dynamic fallback: if static map misses, look up by name in scoring app
-  // so newly added categories sync without redeploying this function.
+  // so newly added scoring-app categories sync without redeploying.
   if (!categoryId && websiteCategory) {
     const { data: cat } = await scoringClient
       .from('categories')
@@ -223,13 +228,13 @@ Deno.serve(async (req: Request) => {
       .ilike('name', websiteCategory)
       .maybeSingle();
     if (cat?.id) {
-      categoryId = cat.id;
+      categoryId = cat.id as string;
     }
   }
 
   if (!categoryId) {
     const msg =
-      'No scoring category for "' + websiteCategory + '". ' +
+      `No scoring category for "${websiteCategory}". ` +
       'Add it to the scoring app competition first.';
     await updateSyncStatus(websiteClient, registrationId, 'failed', null, msg);
     return new Response(JSON.stringify({ error: msg, category: categoryRaw }), {
@@ -242,6 +247,7 @@ Deno.serve(async (req: Request) => {
   const groupSize = typeof reg.group_size === 'string' ? reg.group_size : 'Solo';
   const groupMembers = buildGroupMembers(reg as Record<string, unknown>);
   const divisionType = getDivisionType(groupSize);
+  const abilityLevel = normalizeAbilityLevel(reg.ability_level);
 
   const competitorName =
     divisionType === 'Solo'
@@ -258,6 +264,7 @@ Deno.serve(async (req: Request) => {
     return new Response(JSON.stringify({ error: msg }), { status: 422, headers: JSON_HEADERS });
   }
 
+  // If a row for this registration already exists, treat as success (idempotent).
   const { data: existing } = await scoringClient
     .from('entries')
     .select('id')
@@ -284,6 +291,70 @@ Deno.serve(async (req: Request) => {
 
   const nextEntryNumber = (maxEntry?.entry_number ?? 0) + 1;
 
+  // Step 1: create the parent `performances` row. The scoring app UI
+  // joins entries → performances, so every entry must point at one.
+  const perfPayload = {
+    competition_id: competitionId,
+    entry_number: nextEntryNumber,
+    routine_name: null,
+    competitor_name: competitorName,
+    category_id: categoryId,
+    age_division_id: getAgeDivisionId(age),
+    age,
+    dance_type: categoryRaw,
+    ability_level: abilityLevel,
+    studio_name: reg.studio_name || '',
+    teacher_name: reg.teacher_name || '',
+    group_members: groupMembers.length > 0 ? groupMembers : null,
+    division_type: divisionType,
+    is_medal_program: true,
+  };
+
+  const { data: perfRow, error: perfErr } = await scoringClient
+    .from('performances')
+    .insert(perfPayload)
+    .select('id')
+    .single();
+
+  if (perfErr || !perfRow?.id) {
+    const msg = perfErr?.message ?? 'Failed to create performance row';
+    await updateSyncStatus(websiteClient, registrationId, 'failed', null, msg);
+    return new Response(JSON.stringify({ error: msg, perfPayload }), {
+      status: 500,
+      headers: JSON_HEADERS,
+    });
+  }
+
+  const performanceId = perfRow.id as string;
+
+  // Step 2: insert participant rows. Always at least one (the soloist).
+  const participantRows: { performance_id: string; display_name: string; age: number | null; sort_order: number }[] = [];
+  if (groupMembers.length > 0) {
+    groupMembers.forEach((name, idx) => {
+      const n = typeof name === 'string' ? name.trim() : '';
+      if (n) participantRows.push({ performance_id: performanceId, display_name: n, age: null, sort_order: idx });
+    });
+  }
+  if (participantRows.length === 0) {
+    participantRows.push({
+      performance_id: performanceId,
+      display_name: competitorName,
+      age: age || null,
+      sort_order: 0,
+    });
+  }
+
+  const { error: partErr } = await scoringClient.from('performance_participants').insert(participantRows);
+  if (partErr) {
+    await scoringClient.from('performances').delete().eq('id', performanceId);
+    const msg = partErr.message;
+    await updateSyncStatus(websiteClient, registrationId, 'failed', null, msg);
+    return new Response(JSON.stringify({ error: msg }), { status: 500, headers: JSON_HEADERS });
+  }
+
+  // Step 3: insert the entries row, normalized ability_level + the
+  // performance_id we just created. This is the row whose constraint
+  // was being violated before normalizeAbilityLevel was introduced.
   const entryPayload = {
     competition_id: competitionId,
     entry_number: nextEntryNumber,
@@ -292,7 +363,7 @@ Deno.serve(async (req: Request) => {
     age_division_id: getAgeDivisionId(age),
     age,
     dance_type: categoryRaw,
-    ability_level: normalizeAbilityLevel(reg.ability_level),
+    ability_level: abilityLevel,
     studio_name: reg.studio_name || '',
     teacher_name: reg.teacher_name || '',
     group_members: groupMembers.length > 0 ? groupMembers : null,
@@ -301,6 +372,7 @@ Deno.serve(async (req: Request) => {
     medal_points: 0,
     current_medal_level: 'None',
     website_registration_id: reg.id,
+    performance_id: performanceId,
   };
 
   console.log('[sync-to-scoring-app] entryPayload:', JSON.stringify(entryPayload));
@@ -323,6 +395,8 @@ Deno.serve(async (req: Request) => {
     const msg = e instanceof Error && e.name === 'AbortError'
       ? 'Scoring app connection timed out after 10 seconds — please retry.'
       : `Unexpected error: ${String(e)}`;
+    await scoringClient.from('performance_participants').delete().eq('performance_id', performanceId);
+    await scoringClient.from('performances').delete().eq('id', performanceId);
     await updateSyncStatus(websiteClient, registrationId, 'failed', null, msg);
     return new Response(JSON.stringify({ error: msg }), { status: 500, headers: JSON_HEADERS });
   } finally {
@@ -331,6 +405,8 @@ Deno.serve(async (req: Request) => {
 
   if (insertErr || !insertData) {
     const msg = insertErr?.message ?? 'Insert returned no data';
+    await scoringClient.from('performance_participants').delete().eq('performance_id', performanceId);
+    await scoringClient.from('performances').delete().eq('id', performanceId);
     await updateSyncStatus(websiteClient, registrationId, 'failed', null, msg);
     return new Response(JSON.stringify({ error: msg, entryPayload }), {
       status: 500,
