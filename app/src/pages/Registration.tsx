@@ -308,9 +308,9 @@ const Registration = () => {
                 <ul className="space-y-6">
                   {[
                     'Completed online registration form or PDF',
-                    'Performance music (MP3 upload or USB)',
-                    'Payment (Zelle, check, or money order)',
-                    'Parent or teacher signature (for minors)'
+                    'Performance music: MP3 upload, or USB (due first thing in the morning on competition day)',
+                    'Payment (check, money order, Zelle, or cash)',
+                    'Parent or teacher signature (for minors)',
                   ].map((item, i) => (
                     <li key={i} className="flex items-start gap-4">
                       <div className="w-8 h-8 rounded-full bg-green-50 flex items-center justify-center flex-shrink-0 mt-0.5 text-green-500">

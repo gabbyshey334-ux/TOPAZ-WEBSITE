@@ -1,10 +1,24 @@
 import { useState } from 'react';
-import { X, Minus, Plus, ShoppingBag, Trash2, Loader2, ArrowLeft, CheckCircle2, CreditCard } from 'lucide-react';
+import {
+  X,
+  Minus,
+  Plus,
+  ShoppingBag,
+  Trash2,
+  Loader2,
+  ArrowLeft,
+  CheckCircle2,
+  CreditCard,
+  Wallet,
+  Banknote,
+  Landmark,
+} from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useCart } from '@/contexts/CartContext';
 import { supabase } from '@/lib/supabase';
 
@@ -16,19 +30,30 @@ type CheckoutForm = {
   notes: string;
 };
 
+/** Matches registration / merch policy — keep in sync with confirmation emails. */
+const ZELLE_PAYEE = 'topaz2.0@yahoo.com';
+const CHECK_MAILING_LINE = 'TOPAZ 2.0, PO BOX 131, BANKS OR 97106';
+
+type ShopPayMethod = 'card' | 'zelle' | 'cash' | 'check';
+
 export default function CartDrawer() {
-  const { items, removeItem, updateQuantity, total, count, isOpen, closeCart } = useCart();
+  const { items, removeItem, updateQuantity, total, count, isOpen, closeCart, clearCart } = useCart();
   const [step, setStep] = useState<CheckoutStep>('cart');
   const [form, setForm] = useState<CheckoutForm>({ name: '', email: '', notes: '' });
   const [errors, setErrors] = useState<Partial<CheckoutForm>>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
-  const [orderId] = useState('');
+  const [payMethod, setPayMethod] = useState<ShopPayMethod>('zelle');
+  const [createdOrderId, setCreatedOrderId] = useState('');
+  const [placedOrderTotal, setPlacedOrderTotal] = useState(0);
 
   const handleClose = () => {
     if (step === 'success') {
       setStep('cart');
       setForm({ name: '', email: '', notes: '' });
+      setCreatedOrderId('');
+      setPlacedOrderTotal(0);
+      setPayMethod('zelle');
     }
     closeCart();
   };
@@ -80,6 +105,82 @@ export default function CartDrawer() {
     }
     // Note: setSubmitting(false) is NOT called on success because the page
     // is redirecting — keeping the spinner shows until the navigation happens.
+  };
+
+  const offlineMethodLabel = (m: Exclude<ShopPayMethod, 'card'>) => {
+    if (m === 'zelle') return 'Zelle';
+    if (m === 'cash') return 'Cash (pickup or at event)';
+    return 'Check by mail';
+  };
+
+  const handlePlaceOfflineOrder = async () => {
+    if (!validate()) return;
+    if (payMethod === 'card') return;
+
+    setSubmitting(true);
+    setSubmitError('');
+
+    const orderItems = items.map((i) => ({
+      product_id: i.productId,
+      product_name: i.productName,
+      size: i.size,
+      quantity: i.quantity,
+      unit_price: i.unitPrice,
+    }));
+
+    const methodLine = `Customer selected payment: ${offlineMethodLabel(payMethod)}`;
+    const notesCombined = [methodLine, form.notes.trim()].filter(Boolean).join('\n\n');
+
+    try {
+      const { data: order, error: insertErr } = await supabase
+        .from('orders')
+        .insert({
+          customer_name: form.name.trim(),
+          customer_email: form.email.trim().toLowerCase(),
+          items: orderItems,
+          total_amount: total,
+          status: 'pending',
+          payment_reference: `offline:${crypto.randomUUID()}`,
+          notes: notesCombined || null,
+        })
+        .select('id')
+        .single();
+
+      if (insertErr || !order?.id) {
+        throw new Error(insertErr?.message ?? 'Could not save your order');
+      }
+
+      const { error: notifyErr } = await supabase.functions.invoke('send-order-notification', {
+        body: {
+          order_id: order.id,
+          customer_name: form.name.trim(),
+          customer_email: form.email.trim().toLowerCase(),
+          items: orderItems,
+          total_amount: total,
+          notes: notesCombined || undefined,
+        },
+      });
+      if (notifyErr) {
+        console.warn('[CartDrawer] send-order-notification failed (order was saved):', notifyErr);
+      }
+
+      setPlacedOrderTotal(total);
+      clearCart();
+      setCreatedOrderId(order.id);
+      setStep('success');
+    } catch (err) {
+      console.error('[CartDrawer] Offline checkout error:', err);
+      setSubmitError(
+        'We could not place your order. Please try again or email topaz2.0@yahoo.com with what you would like to order.'
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleCheckoutSubmit = () => {
+    if (payMethod === 'card') void handlePayWithCard();
+    else void handlePlaceOfflineOrder();
   };
 
   return (
@@ -225,7 +326,10 @@ export default function CartDrawer() {
             <div className="flex-1 overflow-y-auto px-5 py-4">
               <button
                 type="button"
-                onClick={() => setStep('cart')}
+                onClick={() => {
+                  setStep('cart');
+                  setSubmitError('');
+                }}
                 className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 mb-5 transition-colors"
               >
                 <ArrowLeft className="w-4 h-4" /> Back to cart
@@ -246,13 +350,92 @@ export default function CartDrawer() {
                 </div>
               </div>
 
-              {/* Stripe payment info */}
-              <div className="flex items-start gap-3 bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 mb-6">
-                <CreditCard className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
-                <p className="text-sm text-blue-800">
-                  You'll be securely redirected to Stripe to complete payment. Your card details never touch this site.
-                </p>
-              </div>
+              <h3 className="text-sm font-bold text-gray-800 mb-3">How would you like to pay?</h3>
+              <RadioGroup
+                value={payMethod}
+                onValueChange={(v) => {
+                  setPayMethod(v as ShopPayMethod);
+                  setSubmitError('');
+                }}
+                className="space-y-2.5 mb-5"
+              >
+                <label
+                  htmlFor="pay-zelle"
+                  className={`flex cursor-pointer items-start gap-3 rounded-xl border p-3 transition-colors ${payMethod === 'zelle' ? 'border-[#2E75B6] bg-blue-50/60' : 'border-gray-200 hover:border-gray-300'}`}
+                >
+                  <RadioGroupItem value="zelle" id="pay-zelle" className="mt-0.5" />
+                  <span className="min-w-0 flex-1">
+                    <span className="flex items-center gap-2 text-sm font-bold text-gray-900">
+                      <Wallet className="h-4 w-4 shrink-0 text-[#2E75B6]" aria-hidden />
+                      Zelle
+                    </span>
+                    <span className="mt-1 block text-xs leading-snug text-gray-500">
+                      Pay to <strong className="text-gray-800">{ZELLE_PAYEE}</strong>. After you place the order, use your order number in the memo.
+                    </span>
+                  </span>
+                </label>
+                <label
+                  htmlFor="pay-cash"
+                  className={`flex cursor-pointer items-start gap-3 rounded-xl border p-3 transition-colors ${payMethod === 'cash' ? 'border-[#2E75B6] bg-blue-50/60' : 'border-gray-200 hover:border-gray-300'}`}
+                >
+                  <RadioGroupItem value="cash" id="pay-cash" className="mt-0.5" />
+                  <span className="min-w-0 flex-1">
+                    <span className="flex items-center gap-2 text-sm font-bold text-gray-900">
+                      <Banknote className="h-4 w-4 shrink-0 text-[#2E75B6]" aria-hidden />
+                      Cash
+                    </span>
+                    <span className="mt-1 block text-xs leading-snug text-gray-500">
+                      Pay when you pick up your merch or at the event. Your order is held once you submit it.
+                    </span>
+                  </span>
+                </label>
+                <label
+                  htmlFor="pay-check"
+                  className={`flex cursor-pointer items-start gap-3 rounded-xl border p-3 transition-colors ${payMethod === 'check' ? 'border-[#2E75B6] bg-blue-50/60' : 'border-gray-200 hover:border-gray-300'}`}
+                >
+                  <RadioGroupItem value="check" id="pay-check" className="mt-0.5" />
+                  <span className="min-w-0 flex-1">
+                    <span className="flex items-center gap-2 text-sm font-bold text-gray-900">
+                      <Landmark className="h-4 w-4 shrink-0 text-[#2E75B6]" aria-hidden />
+                      Check by mail
+                    </span>
+                    <span className="mt-1 block text-xs leading-snug text-gray-500">
+                      Mail checks payable to <strong className="text-gray-800">Topaz 2.0 LLC</strong> to {CHECK_MAILING_LINE}.
+                    </span>
+                  </span>
+                </label>
+                <label
+                  htmlFor="pay-card"
+                  className={`flex cursor-pointer items-start gap-3 rounded-xl border p-3 transition-colors ${payMethod === 'card' ? 'border-[#2E75B6] bg-blue-50/60' : 'border-gray-200 hover:border-gray-300'}`}
+                >
+                  <RadioGroupItem value="card" id="pay-card" className="mt-0.5" />
+                  <span className="min-w-0 flex-1">
+                    <span className="flex items-center gap-2 text-sm font-bold text-gray-900">
+                      <CreditCard className="h-4 w-4 shrink-0 text-[#2E75B6]" aria-hidden />
+                      Credit or debit card
+                    </span>
+                    <span className="mt-1 block text-xs leading-snug text-gray-500">
+                      Secure checkout with Stripe — you will leave this page to pay, then return here when you are done.
+                    </span>
+                  </span>
+                </label>
+              </RadioGroup>
+
+              {payMethod === 'card' ? (
+                <div className="flex items-start gap-3 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 mb-6">
+                  <CreditCard className="mt-0.5 h-4 w-4 shrink-0 text-blue-600" aria-hidden />
+                  <p className="text-sm text-blue-900">
+                    Your card details are processed by Stripe and never stored on our servers.
+                  </p>
+                </div>
+              ) : (
+                <div className="mb-6 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-amber-700" aria-hidden />
+                  <p className="text-sm text-amber-950">
+                    Your order will be saved as <strong>pending</strong> until we receive payment. We will follow up at your email if we need anything else.
+                  </p>
+                </div>
+              )}
 
               <div className="space-y-4">
                 <div className="space-y-1.5">
@@ -282,7 +465,11 @@ export default function CartDrawer() {
                     className={`border-gray-300 ${errors.email ? 'border-red-400' : ''}`}
                   />
                   {errors.email && <p className="text-xs text-red-500">{errors.email}</p>}
-                  <p className="text-xs text-gray-400">Your order confirmation will be sent here.</p>
+                  <p className="text-xs text-gray-400">
+                    {payMethod === 'card'
+                      ? 'Stripe will send your receipt to this address after payment.'
+                      : 'We may contact you here about pickup, shipping, or your payment.'}
+                  </p>
                 </div>
 
                 <div className="space-y-1.5">
@@ -293,7 +480,7 @@ export default function CartDrawer() {
                     id="checkout-notes"
                     value={form.notes}
                     onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
-                    placeholder="Any special requests or questions…"
+                    placeholder="Pickup preference, shipping address, sizing questions…"
                     rows={3}
                     className="border-gray-300 resize-none"
                   />
@@ -309,40 +496,81 @@ export default function CartDrawer() {
 
             <div className="px-5 py-4 border-t border-gray-100 flex-shrink-0">
               <Button
-                onClick={handlePayWithCard}
+                onClick={handleCheckoutSubmit}
                 disabled={submitting}
                 className="w-full bg-[#2E75B6] hover:bg-[#1F4E78] text-white font-bold py-3 text-base"
               >
                 {submitting ? (
-                  <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> Redirecting to payment…</>
+                  <>
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    {payMethod === 'card' ? 'Redirecting to payment…' : 'Placing your order…'}
+                  </>
+                ) : payMethod === 'card' ? (
+                  <>
+                    <CreditCard className="mr-2 h-5 w-5" />
+                    Pay with card · ${total.toFixed(2)}
+                  </>
                 ) : (
-                  <><CreditCard className="w-5 h-5 mr-2" />Pay with Card · ${total.toFixed(2)}</>
+                  <>
+                    <CheckCircle2 className="mr-2 h-5 w-5" />
+                    Place order · ${total.toFixed(2)}
+                  </>
                 )}
               </Button>
-              <p className="text-center text-xs text-gray-400 mt-2">Secured by Stripe</p>
+              {payMethod === 'card' ? (
+                <p className="mt-2 text-center text-xs text-gray-400">Secured by Stripe</p>
+              ) : (
+                <p className="mt-2 text-center text-xs text-gray-400">
+                  Zelle, cash, and check orders stay pending until payment is received.
+                </p>
+              )}
             </div>
           </>
         )}
 
-        {/* Success Step — shown as fallback when returning from Stripe via /shop?payment=success */}
+        {/* Success: Stripe return banner on Shop is primary; this step is used for offline checkout. */}
         {step === 'success' && (
-          <div className="flex-1 flex flex-col items-center justify-center text-center px-8 py-12">
-            <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mb-5">
-              <CheckCircle2 className="w-10 h-10 text-emerald-600" />
+          <div className="flex flex-1 flex-col items-center justify-center px-8 py-12 text-center">
+            <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-amber-100">
+              <CheckCircle2 className="h-10 w-10 text-amber-600" />
             </div>
-            <h3 className="text-2xl font-black text-gray-900 mb-2">Payment Successful!</h3>
-            {orderId && (
-              <p className="text-xs text-gray-400 font-mono mb-4">
-                Order #{orderId.slice(0, 8).toUpperCase()}
+            <h3 className="mb-2 text-2xl font-black text-gray-900">Order received</h3>
+            {createdOrderId && (
+              <p className="mb-4 font-mono text-xs text-gray-500">
+                Order #{createdOrderId.slice(0, 8).toUpperCase()}
               </p>
             )}
-            <p className="text-gray-600 mb-2 leading-relaxed">
-              Your order has been confirmed and paid.
-            </p>
-            <p className="text-gray-600 leading-relaxed">
-              A confirmation will be sent to{' '}
-              <strong className="text-[#2E75B6] break-all">{form.email}</strong>.
-            </p>
+            <div className="max-w-sm space-y-4 text-left text-sm leading-relaxed text-gray-700">
+              {payMethod === 'zelle' && (
+                <p>
+                  Complete your purchase by sending the amount below via <strong>Zelle</strong>, using your order number in the memo.
+                </p>
+              )}
+              {payMethod === 'cash' && (
+                <p>
+                  We recorded your order as <strong>cash on pickup</strong> (or at the event). Bring payment when you collect your items. If you prefer to pay sooner, you can use Zelle or mail a check instead — details below.
+                </p>
+              )}
+              {payMethod === 'check' && (
+                <p>
+                  Mail a check or money order for the amount below, payable to <strong>Topaz 2.0 LLC</strong>, to the address below. Include your name and order number on the memo line.
+                </p>
+              )}
+              <p>
+                <strong>Amount due:</strong>{' '}
+                <span className="text-[#2E75B6]">${placedOrderTotal.toFixed(2)}</span>
+              </p>
+              <p>
+                <strong>Zelle:</strong> Send to <strong className="break-all">{ZELLE_PAYEE}</strong>. In the memo, include your name and order #
+                {createdOrderId ? ` ${createdOrderId.slice(0, 8).toUpperCase()}` : ''}.
+              </p>
+              <p>
+                <strong>Check or money order:</strong> Payable to <strong>Topaz 2.0 LLC</strong>, mailed to {CHECK_MAILING_LINE}.
+              </p>
+              <p className="text-xs text-gray-500">
+                Questions? Email <span className="break-all">topaz2.0@yahoo.com</span> or call 971-299-4401.
+              </p>
+            </div>
             <Button
               onClick={handleClose}
               className="mt-8 bg-[#2E75B6] hover:bg-[#1F4E78] text-white"

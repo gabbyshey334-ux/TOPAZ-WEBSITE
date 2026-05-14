@@ -937,7 +937,7 @@ function OrdersSection() {
   };
 
   const totalRevenue = orders
-    .filter((o) => o.status !== 'cancelled')
+    .filter((o) => o.status === 'paid' || o.status === 'fulfilled')
     .reduce((sum, o) => sum + Number(o.total_amount), 0);
 
   return (
