@@ -27,8 +27,12 @@ type CheckoutStep = 'cart' | 'checkout' | 'success';
 type CheckoutForm = {
   name: string;
   email: string;
+  phone: string;
+  address: string;
   notes: string;
 };
+
+type CheckoutErrors = Partial<Record<keyof CheckoutForm, string>>;
 
 /** Matches registration / merch policy — keep in sync with confirmation emails. */
 const ZELLE_PAYEE = 'topaz2.0@yahoo.com';
@@ -39,8 +43,8 @@ type ShopPayMethod = 'card' | 'zelle' | 'cash' | 'check';
 export default function CartDrawer() {
   const { items, removeItem, updateQuantity, total, count, isOpen, closeCart, clearCart } = useCart();
   const [step, setStep] = useState<CheckoutStep>('cart');
-  const [form, setForm] = useState<CheckoutForm>({ name: '', email: '', notes: '' });
-  const [errors, setErrors] = useState<Partial<CheckoutForm>>({});
+  const [form, setForm] = useState<CheckoutForm>({ name: '', email: '', phone: '', address: '', notes: '' });
+  const [errors, setErrors] = useState<CheckoutErrors>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
   const [payMethod, setPayMethod] = useState<ShopPayMethod>('zelle');
@@ -50,7 +54,7 @@ export default function CartDrawer() {
   const handleClose = () => {
     if (step === 'success') {
       setStep('cart');
-      setForm({ name: '', email: '', notes: '' });
+      setForm({ name: '', email: '', phone: '', address: '', notes: '' });
       setCreatedOrderId('');
       setPlacedOrderTotal(0);
       setPayMethod('zelle');
@@ -59,10 +63,20 @@ export default function CartDrawer() {
   };
 
   const validate = (): boolean => {
-    const errs: Partial<CheckoutForm> = {};
+    const errs: CheckoutErrors = {};
     if (!form.name.trim()) errs.name = 'Your name is required.';
-    if (!form.email.trim()) errs.email = 'Your email is required.';
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errs.email = 'Enter a valid email.';
+    const addr = form.address.trim();
+    if (!addr || addr.length < 8) {
+      errs.address = 'Please enter your full street address or pickup location (at least a few words).';
+    }
+    const emailTrim = form.email.trim();
+    if (emailTrim && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTrim)) {
+      errs.email = 'Enter a valid email, or leave this field blank.';
+    }
+    const phoneTrim = form.phone.trim();
+    if (phoneTrim && phoneTrim.length < 7) {
+      errs.phone = 'If you enter a phone number, please include a complete number.';
+    }
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
@@ -84,9 +98,11 @@ export default function CartDrawer() {
       const { data, error } = await supabase.functions.invoke('create-checkout-session', {
         body: {
           items: cartItems,
-          customerEmail: form.email.trim().toLowerCase(),
+          customerEmail: form.email.trim().toLowerCase() || undefined,
           customerName: form.name.trim(),
           notes: form.notes.trim() || undefined,
+          shippingAddress: form.address.trim(),
+          phone: form.phone.trim() || undefined,
         },
       });
 
@@ -107,12 +123,6 @@ export default function CartDrawer() {
     // is redirecting — keeping the spinner shows until the navigation happens.
   };
 
-  const offlineMethodLabel = (m: Exclude<ShopPayMethod, 'card'>) => {
-    if (m === 'zelle') return 'Zelle';
-    if (m === 'cash') return 'Cash (pickup or at event)';
-    return 'Check by mail';
-  };
-
   const handlePlaceOfflineOrder = async () => {
     if (!validate()) return;
     if (payMethod === 'card') return;
@@ -120,58 +130,51 @@ export default function CartDrawer() {
     setSubmitting(true);
     setSubmitError('');
 
-    const orderItems = items.map((i) => ({
-      product_id: i.productId,
-      product_name: i.productName,
-      size: i.size,
-      quantity: i.quantity,
-      unit_price: i.unitPrice,
-    }));
-
-    const methodLine = `Customer selected payment: ${offlineMethodLabel(payMethod)}`;
-    const notesCombined = [methodLine, form.notes.trim()].filter(Boolean).join('\n\n');
-
     try {
-      const { data: order, error: insertErr } = await supabase
-        .from('orders')
-        .insert({
-          customer_name: form.name.trim(),
-          customer_email: form.email.trim().toLowerCase(),
-          items: orderItems,
-          total_amount: total,
-          status: 'pending',
-          payment_reference: `offline:${crypto.randomUUID()}`,
-          notes: notesCombined || null,
-        })
-        .select('id')
-        .single();
-
-      if (insertErr || !order?.id) {
-        throw new Error(insertErr?.message ?? 'Could not save your order');
-      }
-
-      const { error: notifyErr } = await supabase.functions.invoke('send-order-notification', {
+      const { data, error } = await supabase.functions.invoke('submit-pending-shop-order', {
         body: {
-          order_id: order.id,
+          items: items.map((i) => ({
+            product_id: i.productId,
+            product_name: i.productName,
+            size: i.size,
+            quantity: i.quantity,
+          })),
           customer_name: form.name.trim(),
-          customer_email: form.email.trim().toLowerCase(),
-          items: orderItems,
-          total_amount: total,
-          notes: notesCombined || undefined,
+          customer_email: form.email.trim().toLowerCase() || undefined,
+          phone: form.phone.trim() || undefined,
+          shipping_address: form.address.trim(),
+          notes: form.notes.trim() || undefined,
+          payment_method: payMethod,
         },
       });
-      if (notifyErr) {
-        console.warn('[CartDrawer] send-order-notification failed (order was saved):', notifyErr);
-      }
 
-      setPlacedOrderTotal(total);
+      if (error) throw new Error(error.message ?? 'Checkout failed');
+      const res = data as {
+        success?: boolean;
+        orderId?: string;
+        total_amount?: number;
+        emailDelivered?: boolean;
+        error?: string;
+      };
+      if (res?.error) throw new Error(res.error);
+      if (!res?.success || !res.orderId) throw new Error('Unexpected response from checkout');
+
+      setPlacedOrderTotal(typeof res.total_amount === 'number' ? res.total_amount : total);
       clearCart();
-      setCreatedOrderId(order.id);
+      setCreatedOrderId(res.orderId);
       setStep('success');
+      if (res.emailDelivered === false) {
+        console.warn(
+          '[CartDrawer] Order saved but admin email may not have sent. Order id:',
+          res.orderId,
+        );
+      }
     } catch (err) {
       console.error('[CartDrawer] Offline checkout error:', err);
       setSubmitError(
-        'We could not place your order. Please try again or email topaz2.0@yahoo.com with what you would like to order.'
+        err instanceof Error
+          ? err.message
+          : 'We could not place your order. Please try again or email topaz2.0@yahoo.com with what you would like to order.',
       );
     } finally {
       setSubmitting(false);
@@ -432,7 +435,7 @@ export default function CartDrawer() {
                 <div className="mb-6 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
                   <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-amber-700" aria-hidden />
                   <p className="text-sm text-amber-950">
-                    Your order will be saved as <strong>pending</strong> until we receive payment. We will follow up at your email if we need anything else.
+                    Your order will be saved as <strong>pending</strong> until we receive payment. We will follow up using the email or phone number you provided, if any.
                   </p>
                 </div>
               )}
@@ -440,7 +443,7 @@ export default function CartDrawer() {
               <div className="space-y-4">
                 <div className="space-y-1.5">
                   <Label htmlFor="checkout-name" className="text-gray-700 font-semibold text-sm">
-                    Your Name *
+                    Your name *
                   </Label>
                   <Input
                     id="checkout-name"
@@ -453,8 +456,23 @@ export default function CartDrawer() {
                 </div>
 
                 <div className="space-y-1.5">
+                  <Label htmlFor="checkout-address" className="text-gray-700 font-semibold text-sm">
+                    Shipping or pickup address *
+                  </Label>
+                  <Textarea
+                    id="checkout-address"
+                    value={form.address}
+                    onChange={(e) => { setForm((f) => ({ ...f, address: e.target.value })); setErrors((er) => ({ ...er, address: undefined })); }}
+                    placeholder="Street, city, state, ZIP — or where you will pick up (studio / event)."
+                    rows={3}
+                    className={`border-gray-300 resize-none ${errors.address ? 'border-red-400' : ''}`}
+                  />
+                  {errors.address && <p className="text-xs text-red-500">{errors.address}</p>}
+                </div>
+
+                <div className="space-y-1.5">
                   <Label htmlFor="checkout-email" className="text-gray-700 font-semibold text-sm">
-                    Email Address *
+                    Email <span className="font-normal text-gray-400">(optional)</span>
                   </Label>
                   <Input
                     id="checkout-email"
@@ -467,9 +485,24 @@ export default function CartDrawer() {
                   {errors.email && <p className="text-xs text-red-500">{errors.email}</p>}
                   <p className="text-xs text-gray-400">
                     {payMethod === 'card'
-                      ? 'Stripe will send your receipt to this address after payment.'
-                      : 'We may contact you here about pickup, shipping, or your payment.'}
+                      ? 'Recommended — Stripe can send a receipt. You can also enter email on the Stripe page if you leave this blank.'
+                      : 'We may use this for order updates. You can leave it blank if you prefer.'}
                   </p>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="checkout-phone" className="text-gray-700 font-semibold text-sm">
+                    Phone <span className="font-normal text-gray-400">(optional)</span>
+                  </Label>
+                  <Input
+                    id="checkout-phone"
+                    type="tel"
+                    value={form.phone}
+                    onChange={(e) => { setForm((f) => ({ ...f, phone: e.target.value })); setErrors((er) => ({ ...er, phone: undefined })); }}
+                    placeholder="971-555-0100"
+                    className={`border-gray-300 ${errors.phone ? 'border-red-400' : ''}`}
+                  />
+                  {errors.phone && <p className="text-xs text-red-500">{errors.phone}</p>}
                 </div>
 
                 <div className="space-y-1.5">
@@ -480,7 +513,7 @@ export default function CartDrawer() {
                     id="checkout-notes"
                     value={form.notes}
                     onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
-                    placeholder="Pickup preference, shipping address, sizing questions…"
+                    placeholder="Sizing questions, gift note, second pickup contact…"
                     rows={3}
                     className="border-gray-300 resize-none"
                   />

@@ -114,8 +114,11 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session, stripe:
   });
 
   const customerName = session.metadata?.customerName ?? session.customer_details?.name ?? 'Unknown';
-  const customerEmail = session.customer_email ?? session.customer_details?.email ?? '';
+  const emailRaw = (session.customer_email ?? session.customer_details?.email ?? '').trim();
+  const customerEmail = emailRaw || null;
   const notes = session.metadata?.notes ?? null;
+  const phone = (session.metadata?.phone ?? '').trim() || null;
+  const shippingAddress = (session.metadata?.shippingAddress ?? '').trim() || null;
   const totalAmount = (session.amount_total ?? 0) / 100;
 
   // ── Insert order into database ─────────────────────────────────────────────
@@ -124,6 +127,8 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session, stripe:
     .insert({
       customer_name: customerName,
       customer_email: customerEmail,
+      phone,
+      shipping_address: shippingAddress,
       items: orderItems,
       total_amount: totalAmount,
       status: 'paid',
@@ -146,7 +151,9 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session, stripe:
       body: {
         order_id: order.id,
         customer_name: customerName,
-        customer_email: customerEmail,
+        customer_email: customerEmail ?? undefined,
+        phone: phone ?? undefined,
+        shipping_address: shippingAddress ?? undefined,
         items: orderItems,
         total_amount: totalAmount,
         notes: notes ?? undefined,

@@ -1,6 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 
-const ADMIN_EMAIL = 'topaz2.0@yahoo.com';
+const ADMIN_EMAIL = "topaz2.0@yahoo.com";
 
 interface OrderItem {
   product_id: string;
@@ -13,38 +13,79 @@ interface OrderItem {
 interface OrderPayload {
   order_id: string;
   customer_name: string;
-  customer_email: string;
+  customer_email?: string | null;
+  phone?: string | null;
+  shipping_address?: string | null;
   items: OrderItem[];
   total_amount: number;
   notes?: string;
 }
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
 Deno.serve(async (req: Request) => {
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
   }
 
   try {
     const payload: OrderPayload = await req.json();
-    const { order_id, customer_name, customer_email, items, total_amount, notes } = payload;
+    const {
+      order_id,
+      customer_name,
+      customer_email,
+      phone,
+      shipping_address,
+      items,
+      total_amount,
+      notes,
+    } = payload;
 
-    const itemsHtml = items.map(item =>
-      `<tr>
-        <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;">${item.product_name}</td>
-        <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;text-align:center;">${item.size}</td>
+    const emailStr = (customer_email ?? "").trim();
+    const hasEmail = Boolean(emailStr && emailStr.includes("@"));
+
+    const itemsHtml = items
+      .map(
+        (item) =>
+          `<tr>
+        <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;">${escapeHtml(item.product_name)}</td>
+        <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;text-align:center;">${escapeHtml(item.size)}</td>
         <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;text-align:center;">${item.quantity}</td>
         <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;text-align:right;">$${(item.unit_price * item.quantity).toFixed(2)}</td>
-      </tr>`
-    ).join('');
+      </tr>`,
+      )
+      .join("");
 
-    const itemsText = items.map(item =>
-      `  - ${item.product_name} (Size: ${item.size}) x${item.quantity} = $${(item.unit_price * item.quantity).toFixed(2)}`
-    ).join('\n');
+    const itemsText = items
+      .map(
+        (item) =>
+          `  - ${item.product_name} (Size: ${item.size}) x${item.quantity} = $${(item.unit_price * item.quantity).toFixed(2)}`,
+      )
+      .join("\n");
+
+    const emailBlock = hasEmail
+      ? `<p style="margin:4px 0;color:#374151;"><a href="mailto:${escapeHtml(emailStr)}" style="color:#2E75B6;">${escapeHtml(emailStr)}</a></p>`
+      : `<p style="margin:4px 0;color:#6b7280;">Email: <em>Not provided</em></p>`;
+
+    const phoneBlock = (phone ?? "").trim()
+      ? `<p style="margin:4px 0;color:#374151;"><strong>Phone:</strong> ${escapeHtml((phone ?? "").trim())}</p>`
+      : "";
+
+    const addrRaw = (shipping_address ?? "").trim();
+    const addrBlock = addrRaw
+      ? `<p style="margin:8px 0 0;color:#374151;"><strong>Address:</strong><br/>${escapeHtml(addrRaw).replace(/\n/g, "<br/>")}</p>`
+      : "";
 
     const htmlBody = `
 <!DOCTYPE html>
@@ -61,9 +102,11 @@ Deno.serve(async (req: Request) => {
       
       <div style="background:#f0f7ff;border-radius:8px;padding:20px;margin-bottom:24px;">
         <h3 style="color:#1F4E78;margin:0 0 12px;font-size:14px;text-transform:uppercase;letter-spacing:1px;">Customer</h3>
-        <p style="margin:4px 0;color:#374151;"><strong>${customer_name}</strong></p>
-        <p style="margin:4px 0;color:#374151;"><a href="mailto:${customer_email}" style="color:#2E75B6;">${customer_email}</a></p>
-        ${notes ? `<p style="margin:12px 0 0;color:#374151;"><strong>Note:</strong> ${notes}</p>` : ''}
+        <p style="margin:4px 0;color:#374151;"><strong>${escapeHtml(customer_name)}</strong></p>
+        ${emailBlock}
+        ${phoneBlock}
+        ${addrBlock}
+        ${notes ? `<p style="margin:12px 0 0;color:#374151;"><strong>Note:</strong> ${escapeHtml(notes)}</p>` : ""}
       </div>
 
       <h3 style="color:#1F4E78;margin:0 0 12px;font-size:14px;text-transform:uppercase;letter-spacing:1px;">Items Ordered</h3>
@@ -86,7 +129,11 @@ Deno.serve(async (req: Request) => {
       </table>
 
       <div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:8px;padding:16px;">
-        <p style="margin:0;color:#92400e;font-size:14px;"><strong>Action needed:</strong> Contact ${customer_name} at <a href="mailto:${customer_email}" style="color:#92400e;">${customer_email}</a> to arrange payment and pickup/delivery.</p>
+        <p style="margin:0;color:#92400e;font-size:14px;"><strong>Action needed:</strong> ${
+      hasEmail
+        ? `Contact ${escapeHtml(customer_name)} at <a href="mailto:${escapeHtml(emailStr)}" style="color:#92400e;">${escapeHtml(emailStr)}</a> to arrange payment and pickup/delivery.`
+        : `Contact ${escapeHtml(customer_name)} to arrange payment and pickup/delivery (no email on file — use phone or address if listed).`
+    }</p>
       </div>
     </div>
     <div style="background:#f9fafb;padding:20px 40px;text-align:center;border-top:1px solid #e5e7eb;">
@@ -101,44 +148,47 @@ Deno.serve(async (req: Request) => {
 Order ID: ${order_id.slice(0, 8).toUpperCase()}
 
 Customer: ${customer_name}
-Email: ${customer_email}${notes ? `\nNote: ${notes}` : ''}
+Email: ${hasEmail ? emailStr : "(not provided)"}
+Phone: ${(phone ?? "").trim() || "(not provided)"}
+Address: ${addrRaw || "(not provided)"}
+${notes ? `\nNote: ${notes}` : ""}
 
 Items:
 ${itemsText}
 
 Total: $${total_amount.toFixed(2)}
 
-Action needed: Contact ${customer_name} at ${customer_email} to arrange payment and pickup/delivery.`;
+Action needed: Contact ${customer_name}${hasEmail ? ` at ${emailStr}` : ""} to arrange payment and pickup/delivery.`;
 
-    const brevoKey = Deno.env.get('BREVO_API_KEY') ?? '';
+    const brevoKey = Deno.env.get("BREVO_API_KEY") ?? "";
     if (!brevoKey) {
-      console.error('[send-order-notification] BREVO_API_KEY not set');
-      return new Response(JSON.stringify({ error: 'Email configuration missing' }), {
+      console.error("[send-order-notification] BREVO_API_KEY not set");
+      return new Response(JSON.stringify({ error: "Email configuration missing" }), {
         status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const recipientEmail = (ADMIN_EMAIL ?? '').trim();
-    if (!recipientEmail || !recipientEmail.includes('@')) {
-      console.error('[send-order-notification] Invalid recipient email:', recipientEmail);
-      return new Response(
-        JSON.stringify({ error: 'Invalid recipient email' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
-      );
+    const recipientEmail = (ADMIN_EMAIL ?? "").trim();
+    if (!recipientEmail || !recipientEmail.includes("@")) {
+      console.error("[send-order-notification] Invalid recipient email:", recipientEmail);
+      return new Response(JSON.stringify({ error: "Invalid recipient email" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     const subject = `New Order from ${customer_name} — $${total_amount.toFixed(2)}`;
     const htmlContent = htmlBody;
 
-    const res = await fetch('https://api.brevo.com/v3/smtp/email', {
-      method: 'POST',
+    const res = await fetch("https://api.brevo.com/v3/smtp/email", {
+      method: "POST",
       headers: {
-        'api-key': brevoKey,
-        'Content-Type': 'application/json',
+        "api-key": brevoKey,
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        sender: { name: 'TOPAZ 2.0', email: 'Topaz2.0@dancetopaz.com' },
+        sender: { name: "TOPAZ 2.0", email: "Topaz2.0@dancetopaz.com" },
         to: [{ email: recipientEmail }],
         subject,
         htmlContent,
@@ -148,22 +198,22 @@ Action needed: Contact ${customer_name} at ${customer_email} to arrange payment 
 
     if (!res.ok) {
       const errText = await res.text();
-      console.error('Brevo failed:', res.status, errText);
-      return new Response(
-        JSON.stringify({ error: 'Email delivery failed', detail: errText }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
-      );
+      console.error("Brevo failed:", res.status, errText);
+      return new Response(JSON.stringify({ error: "Email delivery failed", detail: errText }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err) {
-    console.error('send-order-notification error:', err);
+    console.error("send-order-notification error:", err);
     return new Response(JSON.stringify({ error: String(err) }), {
       status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 });

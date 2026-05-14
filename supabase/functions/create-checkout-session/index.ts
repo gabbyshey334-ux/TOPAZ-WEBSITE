@@ -34,13 +34,23 @@ Deno.serve(async (req: Request) => {
     return new Response(JSON.stringify({ error: 'Payment service not configured' }), { status: 500 });
   }
 
-  let body: { items: CartItem[]; customerEmail: string; customerName: string; notes?: string };
+  let body!: {
+    items: CartItem[];
+    customerEmail?: string;
+    customerName: string;
+    notes?: string;
+    shippingAddress?: string;
+    phone?: string;
+  };
 
   try {
     body = await req.json();
     if (!body.items?.length) throw new Error('Cart is empty');
-    if (!body.customerEmail?.includes('@')) throw new Error('Valid email required');
     if (!body.customerName?.trim()) throw new Error('Name required');
+    const addr = (body.shippingAddress ?? '').trim();
+    if (addr.length < 8) throw new Error('A full shipping or pickup address is required');
+    const em = (body.customerEmail ?? '').trim();
+    if (em && !em.includes('@')) throw new Error('Invalid email');
   } catch (e) {
     return new Response(JSON.stringify({ error: String(e) }), { status: 400 });
   }
@@ -59,15 +69,18 @@ Deno.serve(async (req: Request) => {
   }));
 
   try {
+    const emailTrim = (body.customerEmail ?? '').trim();
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       line_items: lineItems,
-      customer_email: body.customerEmail,
+      ...(emailTrim.includes('@') ? { customer_email: emailTrim } : {}),
       success_url: `${SITE_URL}/shop?payment=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${SITE_URL}/shop?payment=cancelled`,
       metadata: {
         customerName: body.customerName.trim().slice(0, 500),
         notes: (body.notes ?? '').trim().slice(0, 500),
+        shippingAddress: (body.shippingAddress ?? '').trim().slice(0, 500),
+        phone: (body.phone ?? '').trim().slice(0, 100),
       },
       // Shipping is handled manually by Nick
       phone_number_collection: { enabled: false },

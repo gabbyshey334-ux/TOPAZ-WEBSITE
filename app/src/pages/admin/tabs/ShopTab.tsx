@@ -908,8 +908,8 @@ function OrdersSection() {
 
   const exportCsv = () => {
     const headers = [
-      'Order ID', 'Customer Name', 'Customer Email', 'Status',
-      'Total Amount', 'Items Summary', 'Notes', 'Date',
+      'Order ID', 'Customer Name', 'Customer Email', 'Phone', 'Shipping Address',
+      'Status', 'Total Amount', 'Items Summary', 'Notes', 'Date',
     ];
     const rows = orders.map((o) => {
       const items = Array.isArray(o.items)
@@ -918,7 +918,9 @@ function OrdersSection() {
       return [
         o.id,
         o.customer_name,
-        o.customer_email,
+        o.customer_email ?? '',
+        o.phone ?? '',
+        o.shipping_address ?? '',
         o.status,
         `$${Number(o.total_amount).toFixed(2)}`,
         items,
@@ -998,7 +1000,15 @@ function OrdersSection() {
                         {order.status}
                       </span>
                     </div>
-                    <p className="text-xs text-slate-400 mt-0.5">{order.customer_email}</p>
+                    <p className="text-xs text-slate-400 mt-0.5 break-all">
+                      {order.customer_email ? order.customer_email : <span className="italic">No email</span>}
+                    </p>
+                    {order.phone && (
+                      <p className="text-xs text-slate-400 mt-0.5">{order.phone}</p>
+                    )}
+                    {order.shipping_address && (
+                      <p className="text-xs text-slate-300 mt-1 whitespace-pre-wrap break-words">{order.shipping_address}</p>
+                    )}
                   </div>
                   <div className="text-right shrink-0">
                     <p className="text-lg font-black text-[#7EB8E8]">

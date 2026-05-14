@@ -603,7 +603,9 @@ export type Database = {
         Row: {
           id: string;
           customer_name: string;
-          customer_email: string;
+          customer_email: string | null;
+          phone: string | null;
+          shipping_address: string | null;
           items: Json;
           total_amount: number;
           status: string;
@@ -614,7 +616,9 @@ export type Database = {
         Insert: {
           id?: string;
           customer_name: string;
-          customer_email: string;
+          customer_email?: string | null;
+          phone?: string | null;
+          shipping_address?: string | null;
           items: Json;
           total_amount: number;
           status?: string;
@@ -625,7 +629,9 @@ export type Database = {
         Update: {
           id?: string;
           customer_name?: string;
-          customer_email?: string;
+          customer_email?: string | null;
+          phone?: string | null;
+          shipping_address?: string | null;
           items?: Json;
           total_amount?: number;
           status?: string;
