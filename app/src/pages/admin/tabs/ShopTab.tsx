@@ -30,6 +30,15 @@ import {
   DialogFooter,
   DialogDescription,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/lib/supabase';
 import type { Database } from '@/types/database';
@@ -886,6 +895,9 @@ function OrdersSection() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Order | null>(null);
+  const [deleteSubmitting, setDeleteSubmitting] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
 
   const fetchOrders = useCallback(async () => {
     setLoading(true);
@@ -904,6 +916,25 @@ function OrdersSection() {
     await supabase.from('orders').update({ status }).eq('id', id);
     await fetchOrders();
     setUpdatingId(null);
+  };
+
+  const confirmDeleteOrder = async () => {
+    if (!deleteTarget) return;
+    setDeleteSubmitting(true);
+    setDeleteError('');
+    const { error } = await supabase.from('orders').delete().eq('id', deleteTarget.id);
+    if (error) {
+      setDeleteError(
+        error.message.includes('permission') || error.message.includes('policy')
+          ? 'Delete blocked by database rules. Run the latest Supabase migration (orders admin delete) or ask your developer.'
+          : error.message,
+      );
+      setDeleteSubmitting(false);
+      return;
+    }
+    setDeleteTarget(null);
+    setDeleteSubmitting(false);
+    await fetchOrders();
   };
 
   const exportCsv = () => {
@@ -985,6 +1016,7 @@ function OrdersSection() {
           {orders.map((order) => {
             const items = Array.isArray(order.items) ? (order.items as OrderItem[]) : [];
             const isUpdating = updatingId === order.id;
+            const isCancelled = order.status?.toLowerCase() === 'cancelled';
             return (
               <div
                 key={order.id}
@@ -1059,11 +1091,79 @@ function OrdersSection() {
                     </button>
                   ))}
                 </div>
+                {isCancelled && (
+                  <div className="mt-3 pt-3 border-t border-slate-700/80">
+                    <button
+                      type="button"
+                      disabled={isUpdating}
+                      onClick={() => {
+                        setDeleteError('');
+                        setDeleteTarget(order);
+                      }}
+                      className="text-[11px] font-semibold px-3 py-1.5 rounded-lg border border-red-900/60 text-red-300 hover:bg-red-950/40 hover:border-red-800 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-1.5"
+                    >
+                      <Trash2 className="w-3 h-3" aria-hidden />
+                      Delete permanently
+                    </button>
+                    <p className="text-[10px] text-slate-500 mt-1.5 max-w-md">
+                      Removes this row from the database. Only use for cancelled orders you do not need for records.
+                    </p>
+                  </div>
+                )}
               </div>
             );
           })}
         </div>
       )}
+
+      <AlertDialog
+        open={deleteTarget !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDeleteTarget(null);
+            setDeleteError('');
+            setDeleteSubmitting(false);
+          }
+        }}
+      >
+        <AlertDialogContent className="bg-slate-900 border-slate-700 text-white sm:max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this order?</AlertDialogTitle>
+            <AlertDialogDescription className="text-slate-300">
+              {deleteTarget && (
+                <>
+                  This permanently removes order <span className="font-mono text-slate-200">{deleteTarget.id.slice(0, 8).toUpperCase()}</span>
+                  {' '}for <strong className="text-white">{deleteTarget.customer_name}</strong>. This cannot be undone.
+                </>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          {deleteError ? (
+            <p className="text-sm text-red-400 bg-red-950/30 border border-red-900/50 rounded-lg px-3 py-2">{deleteError}</p>
+          ) : null}
+          <AlertDialogFooter className="gap-2 sm:gap-0">
+            <AlertDialogCancel className="border-slate-600 bg-slate-800 text-slate-200 hover:bg-slate-700 hover:text-white mt-0">
+              Cancel
+            </AlertDialogCancel>
+            <Button
+              type="button"
+              variant="destructive"
+              disabled={deleteSubmitting}
+              className="bg-red-700 hover:bg-red-800"
+              onClick={() => void confirmDeleteOrder()}
+            >
+              {deleteSubmitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin inline" />
+                  Deleting…
+                </>
+              ) : (
+                'Delete permanently'
+              )}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

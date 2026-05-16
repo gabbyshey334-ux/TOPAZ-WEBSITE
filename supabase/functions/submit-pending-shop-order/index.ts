@@ -23,7 +23,7 @@ type Body = {
   phone?: string | null;
   shipping_address: string;
   notes?: string | null;
-  payment_method: "zelle" | "cash" | "check";
+  payment_method: "zelle" | "cash" | "check" | "money_order";
 };
 
 function json(body: unknown, status: number) {
@@ -44,6 +44,7 @@ function escapeHtml(s: string): string {
 function paymentLabel(pm: Body["payment_method"]): string {
   if (pm === "zelle") return "Zelle";
   if (pm === "cash") return "Cash (pickup or at event)";
+  if (pm === "money_order") return "Money order by mail";
   return "Check by mail";
 }
 
@@ -212,7 +213,7 @@ Deno.serve(async (req: Request) => {
 
   if (!name) return json({ error: "Name is required" }, 400);
   if (addr.length < 8) return json({ error: "Please enter a full shipping or pickup address" }, 400);
-  if (!["zelle", "cash", "check"].includes(pm)) return json({ error: "Invalid payment method" }, 400);
+  if (!["zelle", "cash", "check", "money_order"].includes(pm)) return json({ error: "Invalid payment method" }, 400);
   if (emailRaw && !email) return json({ error: "Invalid email address" }, 400);
   if (!body.items?.length) return json({ error: "Cart is empty" }, 400);
 

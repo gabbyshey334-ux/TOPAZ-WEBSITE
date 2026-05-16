@@ -8,10 +8,10 @@ import {
   Loader2,
   ArrowLeft,
   CheckCircle2,
-  CreditCard,
   Wallet,
   Banknote,
   Landmark,
+  ScrollText,
 } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
@@ -38,7 +38,7 @@ type CheckoutErrors = Partial<Record<keyof CheckoutForm, string>>;
 const ZELLE_PAYEE = 'topaz2.0@yahoo.com';
 const CHECK_MAILING_LINE = 'TOPAZ 2.0, PO BOX 131, BANKS OR 97106';
 
-type ShopPayMethod = 'card' | 'zelle' | 'cash' | 'check';
+type ShopPayMethod = 'zelle' | 'cash' | 'check' | 'money_order';
 
 export default function CartDrawer() {
   const { items, removeItem, updateQuantity, total, count, isOpen, closeCart, clearCart } = useCart();
@@ -81,51 +81,8 @@ export default function CartDrawer() {
     return Object.keys(errs).length === 0;
   };
 
-  const handlePayWithCard = async () => {
-    if (!validate()) return;
-    setSubmitting(true);
-    setSubmitError('');
-
-    try {
-      const cartItems = items.map((i) => ({
-        productId: i.productId,
-        name: i.productName,
-        size: i.size,
-        quantity: i.quantity,
-        unitPrice: i.unitPrice,
-      }));
-
-      const { data, error } = await supabase.functions.invoke('create-checkout-session', {
-        body: {
-          items: cartItems,
-          customerEmail: form.email.trim().toLowerCase() || undefined,
-          customerName: form.name.trim(),
-          notes: form.notes.trim() || undefined,
-          shippingAddress: form.address.trim(),
-          phone: form.phone.trim() || undefined,
-        },
-      });
-
-      if (error) throw new Error(error.message ?? 'Failed to create checkout session');
-      if (!data?.url) throw new Error('No checkout URL returned');
-
-      // Redirect to Stripe Hosted Checkout — cart is preserved in localStorage
-      // so it survives the redirect if the customer cancels.
-      window.location.href = data.url;
-    } catch (err) {
-      console.error('[CartDrawer] Stripe checkout error:', err);
-      setSubmitError(
-        'Payment setup failed. Please try again or contact us at topaz2.0@yahoo.com'
-      );
-      setSubmitting(false);
-    }
-    // Note: setSubmitting(false) is NOT called on success because the page
-    // is redirecting — keeping the spinner shows until the navigation happens.
-  };
-
   const handlePlaceOfflineOrder = async () => {
     if (!validate()) return;
-    if (payMethod === 'card') return;
 
     setSubmitting(true);
     setSubmitError('');
@@ -182,8 +139,7 @@ export default function CartDrawer() {
   };
 
   const handleCheckoutSubmit = () => {
-    if (payMethod === 'card') void handlePayWithCard();
-    else void handlePlaceOfflineOrder();
+    void handlePlaceOfflineOrder();
   };
 
   return (
@@ -408,37 +364,28 @@ export default function CartDrawer() {
                   </span>
                 </label>
                 <label
-                  htmlFor="pay-card"
-                  className={`flex cursor-pointer items-start gap-3 rounded-xl border p-3 transition-colors ${payMethod === 'card' ? 'border-[#2E75B6] bg-blue-50/60' : 'border-gray-200 hover:border-gray-300'}`}
+                  htmlFor="pay-money-order"
+                  className={`flex cursor-pointer items-start gap-3 rounded-xl border p-3 transition-colors ${payMethod === 'money_order' ? 'border-[#2E75B6] bg-blue-50/60' : 'border-gray-200 hover:border-gray-300'}`}
                 >
-                  <RadioGroupItem value="card" id="pay-card" className="mt-0.5" />
+                  <RadioGroupItem value="money_order" id="pay-money-order" className="mt-0.5" />
                   <span className="min-w-0 flex-1">
                     <span className="flex items-center gap-2 text-sm font-bold text-gray-900">
-                      <CreditCard className="h-4 w-4 shrink-0 text-[#2E75B6]" aria-hidden />
-                      Credit or debit card
+                      <ScrollText className="h-4 w-4 shrink-0 text-[#2E75B6]" aria-hidden />
+                      Money order
                     </span>
                     <span className="mt-1 block text-xs leading-snug text-gray-500">
-                      Secure checkout with Stripe — you will leave this page to pay, then return here when you are done.
+                      Mail a money order payable to <strong className="text-gray-800">Topaz 2.0 LLC</strong> to {CHECK_MAILING_LINE}.
                     </span>
                   </span>
                 </label>
               </RadioGroup>
 
-              {payMethod === 'card' ? (
-                <div className="flex items-start gap-3 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 mb-6">
-                  <CreditCard className="mt-0.5 h-4 w-4 shrink-0 text-blue-600" aria-hidden />
-                  <p className="text-sm text-blue-900">
-                    Your card details are processed by Stripe and never stored on our servers.
-                  </p>
-                </div>
-              ) : (
-                <div className="mb-6 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
-                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-amber-700" aria-hidden />
-                  <p className="text-sm text-amber-950">
-                    Your order will be saved as <strong>pending</strong> until we receive payment. We will follow up using the email or phone number you provided, if any.
-                  </p>
-                </div>
-              )}
+              <div className="mb-6 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-amber-700" aria-hidden />
+                <p className="text-sm text-amber-950">
+                  Your order will be saved as <strong>pending</strong> until we receive payment. We will follow up using the email or phone number you provided, if any.
+                </p>
+              </div>
 
               <div className="space-y-4">
                 <div className="space-y-1.5">
@@ -484,9 +431,7 @@ export default function CartDrawer() {
                   />
                   {errors.email && <p className="text-xs text-red-500">{errors.email}</p>}
                   <p className="text-xs text-gray-400">
-                    {payMethod === 'card'
-                      ? 'Recommended — Stripe can send a receipt. You can also enter email on the Stripe page if you leave this blank.'
-                      : 'We may use this for order updates. You can leave it blank if you prefer.'}
+                    We may use this for order updates. You can leave it blank if you prefer.
                   </p>
                 </div>
 
@@ -536,12 +481,7 @@ export default function CartDrawer() {
                 {submitting ? (
                   <>
                     <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                    {payMethod === 'card' ? 'Redirecting to payment…' : 'Placing your order…'}
-                  </>
-                ) : payMethod === 'card' ? (
-                  <>
-                    <CreditCard className="mr-2 h-5 w-5" />
-                    Pay with card · ${total.toFixed(2)}
+                    Placing your order…
                   </>
                 ) : (
                   <>
@@ -550,18 +490,13 @@ export default function CartDrawer() {
                   </>
                 )}
               </Button>
-              {payMethod === 'card' ? (
-                <p className="mt-2 text-center text-xs text-gray-400">Secured by Stripe</p>
-              ) : (
-                <p className="mt-2 text-center text-xs text-gray-400">
-                  Zelle, cash, and check orders stay pending until payment is received.
-                </p>
-              )}
+              <p className="mt-2 text-center text-xs text-gray-400">
+                Zelle, cash, check, and money order orders stay pending until payment is received.
+              </p>
             </div>
           </>
         )}
 
-        {/* Success: Stripe return banner on Shop is primary; this step is used for offline checkout. */}
         {step === 'success' && (
           <div className="flex flex-1 flex-col items-center justify-center px-8 py-12 text-center">
             <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-amber-100">
@@ -586,7 +521,12 @@ export default function CartDrawer() {
               )}
               {payMethod === 'check' && (
                 <p>
-                  Mail a check or money order for the amount below, payable to <strong>Topaz 2.0 LLC</strong>, to the address below. Include your name and order number on the memo line.
+                  Mail a check for the amount below, payable to <strong>Topaz 2.0 LLC</strong>, to the address below. Include your name and order number on the memo line.
+                </p>
+              )}
+              {payMethod === 'money_order' && (
+                <p>
+                  Mail a money order for the amount below, payable to <strong>Topaz 2.0 LLC</strong>, to the address below. Include your name and order number on the memo line.
                 </p>
               )}
               <p>
