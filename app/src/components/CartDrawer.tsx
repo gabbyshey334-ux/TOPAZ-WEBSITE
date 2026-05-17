@@ -50,6 +50,7 @@ export default function CartDrawer() {
   const [payMethod, setPayMethod] = useState<ShopPayMethod>('zelle');
   const [createdOrderId, setCreatedOrderId] = useState('');
   const [placedOrderTotal, setPlacedOrderTotal] = useState(0);
+  const [customerConfirmationSent, setCustomerConfirmationSent] = useState(false);
 
   const handleClose = () => {
     if (step === 'success') {
@@ -57,6 +58,7 @@ export default function CartDrawer() {
       setForm({ name: '', email: '', phone: '', address: '', notes: '' });
       setCreatedOrderId('');
       setPlacedOrderTotal(0);
+      setCustomerConfirmationSent(false);
       setPayMethod('zelle');
     }
     closeCart();
@@ -111,12 +113,15 @@ export default function CartDrawer() {
         orderId?: string;
         total_amount?: number;
         emailDelivered?: boolean;
+        customerEmailDelivered?: boolean;
+        customerEmailError?: string;
         error?: string;
       };
       if (res?.error) throw new Error(res.error);
       if (!res?.success || !res.orderId) throw new Error('Unexpected response from checkout');
 
       setPlacedOrderTotal(typeof res.total_amount === 'number' ? res.total_amount : total);
+      setCustomerConfirmationSent(Boolean(form.email.trim() && res.customerEmailDelivered));
       clearCart();
       setCreatedOrderId(res.orderId);
       setStep('success');
@@ -124,6 +129,13 @@ export default function CartDrawer() {
         console.warn(
           '[CartDrawer] Order saved but admin email may not have sent. Order id:',
           res.orderId,
+        );
+      }
+      if (form.email.trim() && res.customerEmailDelivered === false) {
+        console.warn(
+          '[CartDrawer] Order saved but customer confirmation email may not have sent. Order id:',
+          res.orderId,
+          res.customerEmailError,
         );
       }
     } catch (err) {
@@ -419,7 +431,7 @@ export default function CartDrawer() {
 
                 <div className="space-y-1.5">
                   <Label htmlFor="checkout-email" className="text-gray-700 font-semibold text-sm">
-                    Email <span className="font-normal text-gray-400">(optional)</span>
+                    Email <span className="font-normal text-gray-400">(recommended for order confirmation)</span>
                   </Label>
                   <Input
                     id="checkout-email"
@@ -540,6 +552,11 @@ export default function CartDrawer() {
               <p>
                 <strong>Check or money order:</strong> Payable to <strong>Topaz 2.0 LLC</strong>, mailed to {CHECK_MAILING_LINE}.
               </p>
+              {customerConfirmationSent && (
+                <p className="text-xs text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2">
+                  A confirmation email was sent to you with these payment details.
+                </p>
+              )}
               <p className="text-xs text-gray-500">
                 Questions? Email <span className="break-all">topaz2.0@yahoo.com</span> or call 971-299-4401.
               </p>

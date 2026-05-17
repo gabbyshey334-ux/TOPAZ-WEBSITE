@@ -17,6 +17,10 @@ import {
   Usb,
   AlertTriangle,
   Info,
+  Wallet,
+  Landmark,
+  ScrollText,
+  Banknote,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -75,6 +79,7 @@ const GROUP_SIZES = [
 ] as const;
 
 const PAYMENT_METHODS = ['Zelle', 'Check', 'Money Order', 'Cash'] as const;
+type PaymentMethodValue = (typeof PAYMENT_METHODS)[number];
 
 const PAYMENT_INSTRUCTIONS =
   'Payment accepted by Cash, Check, Money Order, or Zelle. See below for cash, Zelle payee, and memo.';
@@ -85,6 +90,40 @@ const CASH_PAYMENT_MAIL_TEXT =
 
 /** Zelle payee linked to Nick's account (plain text only — no deep links). */
 const ZELLE_EMAIL_DISPLAY = 'topaz2.0@yahoo.com';
+
+const PAYMENT_METHOD_CARDS: {
+  value: PaymentMethodValue;
+  title: string;
+  Icon: typeof Wallet;
+  description: string;
+}[] = [
+  {
+    value: 'Zelle',
+    title: 'Pay with Zelle',
+    Icon: Wallet,
+    description: `Send payment to ${ZELLE_EMAIL_DISPLAY}. Include your dancer name and routine name in the Zelle memo.`,
+  },
+  {
+    value: 'Check',
+    title: 'Pay by Check',
+    Icon: Landmark,
+    description:
+      'Make checks payable to Topaz Productions. Mail to PO BOX 131, BANKS OR 97106. All fees must be received by registration close date (July 30, 2026).',
+  },
+  {
+    value: 'Money Order',
+    title: 'Pay by Money Order',
+    Icon: ScrollText,
+    description:
+      'Make money orders payable to Topaz Productions. Mail to PO BOX 131, BANKS OR 97106. All fees must be received by registration close date (July 30, 2026).',
+  },
+  {
+    value: 'Cash',
+    title: 'Pay with Cash',
+    Icon: Banknote,
+    description: CASH_PAYMENT_MAIL_TEXT,
+  },
+];
 
 function ZellePlainTextBlock({ emailStrongClassName }: { emailStrongClassName: string }) {
   return (
@@ -1217,35 +1256,31 @@ export default function CompetitionRegistrationForm() {
                   <RadioGroup
                     value={paymentMethod}
                     onValueChange={setPaymentMethod}
-                    className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 mt-4"
+                    className="space-y-3 mt-4"
                   >
-                    {PAYMENT_METHODS.map((p) =>
-                      p === 'Cash' ? (
-                        <label
-                          key={p}
-                          htmlFor="pay-Cash"
-                          className="flex flex-col rounded-2xl border-2 border-gray-100 p-5 cursor-pointer transition-all hover:border-gray-200 hover:bg-gray-50 has-[:checked]:border-[#2E75B6] has-[:checked]:bg-[#2E75B6]/5 touch-manipulation sm:col-span-2 xl:col-span-4 active:bg-gray-50"
-                        >
-                          <div className="flex items-center gap-3">
-                            <RadioGroupItem value="Cash" id="pay-Cash" className="size-5 shrink-0" />
-                            <span className="font-bold text-gray-800 select-none text-base">💵 Pay with Cash</span>
-                          </div>
-                          <p className="text-sm font-medium text-gray-600 leading-relaxed mt-4 pl-8">{CASH_PAYMENT_MAIL_TEXT}</p>
-                          <p className="text-sm font-semibold text-[#2E75B6] mt-3 pl-8">
-                            Amount due: <span className="font-black text-lg">${amountDue.toFixed(2)}</span>
-                          </p>
-                        </label>
-                      ) : (
-                        <label
-                          key={p}
-                          htmlFor={`pay-${p.replace(/\s+/g, '-')}`}
-                          className="flex items-center gap-3 rounded-2xl border-2 border-gray-100 p-4 cursor-pointer transition-all hover:border-gray-200 hover:bg-gray-50 has-[:checked]:border-[#2E75B6] has-[:checked]:bg-[#2E75B6]/5 touch-manipulation min-h-[52px] active:bg-gray-50"
-                        >
-                          <RadioGroupItem value={p} id={`pay-${p.replace(/\s+/g, '-')}`} className="size-5 shrink-0" />
-                          <span className="font-bold text-gray-800 select-none">{p}</span>
-                        </label>
-                      ),
-                    )}
+                    {PAYMENT_METHOD_CARDS.map(({ value, title, Icon, description }) => (
+                      <label
+                        key={value}
+                        htmlFor={`pay-${value.replace(/\s+/g, '-')}`}
+                        className="flex flex-col rounded-2xl border-2 border-gray-100 p-5 cursor-pointer transition-all hover:border-gray-200 hover:bg-gray-50 has-[:checked]:border-[#2E75B6] has-[:checked]:bg-[#2E75B6]/5 touch-manipulation active:bg-gray-50"
+                      >
+                        <div className="flex items-center gap-3">
+                          <RadioGroupItem
+                            value={value}
+                            id={`pay-${value.replace(/\s+/g, '-')}`}
+                            className="size-5 shrink-0"
+                          />
+                          <span className="flex items-center gap-2 font-bold text-gray-800 select-none text-base">
+                            <Icon className="h-5 w-5 shrink-0 text-[#2E75B6]" aria-hidden />
+                            {title}
+                          </span>
+                        </div>
+                        <p className="text-sm font-medium text-gray-600 leading-relaxed mt-4 pl-8">{description}</p>
+                        <p className="text-sm font-semibold text-[#2E75B6] mt-3 pl-8">
+                          Amount due: <span className="font-black text-lg">${amountDue.toFixed(2)}</span>
+                        </p>
+                      </label>
+                    ))}
                   </RadioGroup>
                 </div>
 

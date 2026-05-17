@@ -8,6 +8,9 @@ const corsHeaders: Record<string, string> = {
 };
 
 const ADMIN_EMAIL = "topaz2.0@yahoo.com";
+const ZELLE_PAYEE = "topaz2.0@yahoo.com";
+const CHECK_MAILING_LINE = "TOPAZ 2.0, PO BOX 131, BANKS OR 97106";
+const CONTACT_PHONE = "971-299-4401";
 
 type LineIn = {
   product_id: string;
@@ -181,6 +184,188 @@ Total: $${total.toFixed(2)}
   return { ok: true };
 }
 
+function buildPaymentInstructions(
+  pm: Body["payment_method"],
+  orderId: string,
+  customerName: string,
+  total: number,
+): { html: string; text: string } {
+  const oid = orderId.slice(0, 8).toUpperCase();
+  const amount = `$${total.toFixed(2)}`;
+  const memo = `${customerName} — order #${oid}`;
+
+  let leadHtml = "";
+  let leadText = "";
+
+  if (pm === "zelle") {
+    leadHtml =
+      `<p style="margin:0 0 12px;color:#374151;line-height:1.6;">Complete your purchase by sending <strong>${amount}</strong> via <strong>Zelle</strong>. Use your order number in the memo.</p>`;
+    leadText = `Complete your purchase by sending ${amount} via Zelle. Use your order number in the memo.\n\n`;
+  } else if (pm === "cash") {
+    leadHtml =
+      `<p style="margin:0 0 12px;color:#374151;line-height:1.6;">We recorded your order as <strong>cash on pickup</strong> (or at the event). Bring <strong>${amount}</strong> when you collect your items. You may also pay via Zelle or mail a check — details below.</p>`;
+    leadText =
+      `We recorded your order as cash on pickup (or at the event). Bring ${amount} when you collect your items. You may also pay via Zelle or mail a check — details below.\n\n`;
+  } else if (pm === "check") {
+    leadHtml =
+      `<p style="margin:0 0 12px;color:#374151;line-height:1.6;">Mail a check for <strong>${amount}</strong>, payable to <strong>Topaz 2.0 LLC</strong>, to the address below. Include your name and order #${oid} on the memo line.</p>`;
+    leadText =
+      `Mail a check for ${amount}, payable to Topaz 2.0 LLC, to the address below. Include your name and order #${oid} on the memo line.\n\n`;
+  } else {
+    leadHtml =
+      `<p style="margin:0 0 12px;color:#374151;line-height:1.6;">Mail a money order for <strong>${amount}</strong>, payable to <strong>Topaz 2.0 LLC</strong>, to the address below. Include your name and order #${oid} on the memo line.</p>`;
+    leadText =
+      `Mail a money order for ${amount}, payable to Topaz 2.0 LLC, to the address below. Include your name and order #${oid} on the memo line.\n\n`;
+  }
+
+  const html = `${leadHtml}
+      <p style="margin:0 0 8px;color:#374151;line-height:1.6;"><strong>Amount due:</strong> <span style="color:#2E75B6;font-size:18px;font-weight:800;">${amount}</span></p>
+      <p style="margin:0 0 8px;color:#374151;line-height:1.6;"><strong>Zelle:</strong> Send to <a href="mailto:${escapeHtml(ZELLE_PAYEE)}" style="color:#2E75B6;">${escapeHtml(ZELLE_PAYEE)}</a>. Memo: ${escapeHtml(memo)}.</p>
+      <p style="margin:0;color:#374151;line-height:1.6;"><strong>Check or money order:</strong> Payable to <strong>Topaz 2.0 LLC</strong>, mailed to ${escapeHtml(CHECK_MAILING_LINE)}.</p>`;
+
+  const text = `${leadText}Amount due: ${amount}
+
+Zelle: Send to ${ZELLE_PAYEE}. Memo: ${memo}.
+
+Check or money order: Payable to Topaz 2.0 LLC, mailed to ${CHECK_MAILING_LINE}.`;
+
+  return { html, text };
+}
+
+async function sendCustomerOrderConfirmationEmail(params: {
+  orderId: string;
+  customerName: string;
+  customerEmail: string;
+  paymentMethod: Body["payment_method"];
+  items: { product_name: string; size: string; quantity: number; unit_price: number }[];
+  total: number;
+  shippingAddress: string;
+}): Promise<{ ok: true } | { ok: false; detail: string }> {
+  const brevoKey = Deno.env.get("BREVO_API_KEY") ?? "";
+  if (!brevoKey) {
+    return { ok: false, detail: "BREVO_API_KEY not set" };
+  }
+
+  const { orderId, customerName, customerEmail, paymentMethod, items, total, shippingAddress } = params;
+  const to = customerEmail.trim();
+  if (!to.includes("@")) {
+    return { ok: false, detail: `Invalid recipient email: "${customerEmail}"` };
+  }
+
+  const oid = orderId.slice(0, 8).toUpperCase();
+  const payLabel = paymentLabel(paymentMethod);
+
+  const itemsHtml = items
+    .map(
+      (item) =>
+        `<tr>
+        <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;">${escapeHtml(item.product_name)}</td>
+        <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;text-align:center;">${escapeHtml(item.size)}</td>
+        <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;text-align:center;">${item.quantity}</td>
+        <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;text-align:right;">$${(item.unit_price * item.quantity).toFixed(2)}</td>
+      </tr>`,
+    )
+    .join("");
+
+  const itemsText = items
+    .map(
+      (item) =>
+        `  - ${item.product_name} (Size: ${item.size}) x${item.quantity} = $${(item.unit_price * item.quantity).toFixed(2)}`,
+    )
+    .join("\n");
+
+  const payment = buildPaymentInstructions(paymentMethod, orderId, customerName, total);
+
+  const htmlBody = `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"></head>
+<body style="font-family:Arial,sans-serif;background:#f5f7fa;margin:0;padding:0;">
+  <div style="max-width:600px;margin:40px auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,.08);">
+    <div style="background:#1F4E78;padding:36px 40px;text-align:center;">
+      <h1 style="color:#fff;margin:0;font-size:28px;letter-spacing:1px;">TOPAZ 2.0</h1>
+      <p style="color:#93c5fd;margin:8px 0 0;font-size:14px;">Order received — payment pending</p>
+    </div>
+    <div style="padding:36px 40px;">
+      <p style="margin:0 0 16px;color:#374151;line-height:1.6;">Hi ${escapeHtml(customerName)},</p>
+      <p style="margin:0 0 24px;color:#374151;line-height:1.6;">Thank you for your TOPAZ 2.0 shop order. We saved it as <strong>pending</strong> until we receive payment. Your order number is <strong>#${oid}</strong>.</p>
+      <div style="background:#eff6ff;border-left:4px solid #2E75B6;padding:16px 20px;border-radius:6px;margin-bottom:24px;">
+        <p style="margin:0 0 4px;color:#6b7280;font-size:13px;">Payment method</p>
+        <p style="margin:0;color:#1F4E78;font-weight:700;">${escapeHtml(payLabel)}</p>
+      </div>
+      <h3 style="color:#1F4E78;margin:0 0 12px;font-size:14px;text-transform:uppercase;letter-spacing:1px;">Your items</h3>
+      <table style="width:100%;border-collapse:collapse;margin-bottom:24px;">
+        <thead>
+          <tr style="background:#1F4E78;color:#fff;">
+            <th style="padding:10px 12px;text-align:left;font-size:13px;">Product</th>
+            <th style="padding:10px 12px;text-align:center;font-size:13px;">Size</th>
+            <th style="padding:10px 12px;text-align:center;font-size:13px;">Qty</th>
+            <th style="padding:10px 12px;text-align:right;font-size:13px;">Subtotal</th>
+          </tr>
+        </thead>
+        <tbody>${itemsHtml}</tbody>
+        <tfoot>
+          <tr>
+            <td colspan="3" style="padding:12px;text-align:right;font-weight:bold;font-size:16px;color:#1F4E78;">Total:</td>
+            <td style="padding:12px;text-align:right;font-weight:bold;font-size:18px;color:#1F4E78;">$${total.toFixed(2)}</td>
+          </tr>
+        </tfoot>
+      </table>
+      <p style="margin:0 0 8px;color:#6b7280;font-size:13px;">Shipping / pickup</p>
+      <p style="margin:0 0 24px;color:#374151;line-height:1.6;">${escapeHtml(shippingAddress).replace(/\n/g, "<br/>")}</p>
+      <h3 style="color:#1F4E78;margin:0 0 12px;font-size:14px;text-transform:uppercase;letter-spacing:1px;">How to pay</h3>
+      ${payment.html}
+      <p style="margin:24px 0 0;color:#6b7280;font-size:14px;line-height:1.6;">Questions? Email <a href="mailto:${escapeHtml(ZELLE_PAYEE)}" style="color:#2E75B6;">${escapeHtml(ZELLE_PAYEE)}</a> or call ${CONTACT_PHONE}.</p>
+    </div>
+    <div style="background:#f9fafb;padding:20px 40px;text-align:center;border-top:1px solid #e5e7eb;">
+      <p style="color:#9ca3af;font-size:12px;margin:0;">TOPAZ 2.0 Dance &amp; Performing Arts Competition</p>
+    </div>
+  </div>
+</body>
+</html>`;
+
+  const textBody = `TOPAZ 2.0 — Order received (payment pending)
+
+Hi ${customerName},
+
+Thank you for your shop order. Order #${oid} is saved as pending until we receive payment.
+
+Payment method: ${payLabel}
+
+Shipping / pickup:
+${shippingAddress}
+
+Items:
+${itemsText}
+
+Total: $${total.toFixed(2)}
+
+How to pay:
+${payment.text}
+
+Questions? Email ${ZELLE_PAYEE} or call ${CONTACT_PHONE}.`;
+
+  const res = await fetch("https://api.brevo.com/v3/smtp/email", {
+    method: "POST",
+    headers: {
+      "api-key": brevoKey,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      sender: { name: "TOPAZ 2.0", email: "Topaz2.0@dancetopaz.com" },
+      to: [{ email: to, name: customerName }],
+      subject: `TOPAZ 2.0 — Order received #${oid}`,
+      htmlContent: htmlBody,
+      textContent: textBody,
+    }),
+  });
+
+  if (!res.ok) {
+    const errText = await res.text();
+    return { ok: false, detail: errText };
+  }
+  return { ok: true };
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 204, headers: corsHeaders });
@@ -289,7 +474,7 @@ Deno.serve(async (req: Request) => {
     return json({ error: insertErr?.message ?? "Failed to save order" }, 500);
   }
 
-  const mail = await sendAdminOrderEmail({
+  const adminMail = await sendAdminOrderEmail({
     orderId: order.id,
     customerName: name,
     customerEmail: email,
@@ -300,19 +485,39 @@ Deno.serve(async (req: Request) => {
     notes: notesCombined || null,
   });
 
-  if (!mail.ok) {
-    console.error("[submit-pending-shop-order] Brevo failed:", mail.detail);
-    return json(
-      {
-        success: true,
-        orderId: order.id,
-        total_amount: total,
-        emailDelivered: false,
-        emailError: mail.detail.slice(0, 200),
-      },
-      200,
-    );
+  if (!adminMail.ok) {
+    console.error("[submit-pending-shop-order] Admin Brevo failed:", adminMail.detail);
   }
 
-  return json({ success: true, orderId: order.id, total_amount: total, emailDelivered: true }, 200);
+  let customerEmailDelivered = false;
+  let customerEmailError: string | undefined;
+  if (email) {
+    const customerMail = await sendCustomerOrderConfirmationEmail({
+      orderId: order.id,
+      customerName: name,
+      customerEmail: email,
+      paymentMethod: pm,
+      items: orderItems,
+      total,
+      shippingAddress: addr,
+    });
+    customerEmailDelivered = customerMail.ok;
+    if (!customerMail.ok) {
+      customerEmailError = customerMail.detail.slice(0, 200);
+      console.error("[submit-pending-shop-order] Customer Brevo failed:", customerMail.detail);
+    }
+  }
+
+  return json(
+    {
+      success: true,
+      orderId: order.id,
+      total_amount: total,
+      emailDelivered: adminMail.ok,
+      emailError: adminMail.ok ? undefined : adminMail.detail.slice(0, 200),
+      customerEmailDelivered,
+      customerEmailError,
+    },
+    200,
+  );
 });
