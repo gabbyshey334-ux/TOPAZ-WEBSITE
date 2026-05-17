@@ -88,10 +88,6 @@ export default function ScoringInterface() {
           {loadError && (
             <p className="text-sm text-amber-400 mt-2">
               Could not load entries: {loadError}
-              {' '}
-              If <code className="text-amber-200/90">entries</code> lives on another Supabase project, set{' '}
-              <code className="text-amber-200/90">VITE_SCORING_SUPABASE_URL</code> and{' '}
-              <code className="text-amber-200/90">VITE_SCORING_SUPABASE_ANON_KEY</code> in the site env.
             </p>
           )}
         </div>
