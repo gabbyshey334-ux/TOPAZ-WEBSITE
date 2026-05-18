@@ -1,4 +1,4 @@
-import { useMemo, useState, useRef } from 'react';
+import { useEffect, useMemo, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import type { RegistrationParticipant } from '@/types/database';
@@ -154,6 +154,10 @@ const ACCEPTED_AUDIO_TYPES = [
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function needsParticipantTable(groupSize: string): boolean {
   return !groupSize.startsWith('Solo');
+}
+
+function isProductionEntryType(groupSize: string): boolean {
+  return groupSize.startsWith('Production');
 }
 
 function defaultParticipantCount(groupSize: string): number {
@@ -352,6 +356,15 @@ export default function CompetitionRegistrationForm() {
   const [ageDivision, setAgeDivision] = useState('');
   const [abilityLevel, setAbilityLevel] = useState('');
   const [groupSize, setGroupSize] = useState('');
+
+  useEffect(() => {
+    if (isProductionEntryType(groupSize)) {
+      setCategory('PRODUCTION');
+    } else if (category === 'PRODUCTION') {
+      setCategory('');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only react to entry type changes
+  }, [groupSize]);
   const [groupLinkCode, setGroupLinkCode] = useState('');
   const [songTitle, setSongTitle] = useState('');
   const [artistName, setArtistName] = useState('');
@@ -453,7 +466,13 @@ export default function CompetitionRegistrationForm() {
         }
       }
     }
-    if (s === 2 && !category) return 'Select one category.';
+    if (s === 2) {
+      if (isProductionEntryType(groupSize)) {
+        if (category !== 'PRODUCTION') return 'Production entries must use the Production category.';
+      } else if (!category) {
+        return 'Select one category.';
+      }
+    }
     if (s === 3) {
       if (!ageDivision) return 'Select an age division.';
       if (dateOfBirth) {
@@ -1017,9 +1036,22 @@ export default function CompetitionRegistrationForm() {
           <div className="animate-in fade-in slide-in-from-right-4 duration-500">
             <div className="mb-10 pb-6 border-b border-gray-100">
               <h2 className="font-display font-black text-3xl text-[#0a0a0a] uppercase tracking-tight">Category Selection</h2>
-              <p className="text-gray-500 font-medium mt-2">Select one performance category per entry form.</p>
+              <p className="text-gray-500 font-medium mt-2">
+                {isProductionEntryType(groupSize)
+                  ? 'Your entry type is Production — this category is set automatically.'
+                  : 'Select one performance category per entry form.'}
+              </p>
             </div>
             
+            {isProductionEntryType(groupSize) ? (
+              <div className="rounded-2xl border-2 border-[#2E75B6] bg-[#2E75B6]/5 p-6 sm:p-8">
+                <p className="text-xs font-bold uppercase tracking-widest text-[#2E75B6] mb-3">Special category</p>
+                <p className="font-bold text-xl text-[#0a0a0a]">PRODUCTION</p>
+                <p className="text-sm text-gray-600 mt-3 leading-relaxed">
+                  Production entries use the Production special category only. Performing Arts and Variety Arts categories are not available for this entry type.
+                </p>
+              </div>
+            ) : (
             <RadioGroup value={category} onValueChange={setCategory} className="space-y-12">
               <div>
                 <h4 className="font-bold text-sm uppercase tracking-widest text-gray-400 mb-6 flex items-center gap-4">
@@ -1066,6 +1098,7 @@ export default function CompetitionRegistrationForm() {
                 </div>
               </div>
             </RadioGroup>
+            )}
           </div>
         )}
 

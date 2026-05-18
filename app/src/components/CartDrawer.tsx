@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   X,
   Minus,
@@ -21,6 +21,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useCart } from '@/contexts/CartContext';
 import { supabase } from '@/lib/supabase';
+import { computeShopOrderTotals, type ShopFulfillment } from '@/lib/shopFees';
 
 type CheckoutStep = 'cart' | 'checkout' | 'success';
 
@@ -40,6 +41,48 @@ const CHECK_MAILING_LINE = 'TOPAZ 2.0, PO BOX 131, BANKS OR 97106';
 
 type ShopPayMethod = 'zelle' | 'cash' | 'check' | 'money_order';
 
+function OrderTotalsBreakdown({
+  totals,
+  showFeesNote,
+}: {
+  totals: ReturnType<typeof computeShopOrderTotals>;
+  showFeesNote?: boolean;
+}) {
+  return (
+    <div className="space-y-1.5 text-sm">
+      <div className="flex justify-between text-gray-600">
+        <span>Subtotal</span>
+        <span className="font-semibold">${totals.subtotal.toFixed(2)}</span>
+      </div>
+      {totals.shipping > 0 && (
+        <div className="flex justify-between text-gray-600">
+          <span>Shipping</span>
+          <span className="font-semibold">${totals.shipping.toFixed(2)}</span>
+        </div>
+      )}
+      {totals.handling > 0 && (
+        <div className="flex justify-between text-gray-600">
+          <span>Handling</span>
+          <span className="font-semibold">${totals.handling.toFixed(2)}</span>
+        </div>
+      )}
+      {totals.tax > 0 && (
+        <div className="flex justify-between text-gray-600">
+          <span>Tax</span>
+          <span className="font-semibold">${totals.tax.toFixed(2)}</span>
+        </div>
+      )}
+      <div className="flex justify-between font-black text-gray-900 pt-1">
+        <span>Total</span>
+        <span className="text-[#2E75B6]">${totals.total.toFixed(2)}</span>
+      </div>
+      {showFeesNote && totals.shipping === 0 && (
+        <p className="text-xs text-gray-400 pt-1">Pickup at the event or studio — no shipping or handling fees.</p>
+      )}
+    </div>
+  );
+}
+
 export default function CartDrawer() {
   const { items, removeItem, updateQuantity, total, count, isOpen, closeCart, clearCart } = useCart();
   const [step, setStep] = useState<CheckoutStep>('cart');
@@ -48,9 +91,15 @@ export default function CartDrawer() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
   const [payMethod, setPayMethod] = useState<ShopPayMethod>('zelle');
+  const [fulfillment, setFulfillment] = useState<ShopFulfillment>('pickup');
   const [createdOrderId, setCreatedOrderId] = useState('');
   const [placedOrderTotal, setPlacedOrderTotal] = useState(0);
   const [customerConfirmationSent, setCustomerConfirmationSent] = useState(false);
+
+  const orderTotals = useMemo(
+    () => computeShopOrderTotals(total, fulfillment),
+    [total, fulfillment],
+  );
 
   const handleClose = () => {
     if (step === 'success') {
@@ -60,6 +109,7 @@ export default function CartDrawer() {
       setPlacedOrderTotal(0);
       setCustomerConfirmationSent(false);
       setPayMethod('zelle');
+      setFulfillment('pickup');
     }
     closeCart();
   };
@@ -104,6 +154,7 @@ export default function CartDrawer() {
           shipping_address: form.address.trim(),
           notes: form.notes.trim() || undefined,
           payment_method: payMethod,
+          fulfillment,
         },
       });
 
@@ -120,7 +171,7 @@ export default function CartDrawer() {
       if (res?.error) throw new Error(res.error);
       if (!res?.success || !res.orderId) throw new Error('Unexpected response from checkout');
 
-      setPlacedOrderTotal(typeof res.total_amount === 'number' ? res.total_amount : total);
+      setPlacedOrderTotal(typeof res.total_amount === 'number' ? res.total_amount : orderTotals.total);
       setCustomerConfirmationSent(Boolean(form.email.trim() && res.customerEmailDelivered));
       clearCart();
       setCreatedOrderId(res.orderId);
@@ -268,10 +319,8 @@ export default function CartDrawer() {
                 </div>
 
                 <div className="px-5 py-4 border-t border-gray-100 flex-shrink-0 space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-base font-bold text-gray-900">Total</span>
-                    <span className="text-xl font-black text-[#2E75B6]">${total.toFixed(2)}</span>
-                  </div>
+                  <OrderTotalsBreakdown totals={orderTotals} showFeesNote />
+                  <p className="text-xs text-gray-400">Shipping fees apply if you choose mail delivery at checkout.</p>
                   <Button
                     onClick={() => setStep('checkout')}
                     className="w-full bg-[#2E75B6] hover:bg-[#1F4E78] text-white font-bold py-3 text-base"
@@ -315,11 +364,40 @@ export default function CartDrawer() {
                     <span className="font-semibold shrink-0 whitespace-nowrap">${(item.unitPrice * item.quantity).toFixed(2)}</span>
                   </div>
                 ))}
-                <div className="border-t border-gray-200 mt-3 pt-3 flex justify-between font-black text-gray-900">
-                  <span>Total</span>
-                  <span className="text-[#2E75B6]">${total.toFixed(2)}</span>
+                <div className="border-t border-gray-200 mt-3 pt-3">
+                  <OrderTotalsBreakdown totals={orderTotals} showFeesNote />
                 </div>
               </div>
+
+              <h3 className="text-sm font-bold text-gray-800 mb-3">Delivery</h3>
+              <RadioGroup
+                value={fulfillment}
+                onValueChange={(v) => setFulfillment(v as ShopFulfillment)}
+                className="space-y-2.5 mb-6"
+              >
+                <label
+                  htmlFor="fulfillment-pickup"
+                  className={`flex cursor-pointer items-start gap-3 rounded-xl border p-3 transition-colors ${fulfillment === 'pickup' ? 'border-[#2E75B6] bg-blue-50/60' : 'border-gray-200 hover:border-gray-300'}`}
+                >
+                  <RadioGroupItem value="pickup" id="fulfillment-pickup" className="mt-0.5" />
+                  <span className="min-w-0 flex-1">
+                    <span className="text-sm font-bold text-gray-900">Pickup at event or studio</span>
+                    <span className="mt-1 block text-xs leading-snug text-gray-500">No shipping or handling fees.</span>
+                  </span>
+                </label>
+                <label
+                  htmlFor="fulfillment-ship"
+                  className={`flex cursor-pointer items-start gap-3 rounded-xl border p-3 transition-colors ${fulfillment === 'ship' ? 'border-[#2E75B6] bg-blue-50/60' : 'border-gray-200 hover:border-gray-300'}`}
+                >
+                  <RadioGroupItem value="ship" id="fulfillment-ship" className="mt-0.5" />
+                  <span className="min-w-0 flex-1">
+                    <span className="text-sm font-bold text-gray-900">Ship to my address</span>
+                    <span className="mt-1 block text-xs leading-snug text-gray-500">
+                      Adds $12.45 shipping &amp; handling.
+                    </span>
+                  </span>
+                </label>
+              </RadioGroup>
 
               <h3 className="text-sm font-bold text-gray-800 mb-3">How would you like to pay?</h3>
               <RadioGroup
@@ -498,7 +576,7 @@ export default function CartDrawer() {
                 ) : (
                   <>
                     <CheckCircle2 className="mr-2 h-5 w-5" />
-                    Place order · ${total.toFixed(2)}
+                    Place order · ${orderTotals.total.toFixed(2)}
                   </>
                 )}
               </Button>

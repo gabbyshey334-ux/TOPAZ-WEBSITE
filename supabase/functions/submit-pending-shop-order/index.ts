@@ -12,6 +12,27 @@ const ZELLE_PAYEE = "topaz2.0@yahoo.com";
 const CHECK_MAILING_LINE = "TOPAZ 2.0, PO BOX 131, BANKS OR 97106";
 const CONTACT_PHONE = "971-299-4401";
 
+/** Keep in sync with `app/src/lib/shopFees.ts`. */
+const SHOP_SHIPPING_FLAT = 9.95;
+const SHOP_HANDLING_FLAT = 2.5;
+const SHOP_TAX_RATE = 0;
+
+type ShopFulfillment = "ship" | "pickup";
+
+function roundMoney(n: number): number {
+  return Math.round(n * 100) / 100;
+}
+
+function computeShopOrderTotals(subtotal: number, fulfillment: ShopFulfillment) {
+  const sub = roundMoney(subtotal);
+  const shipping = fulfillment === "ship" ? SHOP_SHIPPING_FLAT : 0;
+  const handling = fulfillment === "ship" ? SHOP_HANDLING_FLAT : 0;
+  const taxable = sub + shipping + handling;
+  const tax = roundMoney(taxable * SHOP_TAX_RATE);
+  const total = roundMoney(taxable + tax);
+  return { subtotal: sub, shipping, handling, tax, total };
+}
+
 type LineIn = {
   product_id: string;
   product_name: string;
@@ -27,6 +48,7 @@ type Body = {
   shipping_address: string;
   notes?: string | null;
   payment_method: "zelle" | "cash" | "check" | "money_order";
+  fulfillment?: ShopFulfillment;
 };
 
 function json(body: unknown, status: number) {
@@ -399,6 +421,7 @@ Deno.serve(async (req: Request) => {
   if (!name) return json({ error: "Name is required" }, 400);
   if (addr.length < 8) return json({ error: "Please enter a full shipping or pickup address" }, 400);
   if (!["zelle", "cash", "check", "money_order"].includes(pm)) return json({ error: "Invalid payment method" }, 400);
+  const fulfillment: ShopFulfillment = body.fulfillment === "ship" ? "ship" : "pickup";
   if (emailRaw && !email) return json({ error: "Invalid email address" }, 400);
   if (!body.items?.length) return json({ error: "Cart is empty" }, 400);
 
@@ -426,7 +449,7 @@ Deno.serve(async (req: Request) => {
     quantity: number;
     unit_price: number;
   }[] = [];
-  let total = 0;
+  let subtotal = 0;
 
   for (const line of body.items) {
     const q = Math.floor(Number(line.quantity));
@@ -444,12 +467,27 @@ Deno.serve(async (req: Request) => {
       quantity: q,
       unit_price: unit,
     });
-    total += unit * q;
+    subtotal += unit * q;
   }
-  total = Math.round(total * 100) / 100;
+  subtotal = roundMoney(subtotal);
+
+  const fees = computeShopOrderTotals(subtotal, fulfillment);
+  const total = fees.total;
+
+  const fulfillmentLine =
+    fulfillment === "ship"
+      ? `Delivery: Ship to address (shipping $${fees.shipping.toFixed(2)}, handling $${fees.handling.toFixed(2)}${fees.tax > 0 ? `, tax $${fees.tax.toFixed(2)}` : ""})`
+      : "Delivery: Pickup at event or studio (no shipping/handling fees)";
 
   const methodLine = `Customer selected payment: ${paymentLabel(pm)}`;
-  const notesCombined = [methodLine, `Shipping / pickup address:\n${addr}`, phone ? `Phone: ${phone}` : null, notesUser || null]
+  const notesCombined = [
+    methodLine,
+    fulfillmentLine,
+    `Order subtotal: $${fees.subtotal.toFixed(2)} | Total due: $${fees.total.toFixed(2)}`,
+    `Shipping / pickup address:\n${addr}`,
+    phone ? `Phone: ${phone}` : null,
+    notesUser || null,
+  ]
     .filter(Boolean)
     .join("\n\n");
 
