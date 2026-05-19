@@ -5,6 +5,7 @@ import { useCart } from '@/contexts/CartContext';
 import type { Database } from '@/types/database';
 import { siteContentText, siteContentUrl } from '@/constants/siteContentDefaults';
 import { useSiteContentMap } from '@/contexts/SiteContentContext';
+import { formatProductPriceDisplay, productPricePlusLine, useShopFees } from '@/lib/shopFees';
 import { ImageLightbox } from '@/components/ImageLightbox';
 
 type Product = Database['public']['Tables']['products']['Row'];
@@ -25,7 +26,15 @@ function productGalleryUrls(product: Product): string[] {
 
 // ─── Product Card ──────────────────────────────────────────────────────────────
 
-function ProductCard({ product }: { product: Product }) {
+function ProductCard({
+  product,
+  pricePlusLine,
+  priceDisplay,
+}: {
+  product: Product;
+  pricePlusLine: string;
+  priceDisplay: string;
+}) {
   const { addItem, openCart } = useCart();
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [sizeError, setSizeError] = useState(false);
@@ -143,7 +152,10 @@ function ProductCard({ product }: { product: Product }) {
           <p className="text-sm text-gray-500 mb-3 leading-relaxed">{product.description}</p>
         )}
 
-        <p className="mb-4 text-2xl font-black text-[#2E75B6]">${Number(product.price).toFixed(2)}</p>
+        <p className="mb-4 text-2xl font-black text-[#2E75B6] leading-snug" title={priceDisplay}>
+          ${Number(product.price).toFixed(2)}{' '}
+          <span className="text-base font-semibold text-gray-500">{pricePlusLine}</span>
+        </p>
 
         {/* Size Selector */}
         {sizes.length > 0 && (
@@ -227,6 +239,9 @@ const Shop = () => {
   const [loading, setLoading] = useState(true);
   const [paymentBanner, setPaymentBanner] = useState<'success' | 'cancelled' | null>(null);
   const siteContent = useSiteContentMap();
+  const shopFees = useShopFees();
+  const pricePlusLine = productPricePlusLine(shopFees);
+  const formatPrice = (unitPrice: number) => formatProductPriceDisplay(unitPrice, shopFees);
   const { count, openCart, clearCart } = useCart();
 
   const shopHeroBg = siteContentUrl(siteContent, 'shop_hero_background');
@@ -398,7 +413,12 @@ const Shop = () => {
           ) : (
             <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {products.map((product) => (
-                <ProductCard key={product.id} product={product} />
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  pricePlusLine={pricePlusLine}
+                  priceDisplay={formatPrice(Number(product.price))}
+                />
               ))}
             </div>
           )}

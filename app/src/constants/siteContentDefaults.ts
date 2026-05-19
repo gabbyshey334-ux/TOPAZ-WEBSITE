@@ -333,6 +333,10 @@ export const SITE_CONTENT_TEXT_DEFAULTS = {
   shop_merch_cta_heading: 'Questions about merchandise?',
   shop_merch_cta_subtitle: 'Need help with sizing or bulk orders for your studio?',
   shop_merch_cta_btn: 'Contact Us',
+  shop_shipping_flat: '9.95',
+  shop_handling_flat: '2.5',
+  shop_tax_rate: '0',
+  shop_price_plus_label: '+ shipping & handling',
 
   registration_hero_badge: 'Season 2026',
   registration_hero_title_line1: 'Secure Your',

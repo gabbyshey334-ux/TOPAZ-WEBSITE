@@ -729,6 +729,7 @@ export default function RegistrationsAdmin() {
   const [detail, setDetail] = useState<RegRow | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   // Bulk sync state
   const [bulkSyncing, setBulkSyncing] = useState(false);
@@ -891,8 +892,31 @@ export default function RegistrationsAdmin() {
   async function confirmDelete() {
     if (!deleteTarget) return;
     setDeleting(true);
-    await supabase.from('registrations').delete().eq('id', deleteTarget);
+    setDeleteError(null);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('delete-from-scoring-app', {
+        body: { registrationId: deleteTarget },
+      });
+      if (error) throw new Error(await parseSyncInvokeFailure(error));
+      if (data && typeof data === 'object' && data !== null && 'error' in data && (data as { error?: unknown }).error) {
+        throw new Error(String((data as { error: unknown }).error));
+      }
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      setDeleteError(
+        `Could not remove this entry from the scoring app: ${msg}. The website registration was not deleted.`,
+      );
+      setDeleting(false);
+      return;
+    }
+
+    const { error: delErr } = await supabase.from('registrations').delete().eq('id', deleteTarget);
     setDeleting(false);
+    if (delErr) {
+      setDeleteError(delErr.message);
+      return;
+    }
     setDeleteTarget(null);
     load();
   }
@@ -1629,7 +1653,15 @@ export default function RegistrationsAdmin() {
       />
 
       {/* Delete confirmation dialog */}
-      <Dialog open={!!deleteTarget} onOpenChange={() => setDeleteTarget(null)}>
+      <Dialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDeleteTarget(null);
+            setDeleteError(null);
+          }
+        }}
+      >
         <DialogContent className="max-w-md bg-slate-950 border-slate-700 text-white">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-red-400">
@@ -1649,12 +1681,23 @@ export default function RegistrationsAdmin() {
               ) : null;
             })()}
             <p className="text-sm text-red-400 mt-3 font-medium">This cannot be undone.</p>
+            <p className="text-sm text-amber-300/90 mt-2">
+              If this entry exists in the scoring app, it will be removed there as well.
+            </p>
+            {deleteError && (
+              <p className="text-sm text-red-400 mt-3 bg-red-950/40 border border-red-900/50 rounded-lg px-3 py-2">
+                {deleteError}
+              </p>
+            )}
           </div>
           <DialogFooter className="gap-2">
             <Button
               variant="ghost"
               className="text-slate-300 hover:text-white"
-              onClick={() => setDeleteTarget(null)}
+              onClick={() => {
+                setDeleteTarget(null);
+                setDeleteError(null);
+              }}
               disabled={deleting}
             >
               Cancel

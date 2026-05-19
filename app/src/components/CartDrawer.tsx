@@ -21,7 +21,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useCart } from '@/contexts/CartContext';
 import { supabase } from '@/lib/supabase';
-import { computeShopOrderTotals, type ShopFulfillment } from '@/lib/shopFees';
+import {
+  computeShopOrderTotals,
+  shippingHandlingFlatTotal,
+  useShopFees,
+  type ShopFulfillment,
+} from '@/lib/shopFees';
 
 type CheckoutStep = 'cart' | 'checkout' | 'success';
 
@@ -85,6 +90,7 @@ function OrderTotalsBreakdown({
 
 export default function CartDrawer() {
   const { items, removeItem, updateQuantity, total, count, isOpen, closeCart, clearCart } = useCart();
+  const shopFees = useShopFees();
   const [step, setStep] = useState<CheckoutStep>('cart');
   const [form, setForm] = useState<CheckoutForm>({ name: '', email: '', phone: '', address: '', notes: '' });
   const [errors, setErrors] = useState<CheckoutErrors>({});
@@ -97,9 +103,11 @@ export default function CartDrawer() {
   const [customerConfirmationSent, setCustomerConfirmationSent] = useState(false);
 
   const orderTotals = useMemo(
-    () => computeShopOrderTotals(total, fulfillment),
-    [total, fulfillment],
+    () => computeShopOrderTotals(total, fulfillment, shopFees),
+    [total, fulfillment, shopFees],
   );
+
+  const shipFeesLabel = `$${shippingHandlingFlatTotal(shopFees).toFixed(2)}`;
 
   const handleClose = () => {
     if (step === 'success') {
@@ -393,7 +401,7 @@ export default function CartDrawer() {
                   <span className="min-w-0 flex-1">
                     <span className="text-sm font-bold text-gray-900">Ship to my address</span>
                     <span className="mt-1 block text-xs leading-snug text-gray-500">
-                      Adds $12.45 shipping &amp; handling.
+                      Adds {shipFeesLabel} shipping &amp; handling.
                     </span>
                   </span>
                 </label>

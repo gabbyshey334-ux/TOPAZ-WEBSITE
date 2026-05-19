@@ -15,6 +15,7 @@ import {
   CheckCircle2,
   XCircle,
   Loader2,
+  Settings2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -42,6 +43,12 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/lib/supabase';
 import type { Database } from '@/types/database';
+import { rowsToSiteContentMap } from '@/constants/siteContentDefaults';
+import {
+  formatProductPriceDisplay,
+  parseShopFeesConfig,
+  shippingHandlingFlatTotal,
+} from '@/lib/shopFees';
 
 type Product = Database['public']['Tables']['products']['Row'];
 type Order = Database['public']['Tables']['orders']['Row'];
@@ -1168,6 +1175,193 @@ function OrdersSection() {
   );
 }
 
+// ─── Shop fees (site_content) ─────────────────────────────────────────────────
+
+const SHOP_FEE_KEYS = [
+  'shop_shipping_flat',
+  'shop_handling_flat',
+  'shop_tax_rate',
+  'shop_price_plus_label',
+] as const;
+
+function ShopFeesSettingsSection() {
+  const [shipping, setShipping] = useState('9.95');
+  const [handling, setHandling] = useState('2.5');
+  const [taxRate, setTaxRate] = useState('0');
+  const [pricePlusLabel, setPricePlusLabel] = useState('+ shipping & handling');
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError('');
+    const { data, error: err } = await supabase
+      .from('site_content')
+      .select('key, value')
+      .in('key', [...SHOP_FEE_KEYS]);
+    if (err) {
+      setError(err.message);
+      setLoading(false);
+      return;
+    }
+    const cfg = parseShopFeesConfig(rowsToSiteContentMap(data));
+    setShipping(String(cfg.shippingFlat));
+    setHandling(String(cfg.handlingFlat));
+    setTaxRate(String(cfg.taxRate));
+    setPricePlusLabel(cfg.pricePlusLabel);
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  const previewConfig = parseShopFeesConfig({
+    shop_shipping_flat: shipping,
+    shop_handling_flat: handling,
+    shop_tax_rate: taxRate,
+    shop_price_plus_label: pricePlusLabel,
+  });
+
+  const handleSave = async () => {
+    const ship = parseFloat(shipping);
+    const hand = parseFloat(handling);
+    const tax = parseFloat(taxRate);
+    if (!Number.isFinite(ship) || ship < 0) {
+      setError('Enter a valid shipping amount.');
+      return;
+    }
+    if (!Number.isFinite(hand) || hand < 0) {
+      setError('Enter a valid handling amount.');
+      return;
+    }
+    if (!Number.isFinite(tax) || tax < 0) {
+      setError('Enter a valid tax rate (use 0 for no tax).');
+      return;
+    }
+    if (!pricePlusLabel.trim()) {
+      setError('Enter the text shown under product prices.');
+      return;
+    }
+
+    setSaving(true);
+    setError('');
+    setMessage('');
+    const rows = [
+      { key: 'shop_shipping_flat', value: String(ship) },
+      { key: 'shop_handling_flat', value: String(hand) },
+      { key: 'shop_tax_rate', value: String(tax) },
+      { key: 'shop_price_plus_label', value: pricePlusLabel.trim() },
+    ];
+    for (const row of rows) {
+      const { error: err } = await supabase.from('site_content').upsert(row, { onConflict: 'key' });
+      if (err) {
+        setError(err.message);
+        setSaving(false);
+        return;
+      }
+    }
+    setSaving(false);
+    setMessage('Saved. The shop and checkout now use these shipping and handling settings.');
+    void load();
+  };
+
+  return (
+    <div className="max-w-xl space-y-6 rounded-xl border border-slate-700 bg-slate-800/50 p-6">
+      <div>
+        <h3 className="text-lg font-bold text-white">Shipping &amp; handling</h3>
+        <p className="mt-1 text-sm text-slate-400">
+          Controls the line under each product price (e.g. &quot;+ shipping &amp; handling&quot;) and fees added at checkout when customers choose mail delivery.
+        </p>
+      </div>
+
+      {loading ? (
+        <p className="flex items-center gap-2 text-sm text-slate-400">
+          <Loader2 className="h-4 w-4 animate-spin" /> Loading…
+        </p>
+      ) : (
+        <div className="space-y-4">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <Label className="text-slate-300">Shipping ($)</Label>
+              <Input
+                type="number"
+                min={0}
+                step="0.01"
+                value={shipping}
+                onChange={(e) => setShipping(e.target.value)}
+                className="border-slate-600 bg-slate-900 text-white"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-slate-300">Handling ($)</Label>
+              <Input
+                type="number"
+                min={0}
+                step="0.01"
+                value={handling}
+                onChange={(e) => setHandling(e.target.value)}
+                className="border-slate-600 bg-slate-900 text-white"
+              />
+            </div>
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-slate-300">Tax rate (decimal)</Label>
+            <Input
+              type="number"
+              min={0}
+              step="0.001"
+              value={taxRate}
+              onChange={(e) => setTaxRate(e.target.value)}
+              className="border-slate-600 bg-slate-900 text-white"
+            />
+            <p className="text-xs text-slate-500">Use 0 for no tax (Oregon). Use 0.085 for 8.5% if needed later.</p>
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-slate-300">Text under product price</Label>
+            <Input
+              value={pricePlusLabel}
+              onChange={(e) => setPricePlusLabel(e.target.value)}
+              placeholder="+ shipping & handling"
+              className="border-slate-600 bg-slate-900 text-white"
+            />
+          </div>
+
+          <div className="rounded-lg border border-slate-600 bg-slate-900/80 px-4 py-3 text-sm text-slate-300">
+            <p className="font-semibold text-white mb-1">Preview</p>
+            <p className="text-2xl font-black text-[#7EB8E8] leading-snug">
+              {formatProductPriceDisplay(25, previewConfig)}
+            </p>
+            <p className="mt-2 text-xs text-slate-500">
+              Mail delivery adds ${shippingHandlingFlatTotal(previewConfig).toFixed(2)} to the order total.
+            </p>
+          </div>
+
+          {error && <p className="text-sm text-red-400">{error}</p>}
+          {message && <p className="text-sm text-emerald-400">{message}</p>}
+
+          <Button
+            type="button"
+            onClick={() => void handleSave()}
+            disabled={saving}
+            className="bg-[#2E75B6] hover:bg-[#1F4E78] text-white"
+          >
+            {saving ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving…
+              </>
+            ) : (
+              'Save shipping settings'
+            )}
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Main ShopTab ─────────────────────────────────────────────────────────────
 
 export default function ShopTab() {
@@ -1186,12 +1380,18 @@ export default function ShopTab() {
           <TabsTrigger value="orders" className="data-[state=active]:bg-[#2E75B6] data-[state=active]:text-white text-slate-400">
             <ShoppingBag className="w-4 h-4 mr-2" /> Orders
           </TabsTrigger>
+          <TabsTrigger value="settings" className="data-[state=active]:bg-[#2E75B6] data-[state=active]:text-white text-slate-400">
+            <Settings2 className="w-4 h-4 mr-2" /> Shipping
+          </TabsTrigger>
         </TabsList>
         <TabsContent value="products">
           <ProductsSection />
         </TabsContent>
         <TabsContent value="orders">
           <OrdersSection />
+        </TabsContent>
+        <TabsContent value="settings">
+          <ShopFeesSettingsSection />
         </TabsContent>
       </Tabs>
     </div>

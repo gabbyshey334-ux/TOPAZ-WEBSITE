@@ -12,23 +12,53 @@ const ZELLE_PAYEE = "topaz2.0@yahoo.com";
 const CHECK_MAILING_LINE = "TOPAZ 2.0, PO BOX 131, BANKS OR 97106";
 const CONTACT_PHONE = "971-299-4401";
 
-/** Keep in sync with `app/src/lib/shopFees.ts`. */
-const SHOP_SHIPPING_FLAT = 9.95;
-const SHOP_HANDLING_FLAT = 2.5;
-const SHOP_TAX_RATE = 0;
+/** Fallbacks — keep in sync with `app/src/lib/shopFees.ts`. */
+const SHOP_SHIPPING_FLAT_DEFAULT = 9.95;
+const SHOP_HANDLING_FLAT_DEFAULT = 2.5;
+const SHOP_TAX_RATE_DEFAULT = 0;
 
 type ShopFulfillment = "ship" | "pickup";
+
+type ShopFeesConfig = {
+  shippingFlat: number;
+  handlingFlat: number;
+  taxRate: number;
+};
 
 function roundMoney(n: number): number {
   return Math.round(n * 100) / 100;
 }
 
-function computeShopOrderTotals(subtotal: number, fulfillment: ShopFulfillment) {
+function parseFee(value: string | null | undefined, fallback: number): number {
+  const n = Number(String(value ?? "").trim());
+  return Number.isFinite(n) && n >= 0 ? n : fallback;
+}
+
+async function loadShopFeesConfig(
+  supabase: ReturnType<typeof createClient>,
+): Promise<ShopFeesConfig> {
+  const { data } = await supabase
+    .from("site_content")
+    .select("key, value")
+    .in("key", ["shop_shipping_flat", "shop_handling_flat", "shop_tax_rate"]);
+  const map = new Map((data ?? []).map((r) => [r.key, r.value]));
+  return {
+    shippingFlat: parseFee(map.get("shop_shipping_flat"), SHOP_SHIPPING_FLAT_DEFAULT),
+    handlingFlat: parseFee(map.get("shop_handling_flat"), SHOP_HANDLING_FLAT_DEFAULT),
+    taxRate: parseFee(map.get("shop_tax_rate"), SHOP_TAX_RATE_DEFAULT),
+  };
+}
+
+function computeShopOrderTotals(
+  subtotal: number,
+  fulfillment: ShopFulfillment,
+  fees: ShopFeesConfig,
+) {
   const sub = roundMoney(subtotal);
-  const shipping = fulfillment === "ship" ? SHOP_SHIPPING_FLAT : 0;
-  const handling = fulfillment === "ship" ? SHOP_HANDLING_FLAT : 0;
+  const shipping = fulfillment === "ship" ? fees.shippingFlat : 0;
+  const handling = fulfillment === "ship" ? fees.handlingFlat : 0;
   const taxable = sub + shipping + handling;
-  const tax = roundMoney(taxable * SHOP_TAX_RATE);
+  const tax = roundMoney(taxable * fees.taxRate);
   const total = roundMoney(taxable + tax);
   return { subtotal: sub, shipping, handling, tax, total };
 }
@@ -471,7 +501,8 @@ Deno.serve(async (req: Request) => {
   }
   subtotal = roundMoney(subtotal);
 
-  const fees = computeShopOrderTotals(subtotal, fulfillment);
+  const feeConfig = await loadShopFeesConfig(supabase);
+  const fees = computeShopOrderTotals(subtotal, fulfillment, feeConfig);
   const total = fees.total;
 
   const fulfillmentLine =
