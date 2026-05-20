@@ -64,28 +64,40 @@ async function deleteScoringForRegistration(
   }
 
   const errors: string[] = [];
-
-  for (const perfId of performanceIds) {
-    const { error } = await scoringClient
-      .from('performance_participants')
-      .delete()
-      .eq('performance_id', perfId);
-    if (error) errors.push(`performance_participants: ${error.message}`);
-  }
+  let deletedPerformances = 0;
 
   for (const entryId of entryIds) {
     const { error } = await scoringClient.from('entries').delete().eq('id', entryId);
     if (error) errors.push(`entries: ${error.message}`);
   }
 
+  // Only remove the performance when no other entries still reference it (shared duo/trio).
   for (const perfId of performanceIds) {
-    const { error } = await scoringClient.from('performances').delete().eq('id', perfId);
-    if (error) errors.push(`performances: ${error.message}`);
+    const { data: stillLinked, error: linkErr } = await scoringClient
+      .from('entries')
+      .select('id')
+      .eq('performance_id', perfId)
+      .limit(1);
+    if (linkErr) {
+      errors.push(`entries lookup: ${linkErr.message}`);
+      continue;
+    }
+    if (stillLinked && stillLinked.length > 0) continue;
+
+    const { error: partErr } = await scoringClient
+      .from('performance_participants')
+      .delete()
+      .eq('performance_id', perfId);
+    if (partErr) errors.push(`performance_participants: ${partErr.message}`);
+
+    const { error: perfErr } = await scoringClient.from('performances').delete().eq('id', perfId);
+    if (perfErr) errors.push(`performances: ${perfErr.message}`);
+    else deletedPerformances += 1;
   }
 
   return {
     deletedEntries: entryIds.size,
-    deletedPerformances: performanceIds.size,
+    deletedPerformances,
     errors,
   };
 }

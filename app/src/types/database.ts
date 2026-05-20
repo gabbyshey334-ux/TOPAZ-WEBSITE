@@ -196,6 +196,7 @@ export type Database = {
           group_members: Json | null;
           division_type: string | null;
           website_registration_id: string | null;
+          performance_id: string | null;
           created_at: string | null;
         };
         Insert: {
@@ -208,6 +209,7 @@ export type Database = {
           group_members?: Json | null;
           division_type?: string | null;
           website_registration_id?: string | null;
+          performance_id?: string | null;
           created_at?: string | null;
         };
         Update: {
@@ -220,7 +222,26 @@ export type Database = {
           group_members?: Json | null;
           division_type?: string | null;
           website_registration_id?: string | null;
+          performance_id?: string | null;
           created_at?: string | null;
+        };
+        Relationships: [];
+      };
+      performance_participants: {
+        Row: {
+          performance_id: string;
+          display_name: string | null;
+          sort_order: number | null;
+        };
+        Insert: {
+          performance_id: string;
+          display_name?: string | null;
+          sort_order?: number | null;
+        };
+        Update: {
+          performance_id?: string;
+          display_name?: string | null;
+          sort_order?: number | null;
         };
         Relationships: [];
       };

@@ -1,6 +1,30 @@
-import type { Database } from '@/types/database';
+import type { Database, Json } from '@/types/database';
 
 export type RegistrationRow = Database['public']['Tables']['registrations']['Row'];
+
+/** TOPAZ 2026 — same competition id as sync/delete edge functions. */
+export const SCORING_COMPETITION_ID = '60874ab6-341e-4e21-9e62-7fe686530607';
+
+/** Names from scoring `group_members` JSON (strings or `{ name }` / `{ competitor_name }`). */
+export function parseGroupMemberNames(gm: Json | null | undefined): string[] {
+  if (!Array.isArray(gm)) return [];
+  const out: string[] = [];
+  for (const x of gm) {
+    if (typeof x === 'string') {
+      const n = x.trim();
+      if (n) out.push(n);
+      continue;
+    }
+    if (x && typeof x === 'object') {
+      const o = x as { name?: unknown; competitor_name?: unknown };
+      const n =
+        (typeof o.name === 'string' ? o.name : '') ||
+        (typeof o.competitor_name === 'string' ? o.competitor_name : '');
+      if (n.trim()) out.push(n.trim());
+    }
+  }
+  return out;
+}
 
 /** Normalize routine / group link keys the same way as admin grouping. */
 export function normalizeRegistrationKey(v: string | null | undefined): string {
@@ -81,19 +105,7 @@ export function groupSizeToEntryType(groupSize: string): string {
  * from `group_members` (or merged participant list), not from `dance_type` / category.
  */
 export function getEntryType(entry: { group_members?: unknown }): string {
-  const raw = entry.group_members;
-  const members: string[] = Array.isArray(raw)
-    ? raw
-        .map((x) => {
-          if (typeof x === 'string') return x.trim();
-          if (x && typeof x === 'object' && 'name' in x) {
-            const n = (x as { name?: unknown }).name;
-            return typeof n === 'string' ? n.trim() : '';
-          }
-          return '';
-        })
-        .filter((s) => s.length > 0)
-    : [];
+  const members = parseGroupMemberNames(entry.group_members as Json | null);
   const count = members.length;
   if (count <= 1) return 'Solo';
   if (count === 2) return 'Duo';

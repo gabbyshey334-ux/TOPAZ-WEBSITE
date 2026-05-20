@@ -291,65 +291,121 @@ Deno.serve(async (req: Request) => {
 
   const nextEntryNumber = (maxEntry?.entry_number ?? 0) + 1;
 
-  // Step 1: create the parent `performances` row. The scoring app UI
-  // joins entries → performances, so every entry must point at one.
-  const perfPayload = {
-    competition_id: competitionId,
-    entry_number: nextEntryNumber,
-    routine_name: null,
-    competitor_name: competitorName,
-    category_id: categoryId,
-    age_division_id: getAgeDivisionId(age),
-    age,
-    dance_type: categoryRaw,
-    ability_level: abilityLevel,
-    studio_name: reg.studio_name || '',
-    teacher_name: reg.teacher_name || '',
-    group_members: groupMembers.length > 0 ? groupMembers : null,
-    division_type: divisionType,
-    is_medal_program: true,
+  const buildParticipantRows = (performanceId: string) => {
+    const participantRows: {
+      performance_id: string;
+      display_name: string;
+      age: number | null;
+      sort_order: number;
+    }[] = [];
+    if (groupMembers.length > 0) {
+      groupMembers.forEach((name, idx) => {
+        const n = typeof name === 'string' ? name.trim() : '';
+        if (n) participantRows.push({ performance_id: performanceId, display_name: n, age: null, sort_order: idx });
+      });
+    }
+    if (participantRows.length === 0) {
+      participantRows.push({
+        performance_id: performanceId,
+        display_name: competitorName,
+        age: age || null,
+        sort_order: 0,
+      });
+    }
+    return participantRows;
   };
 
-  const { data: perfRow, error: perfErr } = await scoringClient
-    .from('performances')
-    .insert(perfPayload)
-    .select('id')
-    .single();
+  let performanceId: string | null = null;
 
-  if (perfErr || !perfRow?.id) {
-    const msg = perfErr?.message ?? 'Failed to create performance row';
-    await updateSyncStatus(websiteClient, registrationId, 'failed', null, msg);
-    return new Response(JSON.stringify({ error: msg, perfPayload }), {
-      status: 500,
-      headers: JSON_HEADERS,
-    });
+  // Duo/Trio/etc.: reuse an existing performance for the same routine name so the
+  // scoring app does not list duplicate performances when each dancer registers separately.
+  if (divisionType !== 'Solo') {
+    const { data: sibling } = await scoringClient
+      .from('entries')
+      .select('performance_id')
+      .eq('competition_id', competitionId)
+      .eq('division_type', divisionType)
+      .eq('competitor_name', competitorName)
+      .not('performance_id', 'is', null)
+      .limit(1)
+      .maybeSingle();
+    if (sibling?.performance_id) {
+      performanceId = sibling.performance_id as string;
+    }
   }
 
-  const performanceId = perfRow.id as string;
+  if (!performanceId) {
+    // Step 1: create the parent `performances` row. The scoring app UI
+    // joins entries → performances, so every entry must point at one.
+    const perfPayload = {
+      competition_id: competitionId,
+      entry_number: nextEntryNumber,
+      routine_name: null,
+      competitor_name: competitorName,
+      category_id: categoryId,
+      age_division_id: getAgeDivisionId(age),
+      age,
+      dance_type: categoryRaw,
+      ability_level: abilityLevel,
+      studio_name: reg.studio_name || '',
+      teacher_name: reg.teacher_name || '',
+      group_members: groupMembers.length > 0 ? groupMembers : null,
+      division_type: divisionType,
+      is_medal_program: true,
+    };
 
-  // Step 2: insert participant rows. Always at least one (the soloist).
-  const participantRows: { performance_id: string; display_name: string; age: number | null; sort_order: number }[] = [];
-  if (groupMembers.length > 0) {
-    groupMembers.forEach((name, idx) => {
-      const n = typeof name === 'string' ? name.trim() : '';
-      if (n) participantRows.push({ performance_id: performanceId, display_name: n, age: null, sort_order: idx });
-    });
-  }
-  if (participantRows.length === 0) {
-    participantRows.push({
-      performance_id: performanceId,
-      display_name: competitorName,
-      age: age || null,
-      sort_order: 0,
-    });
-  }
+    const { data: perfRow, error: perfErr } = await scoringClient
+      .from('performances')
+      .insert(perfPayload)
+      .select('id')
+      .single();
 
-  const { error: partErr } = await scoringClient.from('performance_participants').insert(participantRows);
-  if (partErr) {
-    await scoringClient.from('performances').delete().eq('id', performanceId);
-    const msg = partErr.message;
-    await updateSyncStatus(websiteClient, registrationId, 'failed', null, msg);
-    return new Response(JSON.stringify({ error: msg }), { status: 500, headers: JSON_HEADERS });
+    if (perfErr || !perfRow?.id) {
+      const msg = perfErr?.message ?? 'Failed to create performance row';
+      await updateSyncStatus(websiteClient, registrationId, 'failed', null, msg);
+      return new Response(JSON.stringify({ error: msg, perfPayload }), {
+        status: 500,
+        headers: JSON_HEADERS,
+      });
+    }
+
+    performanceId = perfRow.id as string;
+
+    const { error: partErr } = await scoringClient
+      .from('performance_participants')
+      .insert(buildParticipantRows(performanceId));
+    if (partErr) {
+      await scoringClient.from('performances').delete().eq('id', performanceId);
+      const msg = partErr.message;
+      await updateSyncStatus(websiteClient, registrationId, 'failed', null, msg);
+      return new Response(JSON.stringify({ error: msg }), { status: 500, headers: JSON_HEADERS });
+    }
+  } else {
+    await scoringClient
+      .from('performances')
+      .update({
+        group_members: groupMembers.length > 0 ? groupMembers : null,
+        studio_name: reg.studio_name || '',
+        teacher_name: reg.teacher_name || '',
+      })
+      .eq('id', performanceId);
+
+    if (groupMembers.length > 0) {
+      await scoringClient.from('performance_participants').delete().eq('performance_id', performanceId);
+      const { error: partErr } = await scoringClient
+        .from('performance_participants')
+        .insert(buildParticipantRows(performanceId));
+      if (partErr) {
+        const msg = partErr.message;
+        await updateSyncStatus(websiteClient, registrationId, 'failed', null, msg);
+        return new Response(JSON.stringify({ error: msg }), { status: 500, headers: JSON_HEADERS });
+      }
+    }
+
+    await scoringClient
+      .from('entries')
+      .update({ group_members: groupMembers.length > 0 ? groupMembers : null })
+      .eq('performance_id', performanceId);
   }
 
   // Step 3: insert the entries row, normalized ability_level + the
