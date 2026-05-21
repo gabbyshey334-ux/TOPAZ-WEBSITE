@@ -44,6 +44,7 @@ import {
   List,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useScoringCompetitionId } from '@/hooks/useScoringCompetitionId';
 import {
   findLinkedRegistrations,
   groupSizeToEntryType,
@@ -85,7 +86,7 @@ async function parseSyncInvokeFailure(error: unknown): Promise<string> {
 // function returns an error containing "No matching competition". We surface
 // this as a clear, human-readable banner so Nick knows exactly what to do.
 const MISSING_COMPETITION_HINT =
-  "No competition found in the scoring app. Please create 'The Return of TOPAZ 2.0' in the scoring app first, then try syncing again.";
+  'No scoring competition is linked. Create the competition in the scoring app, then paste its UUID in Admin → Events (Scoring app competition ID) on the active event, and sync again.';
 
 function isMissingCompetitionError(err: string | null | undefined): boolean {
   if (!err) return false;
@@ -219,6 +220,7 @@ function Field({ label, value }: { label: string; value?: string | null }) {
 function DetailDialog({
   row,
   allRows,
+  scoringCompetitionId,
   onClose,
   onStatusChange,
   onSyncComplete,
@@ -226,6 +228,7 @@ function DetailDialog({
 }: {
   row: RegRow | null;
   allRows: RegRow[];
+  scoringCompetitionId: string;
   onClose: () => void;
   onStatusChange: (id: string, status: string) => void;
   onSyncComplete: (id: string, updated: Partial<RegRow>) => void;
@@ -265,7 +268,7 @@ function DetailDialog({
     setSyncMsg(null);
     try {
       const { data, error } = await supabase.functions.invoke('sync-to-scoring-app', {
-        body: { registrationId: row.id },
+        body: { registrationId: row.id, competitionId: scoringCompetitionId },
       });
       if (error) throw new Error(await parseSyncInvokeFailure(error));
       if (data?.alreadySynced) {
@@ -718,6 +721,7 @@ function DetailDialog({
 
 // ── Main component ────────────────────────────────────────────────────────────
 export default function RegistrationsAdmin() {
+  const { resolvedCompetitionId, isLinked } = useScoringCompetitionId();
   const [rows, setRows] = useState<RegRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -945,7 +949,7 @@ export default function RegistrationsAdmin() {
       let thisError: string | null = null;
       try {
         const { data, error } = await supabase.functions.invoke('sync-to-scoring-app', {
-          body: { registrationId: reg.id },
+          body: { registrationId: reg.id, competitionId: resolvedCompetitionId },
         });
         if (error) {
           thisError = await parseSyncInvokeFailure(error);
@@ -1055,7 +1059,12 @@ export default function RegistrationsAdmin() {
       try {
         const { data: syncData, error: syncErr } = await supabase.functions.invoke(
           'sync-to-scoring-app',
-          { body: { registrationId: (insData as RegRow).id } }
+          {
+            body: {
+              registrationId: (insData as RegRow).id,
+              competitionId: resolvedCompetitionId,
+            },
+          },
         );
         if (syncErr) throw new Error(await parseSyncInvokeFailure(syncErr));
         if (syncData?.alreadySynced) {
@@ -1643,9 +1652,17 @@ export default function RegistrationsAdmin() {
       )}
 
       {/* Full detail dialog */}
+      {!isLinked && (
+        <div className="rounded-xl border border-amber-700/60 bg-amber-950/40 px-4 py-3 text-sm text-amber-200">
+          Link the active event to a scoring competition in Admin → Events (paste the competition
+          UUID) before syncing registrations.
+        </div>
+      )}
+
       <DetailDialog
         row={detail}
         allRows={rows}
+        scoringCompetitionId={resolvedCompetitionId}
         onClose={() => setDetail(null)}
         onStatusChange={setStatus}
         onSyncComplete={handleSyncComplete}
@@ -1971,7 +1988,7 @@ export default function RegistrationsAdmin() {
             <div className="mt-3 bg-amber-950/30 border border-amber-900/40 rounded-lg px-3 py-2 flex items-start gap-2">
               <AlertTriangle className="w-3.5 h-3.5 text-amber-400 mt-0.5 shrink-0" />
               <p className="text-xs text-amber-300">
-                The TOPAZ 2.0 competition must already exist in the scoring app. If it doesn't, registrations will fail with a clear error message.
+                The active event must have a scoring competition ID (Admin → Events). Create the competition in the scoring app first, then paste its UUID on the event.
               </p>
             </div>
           </div>

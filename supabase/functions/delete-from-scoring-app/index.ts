@@ -1,12 +1,10 @@
 import { createClient } from 'jsr:@supabase/supabase-js@2';
+import { resolveCompetitionId } from '../_shared/scoringCompetition.ts';
 
 const SCORING_APP_URL = Deno.env.get('SCORING_APP_URL')!;
 const SCORING_APP_SERVICE_ROLE_KEY = Deno.env.get('SCORING_APP_SERVICE_ROLE_KEY')!;
 const WEBSITE_URL = Deno.env.get('SUPABASE_URL')!;
 const WEBSITE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-
-/** Same competition as `sync-to-scoring-app`. */
-const COMPETITION_ID = '60874ab6-341e-4e21-9e62-7fe686530607';
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -24,6 +22,7 @@ type EntryRef = { id: string; performance_id: string | null };
 
 async function deleteScoringForRegistration(
   scoringClient: ReturnType<typeof createClient>,
+  competitionId: string,
   registrationId: string,
   entryIdHint: string | null,
 ): Promise<{ deletedEntries: number; deletedPerformances: number; errors: string[] }> {
@@ -35,7 +34,7 @@ async function deleteScoringForRegistration(
   const { data: byReg, error: lookupErr } = await scoringClient
     .from('entries')
     .select('id, performance_id')
-    .eq('competition_id', COMPETITION_ID)
+    .eq('competition_id', competitionId)
     .eq('website_registration_id', registrationId);
 
   if (lookupErr) {
@@ -71,7 +70,6 @@ async function deleteScoringForRegistration(
     if (error) errors.push(`entries: ${error.message}`);
   }
 
-  // Only remove the performance when no other entries still reference it (shared duo/trio).
   for (const perfId of performanceIds) {
     const { data: stillLinked, error: linkErr } = await scoringClient
       .from('entries')
@@ -112,9 +110,11 @@ Deno.serve(async (req: Request) => {
   }
 
   let registrationId: string;
+  let bodyCompetitionId: string | undefined;
   try {
     const body = await req.json();
     registrationId = body?.registrationId;
+    bodyCompetitionId = body?.competitionId;
     if (!registrationId || typeof registrationId !== 'string') {
       throw new Error('registrationId is required');
     }
@@ -136,6 +136,11 @@ Deno.serve(async (req: Request) => {
   const websiteClient = createClient(WEBSITE_URL, WEBSITE_SERVICE_ROLE_KEY);
   const scoringClient = createClient(SCORING_APP_URL, SCORING_APP_SERVICE_ROLE_KEY);
 
+  const resolved = await resolveCompetitionId(websiteClient, bodyCompetitionId);
+  if ('error' in resolved) {
+    return json({ error: resolved.error }, 422);
+  }
+
   const { data: reg, error: regErr } = await websiteClient
     .from('registrations')
     .select('id, scoring_app_contestant_id, scoring_app_sync_status')
@@ -151,6 +156,7 @@ Deno.serve(async (req: Request) => {
 
   const result = await deleteScoringForRegistration(
     scoringClient,
+    resolved.competitionId,
     registrationId,
     entryHint,
   );

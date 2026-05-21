@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import { useActiveEvent } from '@/hooks/useActiveEvent';
 import { supabase } from '@/lib/supabase';
 import type { RegistrationParticipant } from '@/types/database';
 import { Input } from '@/components/ui/input';
@@ -24,10 +25,25 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-// ─── Competition schedule ─────────────────────────────────────────────────────
-const COMPETITION_DATE = new Date('2026-08-22T00:00:00');
-const REGISTRATION_OPEN = new Date('2026-04-01T00:00:00');
-const REGISTRATION_CLOSE = new Date('2026-07-30T00:00:00'); // exclusive — closes midnight July 30
+// ─── Competition schedule (fallback when no active event in Admin → Events) ───
+const FALLBACK_COMPETITION_DATE = new Date('2026-08-22T00:00:00');
+const FALLBACK_REGISTRATION_OPEN = new Date('2026-04-01T00:00:00');
+const FALLBACK_REGISTRATION_CLOSE = new Date('2026-07-30T00:00:00');
+
+function parseDateStart(isoDate: string): Date {
+  const [y, m, d] = isoDate.split('-').map(Number);
+  return new Date(y, m - 1, d, 0, 0, 0, 0);
+}
+
+/** Last moment of the close date (inclusive). */
+function parseDateEnd(isoDate: string): Date {
+  const [y, m, d] = isoDate.split('-').map(Number);
+  return new Date(y, m - 1, d, 23, 59, 59, 999);
+}
+
+function formatDisplayDate(d: Date): string {
+  return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+}
 
 // ─── Static option lists ──────────────────────────────────────────────────────
 const PERFORMING = [
@@ -244,12 +260,20 @@ function ageAsOf(dob: string, referenceDate: Date): number {
   return age;
 }
 
-function isMajor(dob: string): boolean {
-  return ageAsOf(dob, COMPETITION_DATE) >= 18;
+function isMajor(dob: string, competitionDate: Date): boolean {
+  return ageAsOf(dob, competitionDate) >= 18;
 }
 
 // ─── Registration closed banner ───────────────────────────────────────────────
-function RegistrationClosedBanner({ before }: { before?: boolean }) {
+function RegistrationClosedBanner({
+  before,
+  openDate,
+  closeDate,
+}: {
+  before?: boolean;
+  openDate: Date;
+  closeDate: Date;
+}) {
   return (
     <div className="max-w-xl mx-auto text-center py-12 px-6">
       <div className="w-20 h-20 bg-red-50 rounded-[1.5rem] flex items-center justify-center mx-auto mb-8 shadow-sm">
@@ -260,8 +284,8 @@ function RegistrationClosedBanner({ before }: { before?: boolean }) {
       </h2>
       <p className="text-gray-500 mb-8 leading-relaxed font-medium text-lg">
         {before
-          ? 'Online registration opens April 1, 2026. Please check back then.'
-          : 'The registration deadline was July 30, 2026 at 12:00 AM. No late registrations are accepted.'}
+          ? `Online registration opens ${formatDisplayDate(openDate)}. Please check back then.`
+          : `The registration deadline was ${formatDisplayDate(closeDate)}. No late registrations are accepted.`}
       </p>
       <p className="text-sm font-bold tracking-widest uppercase text-gray-400">
         Questions?{' '}
@@ -292,9 +316,26 @@ const FormLabel = ({ children, className }: { children: React.ReactNode; classNa
 
 // ─── Main component ───────────────────────────────────────────────────────────
 export default function CompetitionRegistrationForm() {
+  const { event, loading: eventLoading } = useActiveEvent();
+
+  const competitionDate = useMemo(() => {
+    if (event?.date) return parseDateStart(event.date);
+    return FALLBACK_COMPETITION_DATE;
+  }, [event?.date]);
+
+  const registrationOpen = useMemo(() => {
+    if (event?.registration_open_date) return parseDateStart(event.registration_open_date);
+    return FALLBACK_REGISTRATION_OPEN;
+  }, [event?.registration_open_date]);
+
+  const registrationClose = useMemo(() => {
+    if (event?.registration_close_date) return parseDateEnd(event.registration_close_date);
+    return FALLBACK_REGISTRATION_CLOSE;
+  }, [event?.registration_close_date]);
+
   const now = new Date();
-  const isBeforeOpen = now < REGISTRATION_OPEN;
-  const isAfterClose = now >= REGISTRATION_CLOSE;
+  const isBeforeOpen = !eventLoading && now < registrationOpen;
+  const isAfterClose = !eventLoading && now > registrationClose;
 
   const [step, setStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
@@ -382,13 +423,13 @@ export default function CompetitionRegistrationForm() {
   // ── Derived values ───────────────────────────────────────────────────────
   const computedAge = useMemo(() => {
     if (!dateOfBirth) return '';
-    const age = ageAsOf(dateOfBirth, COMPETITION_DATE);
+    const age = ageAsOf(dateOfBirth, competitionDate);
     return age > 0 ? String(age) : '';
   }, [dateOfBirth]);
 
   const dancerIsMinor = useMemo(() => {
     if (!dateOfBirth) return false;
-    return !isMajor(dateOfBirth);
+    return !isMajor(dateOfBirth, competitionDate);
   }, [dateOfBirth]);
 
   const countForFee = useMemo(() => {
@@ -427,7 +468,7 @@ export default function CompetitionRegistrationForm() {
 
   const ageDivisionError = useMemo(() => {
     if (!ageDivision || !dateOfBirth) return null;
-    const age = ageAsOf(dateOfBirth, COMPETITION_DATE);
+    const age = ageAsOf(dateOfBirth, competitionDate);
     if (!Number.isFinite(age) || age <= 0) return null;
     if (validateAgeDivision(ageDivision, age)) return null;
     return `Your age (${age}) doesn't match this division. Please select the correct age group.`;
@@ -447,7 +488,7 @@ export default function CompetitionRegistrationForm() {
     if (s === 1) {
       if (!contestantName.trim()) return 'Contestant name is required.';
       if (!dateOfBirth) return 'Date of birth is required.';
-      const age = ageAsOf(dateOfBirth, COMPETITION_DATE);
+      const age = ageAsOf(dateOfBirth, competitionDate);
       if (age < 0 || age > 120) return 'Please enter a valid date of birth.';
       if (!studioName.trim()) return 'Studio name is required.';
       if (!teacherName.trim()) return 'Teacher / instructor name is required.';
@@ -476,7 +517,7 @@ export default function CompetitionRegistrationForm() {
     if (s === 3) {
       if (!ageDivision) return 'Select an age division.';
       if (dateOfBirth) {
-        const stepAge = ageAsOf(dateOfBirth, COMPETITION_DATE);
+        const stepAge = ageAsOf(dateOfBirth, competitionDate);
         if (!validateAgeDivision(ageDivision, stepAge)) {
           return `Your age (${stepAge}) doesn't match this division. Please select the correct age group.`;
         }
@@ -591,7 +632,7 @@ export default function CompetitionRegistrationForm() {
     const row = {
       status: 'pending',
       contestant_name: contestantName.trim(),
-      age: computedAge || String(ageAsOf(dateOfBirth, COMPETITION_DATE)),
+      age: computedAge || String(ageAsOf(dateOfBirth, competitionDate)),
       date_of_birth: dateOfBirth || null,
       studio_name: studioName.trim(),
       teacher_name: teacherName.trim(),
@@ -698,8 +739,16 @@ export default function CompetitionRegistrationForm() {
   }
 
   // ── Early returns ─────────────────────────────────────────────────────────
-  if (isBeforeOpen) return <RegistrationClosedBanner before />;
-  if (isAfterClose) return <RegistrationClosedBanner />;
+  if (isBeforeOpen) {
+    return (
+      <RegistrationClosedBanner before openDate={registrationOpen} closeDate={registrationClose} />
+    );
+  }
+  if (isAfterClose) {
+    return (
+      <RegistrationClosedBanner openDate={registrationOpen} closeDate={registrationClose} />
+    );
+  }
 
   if (success) {
     return (

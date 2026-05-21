@@ -2,7 +2,7 @@ import type { Database, Json } from '@/types/database';
 
 export type RegistrationRow = Database['public']['Tables']['registrations']['Row'];
 
-/** TOPAZ 2026 — same competition id as sync/delete edge functions. */
+/** @deprecated Use `useScoringCompetitionId()` — reads active event's `scoring_competition_id`. */
 export const SCORING_COMPETITION_ID = '60874ab6-341e-4e21-9e62-7fe686530607';
 
 /** Names from scoring `group_members` JSON (strings or `{ name }` / `{ competitor_name }`). */

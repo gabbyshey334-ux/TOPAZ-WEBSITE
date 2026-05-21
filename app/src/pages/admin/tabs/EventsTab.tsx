@@ -29,6 +29,7 @@ export default function EventsTab() {
     description: '',
     registration_open_date: '',
     registration_close_date: '',
+    scoring_competition_id: '',
     is_active: true,
   });
   const [createError, setCreateError] = useState<string | null>(null);
@@ -56,6 +57,7 @@ export default function EventsTab() {
         is_active: row.is_active,
         registration_open_date: row.registration_open_date || null,
         registration_close_date: row.registration_close_date || null,
+        scoring_competition_id: row.scoring_competition_id?.trim() || null,
       })
       .eq('id', row.id);
     if (error) alert(error.message);
@@ -70,6 +72,7 @@ export default function EventsTab() {
       description: '',
       registration_open_date: '',
       registration_close_date: '',
+      scoring_competition_id: '',
       is_active: true,
     });
     setCreateError(null);
@@ -80,6 +83,10 @@ export default function EventsTab() {
     if (!newEvent.name.trim()) { setCreateError('Event name is required.'); return; }
     if (!newEvent.date) { setCreateError('Competition date is required.'); return; }
     if (!newEvent.location.trim()) { setCreateError('Location is required.'); return; }
+    if (newEvent.is_active && !newEvent.scoring_competition_id.trim()) {
+      setCreateError('Scoring competition ID is required for an active event (create the competition in the scoring app first).');
+      return;
+    }
 
     setCreating(true);
     const { error } = await supabase.from('events').insert({
@@ -89,6 +96,7 @@ export default function EventsTab() {
       description: newEvent.description.trim() || null,
       registration_open_date: newEvent.registration_open_date || null,
       registration_close_date: newEvent.registration_close_date || null,
+      scoring_competition_id: newEvent.scoring_competition_id.trim() || null,
       is_active: newEvent.is_active,
     });
     setCreating(false);
@@ -190,6 +198,18 @@ export default function EventsTab() {
                   className="mt-1 bg-slate-900 border-slate-600 text-white"
                 />
               </div>
+            </div>
+            <div>
+              <Label className="text-slate-300">Scoring app competition ID</Label>
+              <Input
+                value={newEvent.scoring_competition_id}
+                onChange={(e) => setNewEvent({ ...newEvent, scoring_competition_id: e.target.value })}
+                className="mt-1 bg-slate-900 border-slate-600 text-white font-mono text-xs"
+                placeholder="UUID from scoring app → Competitions"
+              />
+              <p className="text-[10px] text-slate-500 mt-1">
+                Required when active. Create the competition in the scoring app, then paste its ID here so registrations sync to the right event.
+              </p>
             </div>
             <div className="flex items-center gap-3">
               <Switch
@@ -360,6 +380,27 @@ function EventEditor({ initial, onSave }: { initial: Row; onSave: (r: Row) => vo
             className="mt-1 bg-slate-800 border-slate-600 text-white min-h-[90px]"
             placeholder="Any additional details about this event…"
           />
+        </div>
+
+        {/* Scoring competition link */}
+        <div className="md:col-span-2">
+          <Label className="text-slate-300">Scoring app competition ID</Label>
+          <Input
+            value={row.scoring_competition_id ?? ''}
+            onChange={(e) =>
+              setRow({ ...row, scoring_competition_id: e.target.value.trim() || null })
+            }
+            className="mt-1 bg-slate-800 border-slate-600 text-white font-mono text-xs"
+            placeholder="UUID from scoring app → Competitions"
+          />
+          <p className="text-[10px] text-slate-500 mt-1">
+            Registrations sync to this competition. Required when the event is active on the public site.
+          </p>
+          {row.is_active && !row.scoring_competition_id && (
+            <p className="text-[10px] text-amber-400 mt-1">
+              Active event has no scoring competition linked — sync will fail until you paste the UUID.
+            </p>
+          )}
         </div>
 
         {/* Active toggle */}

@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { getEntriesSupabaseClient, supabase } from '@/lib/supabase';
+import { useScoringCompetitionId } from '@/hooks/useScoringCompetitionId';
 import {
   mergedParticipantNamesForRegistration,
   parseGroupMemberNames,
-  SCORING_COMPETITION_ID,
   type RegistrationRow,
 } from '@/lib/entryType';
 import type { Json } from '@/types/database';
@@ -56,6 +56,8 @@ function matchesDivisionFilter(
 }
 
 export default function ScoringInterface() {
+  const { resolvedCompetitionId, isLinked, loading: competitionIdLoading } =
+    useScoringCompetitionId();
   const [rows, setRows] = useState<EntryRow[]>([]);
   const [participantNamesByPerf, setParticipantNamesByPerf] = useState<Map<string, string[]>>(
     new Map(),
@@ -76,6 +78,7 @@ export default function ScoringInterface() {
   const [cleanupResult, setCleanupResult] = useState<string | null>(null);
 
   const load = useCallback(async () => {
+    if (competitionIdLoading) return;
     setLoading(true);
     setLoadError(null);
     const client = getEntriesSupabaseClient();
@@ -86,7 +89,7 @@ export default function ScoringInterface() {
         .select(
           'id, competition_id, entry_number, competitor_name, studio_name, dance_type, group_members, division_type, website_registration_id, performance_id',
         )
-        .eq('competition_id', SCORING_COMPETITION_ID)
+        .eq('competition_id', resolvedCompetitionId)
         .order('entry_number', { ascending: true }),
       supabase
         .from('registrations')
@@ -135,7 +138,7 @@ export default function ScoringInterface() {
     }
 
     setLoading(false);
-  }, []);
+  }, [competitionIdLoading, resolvedCompetitionId]);
 
   useEffect(() => {
     void load();
@@ -195,7 +198,7 @@ export default function ScoringInterface() {
     if (!dryRun) setCleanupResult(null);
     try {
       const { data, error } = await supabase.functions.invoke('cleanup-scoring-orphans', {
-        body: { dryRun },
+        body: { dryRun, competitionId: resolvedCompetitionId },
       });
       if (error) throw new Error(await parseEdgeFunctionFailure(error));
       if (data && typeof data === 'object' && data !== null && 'error' in data && (data as { error?: unknown }).error) {
@@ -253,12 +256,18 @@ export default function ScoringInterface() {
 
   return (
     <div className="space-y-6">
+      {!isLinked && (
+        <div className="rounded-xl border border-amber-700/60 bg-amber-950/40 px-4 py-3 text-sm text-amber-200">
+          No scoring competition is linked on the active event. Go to Admin → Events and paste the
+          competition UUID from the scoring app so entries appear here.
+        </div>
+      )}
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-white">Scoring entries</h2>
           <p className="text-sm text-slate-400 mt-1 max-w-2xl">
-            Pulled from the scoring app <code className="text-[#7EB8E8]">entries</code> table (TOPAZ
-            2026). The scoring app shows <strong className="text-slate-300">all divisions</strong> at
+            Pulled from the scoring app <code className="text-[#7EB8E8]">entries</code> table for the
+            linked competition. The scoring app shows <strong className="text-slate-300">all divisions</strong> at
             once — use the filter to match one division. Division type uses{' '}
             <code className="text-[#7EB8E8]">division_type</code>, not{' '}
             <code className="text-[#7EB8E8]">dance_type</code>.

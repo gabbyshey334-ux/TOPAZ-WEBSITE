@@ -41,10 +41,21 @@ if (!fnName) {
 }
 
 const root = join('supabase', 'functions', fnName);
-const files = walk(root)
+const sharedRoot = join('supabase', 'functions', '_shared');
+const filePaths = [
+  ...walk(root),
+  ...(fnName.startsWith('sync-to-scoring') ||
+  fnName.startsWith('delete-from-scoring') ||
+  fnName.startsWith('cleanup-scoring')
+    ? walk(sharedRoot)
+    : []),
+];
+const files = filePaths
   .filter((p) => /\.(ts|js|json|jsonc)$/.test(p))
   .map((p) => ({
-    name: relative(root, p),
+    name: p.startsWith(sharedRoot)
+      ? `../_shared/${relative(sharedRoot, p)}`
+      : relative(root, p),
     content: readFileSync(p, 'utf8'),
   }));
 

@@ -349,6 +349,7 @@ export type Database = {
           is_active: boolean;
           registration_open_date: string | null;
           registration_close_date: string | null;
+          scoring_competition_id: string | null;
         };
         Insert: {
           id?: string;
@@ -360,6 +361,7 @@ export type Database = {
           is_active?: boolean;
           registration_open_date?: string | null;
           registration_close_date?: string | null;
+          scoring_competition_id?: string | null;
         };
         Update: {
           id?: string;
@@ -371,6 +373,7 @@ export type Database = {
           is_active?: boolean;
           registration_open_date?: string | null;
           registration_close_date?: string | null;
+          scoring_competition_id?: string | null;
         };
         Relationships: [];
       };

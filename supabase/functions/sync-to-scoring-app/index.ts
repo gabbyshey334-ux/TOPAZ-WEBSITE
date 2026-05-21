@@ -1,12 +1,14 @@
 import { createClient } from 'jsr:@supabase/supabase-js@2';
+import {
+  resolveAgeDivisionId,
+  resolveCategoryId,
+  resolveCompetitionId,
+} from '../_shared/scoringCompetition.ts';
 
 const SCORING_APP_URL = Deno.env.get('SCORING_APP_URL')!;
 const SCORING_APP_SERVICE_ROLE_KEY = Deno.env.get('SCORING_APP_SERVICE_ROLE_KEY')!;
 const WEBSITE_URL = Deno.env.get('SUPABASE_URL')!;
 const WEBSITE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-
-/** Verified competition (TOPAZ 2026 — scoring app). */
-const COMPETITION_ID = '60874ab6-341e-4e21-9e62-7fe686530607';
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -16,84 +18,6 @@ const CORS_HEADERS = {
 
 const JSON_HEADERS = { 'Content-Type': 'application/json', ...CORS_HEADERS };
 
-// Age division mapping — exact IDs from scoring app database
-const AGE_DIVISION_MAP: Record<string, string> = {
-  junior_primary: '4f39aaf7-9cb0-44a7-a767-efb4f66b1245', // 3-7
-  junior_advanced: '8eb9859e-2fb0-4589-bac5-0757df006d8e', // 8-12
-  senior_youth: 'cc623271-c9de-4509-b832-92f5483a37be', // 13-18
-  senior_adult: 'dfc6b488-8c58-4d2f-b324-32d28a6c20b0', // 19+
-};
-
-const getAgeDivisionId = (age: number): string => {
-  if (age >= 3 && age <= 7) return AGE_DIVISION_MAP.junior_primary;
-  if (age >= 8 && age <= 12) return AGE_DIVISION_MAP.junior_advanced;
-  if (age >= 13 && age <= 18) return AGE_DIVISION_MAP.senior_youth;
-  return AGE_DIVISION_MAP.senior_adult;
-};
-
-// Category mapping — exact IDs from scoring app database
-const CATEGORY_MAP: Record<string, string> = {
-  ballet: 'fb9c9d73-f18d-4fdd-adde-5ae63e2b77af',
-  'hip hop': '30509f90-d0e8-48b7-96dd-746b25bcb0f1',
-  jazz: 'f33b2718-1502-422d-b724-79f6054eb2f9',
-  'lyrical/contemporary': '3302f445-1e1f-4ca6-aec1-7d5c06e11a68',
-  acting: '8e4e3051-8e3b-4aac-b342-fc27dbe51a01',
-  production: 'b01e1706-f917-4e4c-aada-dda2ae20d7e4',
-  'student choreography': '01f04932-2667-4692-b2a7-a77ee0e5ae2a',
-  tap: '211d5c0e-3356-43e2-8be0-4da157a8e72d',
-  'teacher/student': 'a00513f1-bb3a-4d73-a265-4b3f85feabda',
-  vocal: '1ca1a436-b0ce-4c4f-ae6d-6ad9f936ed05',
-  'variety a - song & dance, character, or combination': '9d622455-deba-4e24-8e7f-686b62a53cc8',
-  'variety b - dance with prop': '01f54673-1df7-4d88-b47d-ff7e18873697',
-  'variety c - dance with acrobatics': '94b14fe5-f434-449b-a564-2b61610b8a5e',
-  'variety d - dance with acrobatics & prop': 'f4dd7c60-14f7-4dec-ab1e-a9e35a2adafc',
-  'variety e - hip hop with floor work & acrobatics': 'f0d36c14-a80a-4847-9f4f-04485b08c0e5',
-  'variety f - ballroom': 'cac1bbaf-9a58-40ea-b93b-bfabf0f698b5',
-  'variety g - line dancing': '99f91644-cafd-4628-bbc3-d5788e674012',
-};
-
-/**
- * Lowercased website `reg.category` value → key in CATEGORY_MAP.
- * (Website stores labels like `TAP`, `VARIETY B (Dance with Prop)`.)
- */
-const WEBSITE_CATEGORY_TO_MAP_KEY: Record<string, string> = {
-  tap: 'tap',
-  ballet: 'ballet',
-  jazz: 'jazz',
-  'lyrical/contemporary': 'lyrical/contemporary',
-  vocal: 'vocal',
-  acting: 'acting',
-  'hip hop': 'hip hop',
-  'variety a (song & dance/character/combination of performing arts)':
-    'variety a - song & dance, character, or combination',
-  'variety b (dance with prop)': 'variety b - dance with prop',
-  'variety c (dance with acrobatics)': 'variety c - dance with acrobatics',
-  'variety d (dance with acrobatics & prop)': 'variety d - dance with acrobatics & prop',
-  'variety e (hip hop)': 'variety e - hip hop with floor work & acrobatics',
-  'variety f (ballroom)': 'variety f - ballroom',
-  'variety g (line dancing)': 'variety g - line dancing',
-  production: 'production',
-  'student choreography': 'student choreography',
-  'teacher/student': 'teacher/student',
-};
-
-const getCategoryId = (category: string): string | null => {
-  const key = category?.toLowerCase().trim() ?? '';
-  const mapKey = WEBSITE_CATEGORY_TO_MAP_KEY[key] ?? key;
-  return CATEGORY_MAP[mapKey] ?? null;
-};
-
-/**
- * Scoring app `entries.ability_level` has a CHECK constraint that allows
- * ONLY the bare labels: 'Beginning' | 'Intermediate' | 'Advanced'. The
- * website registration form stores the long descriptive form like
- * "BEGINNING (Less than 2 years training)" or
- * "ADVANCED (Starting the 5th year or more of training)". Sending the
- * raw value triggers the `entries_ability_level_check` constraint and
- * the sync fails. Always pass values through this normalizer before
- * inserting into either `performances.ability_level` or
- * `entries.ability_level`.
- */
 const normalizeAbilityLevel = (raw: unknown): 'Beginning' | 'Intermediate' | 'Advanced' => {
   if (typeof raw !== 'string' || !raw.trim()) return 'Intermediate';
   const lower = raw.toLowerCase().trim();
@@ -103,7 +27,6 @@ const normalizeAbilityLevel = (raw: unknown): 'Beginning' | 'Intermediate' | 'Ad
   return 'Intermediate';
 };
 
-/** Scoring DB only uses Solo | Duo | Trio | Production for division_type. */
 const getDivisionType = (groupSize: string): 'Solo' | 'Duo' | 'Trio' | 'Production' => {
   const s = groupSize?.toLowerCase() || '';
   if (s.includes('duo')) return 'Duo';
@@ -117,8 +40,7 @@ const buildGroupMembers = (reg: Record<string, unknown>): string[] => {
   const raw = reg.participants_json;
   if (raw == null) return [];
   try {
-    const participants =
-      typeof raw === 'string' ? JSON.parse(raw) : raw;
+    const participants = typeof raw === 'string' ? JSON.parse(raw) : raw;
     if (!Array.isArray(participants)) return [];
     return participants
       .map((p: unknown) => {
@@ -166,9 +88,11 @@ Deno.serve(async (req: Request) => {
   }
 
   let registrationId: string;
+  let bodyCompetitionId: string | undefined;
   try {
     const body = await req.json();
     registrationId = body?.registrationId;
+    bodyCompetitionId = body?.competitionId;
     if (!registrationId) throw new Error('registrationId is required');
   } catch (e) {
     return new Response(JSON.stringify({ error: String(e) }), {
@@ -196,6 +120,16 @@ Deno.serve(async (req: Request) => {
     return new Response(JSON.stringify({ error: msg }), { status: 500, headers: JSON_HEADERS });
   }
 
+  const resolved = await resolveCompetitionId(websiteClient, bodyCompetitionId);
+  if ('error' in resolved) {
+    await updateSyncStatus(websiteClient, registrationId, 'failed', null, resolved.error);
+    return new Response(JSON.stringify({ error: resolved.error }), {
+      status: 422,
+      headers: JSON_HEADERS,
+    });
+  }
+  const competitionId = resolved.competitionId;
+
   const { data: reg, error: regErr } = await websiteClient
     .from('registrations')
     .select('*')
@@ -212,25 +146,10 @@ Deno.serve(async (req: Request) => {
   }
 
   const scoringClient = createClient(SCORING_APP_URL, SCORING_APP_SERVICE_ROLE_KEY);
-  const competitionId = COMPETITION_ID;
 
   const categoryRaw = typeof reg.category === 'string' ? reg.category : '';
   const websiteCategory = categoryRaw.trim();
-  let categoryId = getCategoryId(categoryRaw);
-
-  // Dynamic fallback: if static map misses, look up by name in scoring app
-  // so newly added scoring-app categories sync without redeploying.
-  if (!categoryId && websiteCategory) {
-    const { data: cat } = await scoringClient
-      .from('categories')
-      .select('id, name')
-      .eq('competition_id', competitionId)
-      .ilike('name', websiteCategory)
-      .maybeSingle();
-    if (cat?.id) {
-      categoryId = cat.id as string;
-    }
-  }
+  const categoryId = await resolveCategoryId(scoringClient, competitionId, categoryRaw);
 
   if (!categoryId) {
     const msg =
@@ -244,6 +163,17 @@ Deno.serve(async (req: Request) => {
   }
 
   const age = parseInt(String(reg.age), 10) || 0;
+  const ageDivisionId = await resolveAgeDivisionId(scoringClient, competitionId, age);
+  if (!ageDivisionId) {
+    const msg =
+      'No age division found in the scoring app for this competition. Add age divisions in the scoring app first.';
+    await updateSyncStatus(websiteClient, registrationId, 'failed', null, msg);
+    return new Response(JSON.stringify({ error: msg }), {
+      status: 422,
+      headers: JSON_HEADERS,
+    });
+  }
+
   const groupSize = typeof reg.group_size === 'string' ? reg.group_size : 'Solo';
   const groupMembers = buildGroupMembers(reg as Record<string, unknown>);
   const divisionType = getDivisionType(groupSize);
@@ -264,7 +194,6 @@ Deno.serve(async (req: Request) => {
     return new Response(JSON.stringify({ error: msg }), { status: 422, headers: JSON_HEADERS });
   }
 
-  // If a row for this registration already exists, treat as success (idempotent).
   const { data: existing } = await scoringClient
     .from('entries')
     .select('id')
@@ -317,8 +246,6 @@ Deno.serve(async (req: Request) => {
 
   let performanceId: string | null = null;
 
-  // Duo/Trio/etc.: reuse an existing performance for the same routine name so the
-  // scoring app does not list duplicate performances when each dancer registers separately.
   if (divisionType !== 'Solo') {
     const { data: sibling } = await scoringClient
       .from('entries')
@@ -335,15 +262,13 @@ Deno.serve(async (req: Request) => {
   }
 
   if (!performanceId) {
-    // Step 1: create the parent `performances` row. The scoring app UI
-    // joins entries → performances, so every entry must point at one.
     const perfPayload = {
       competition_id: competitionId,
       entry_number: nextEntryNumber,
       routine_name: null,
       competitor_name: competitorName,
       category_id: categoryId,
-      age_division_id: getAgeDivisionId(age),
+      age_division_id: ageDivisionId,
       age,
       dance_type: categoryRaw,
       ability_level: abilityLevel,
@@ -408,15 +333,12 @@ Deno.serve(async (req: Request) => {
       .eq('performance_id', performanceId);
   }
 
-  // Step 3: insert the entries row, normalized ability_level + the
-  // performance_id we just created. This is the row whose constraint
-  // was being violated before normalizeAbilityLevel was introduced.
   const entryPayload = {
     competition_id: competitionId,
     entry_number: nextEntryNumber,
     competitor_name: competitorName,
     category_id: categoryId,
-    age_division_id: getAgeDivisionId(age),
+    age_division_id: ageDivisionId,
     age,
     dance_type: categoryRaw,
     ability_level: abilityLevel,
