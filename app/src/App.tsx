@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import ReactGA from 'react-ga4';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Lenis from 'lenis';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -25,6 +26,16 @@ import AdminDashboard from '@/pages/admin/AdminDashboard';
 import MembersDashboard from '@/pages/members/MembersDashboard';
 
 gsap.registerPlugin(ScrollTrigger);
+
+function GaPageViewTracker() {
+  const location = useLocation();
+
+  useEffect(() => {
+    ReactGA.send({ hitType: 'pageview', page: location.pathname + location.search });
+  }, [location]);
+
+  return null;
+}
 
 function App() {
   useEffect(() => {
@@ -54,6 +65,7 @@ function App() {
 
   return (
     <Router>
+      <GaPageViewTracker />
       <ScrollToTop />
       <Routes>
         <Route element={<PublicLayout />}>
