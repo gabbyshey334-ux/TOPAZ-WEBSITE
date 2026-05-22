@@ -10,11 +10,12 @@ export function useActiveEvent() {
 
   const load = useCallback(async () => {
     setLoading(true);
+    // Only one event should be is_active=true (enforced in admin Events tab).
     const { data } = await supabase
       .from('events')
       .select('*')
       .eq('is_active', true)
-      .order('date', { ascending: true })
+      .order('date', { ascending: false })
       .limit(1)
       .maybeSingle();
     setEvent(data != null ? (data as EventRow) : null);

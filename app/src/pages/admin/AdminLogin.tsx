@@ -95,7 +95,7 @@ export default function AdminLogin() {
           </Link>
           <h1 className="mt-6 text-xl font-bold text-white tracking-wide">Admin login</h1>
           <p className="mt-2 text-sm text-white/50">
-            Sign in with the staff email (<span className="text-white/70">topaz2.0@yahoo.com</span>) and your Supabase
+            Sign in with a staff email on the admin allowlist (e.g. <span className="text-white/70">topaz2.0@yahoo.com</span>) and your Supabase
             password. First-time setup: use Forgot password or set the password in Supabase → Authentication → Users.
           </p>
         </div>

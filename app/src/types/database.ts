@@ -338,6 +338,21 @@ export type Database = {
         };
         Relationships: [];
       };
+      admin_emails: {
+        Row: {
+          email: string;
+          created_at: string;
+        };
+        Insert: {
+          email: string;
+          created_at?: string;
+        };
+        Update: {
+          email?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
       events: {
         Row: {
           id: string;

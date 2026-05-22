@@ -47,10 +47,4 @@ export function getEntriesSupabaseClient(): SupabaseClient<Database> {
   return scoringSupabase;
 }
 
-const ADMIN_EMAIL = 'topaz2.0@yahoo.com';
-
-/** Returns true if the email is the site admin account. */
-export function isAdmin(email: string | null | undefined): boolean {
-  if (!email) return false;
-  return email.trim().toLowerCase() === ADMIN_EMAIL.toLowerCase();
-}
+export { isAdminEmail as isAdmin, getAdminEmailAllowlist } from '@/lib/adminEmails';

@@ -13,9 +13,24 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { CheckCircle2, AlertCircle, Plus, Loader2 } from 'lucide-react';
+import { CheckCircle2, AlertCircle, Plus, Loader2, Trash2 } from 'lucide-react';
 
 type Row = Database['public']['Tables']['events']['Row'];
+
+/** Only one event should be active on the public site at a time. */
+async function deactivateOtherActiveEvents(exceptId?: string) {
+  let q = supabase.from('events').update({ is_active: false }).eq('is_active', true);
+  if (exceptId) q = q.neq('id', exceptId);
+  const { error } = await q;
+  if (error) throw new Error(error.message);
+}
+
+function formatDbError(error: { message: string; code?: string }): string {
+  if (error.code === '42501' || /permission|policy|row-level security/i.test(error.message)) {
+    return `${error.message} — Your login email may not be in the admin allowlist. Add it to VITE_ADMIN_EMAILS in Vercel and to the admin_emails table in Supabase, then sign in again.`;
+  }
+  return error.message;
+}
 
 export default function EventsTab() {
   const [rows, setRows] = useState<Row[]>([]);
@@ -30,9 +45,12 @@ export default function EventsTab() {
     registration_open_date: '',
     registration_close_date: '',
     scoring_competition_id: '',
-    is_active: true,
+    is_active: false,
   });
   const [createError, setCreateError] = useState<string | null>(null);
+  const [staffEmails, setStaffEmails] = useState<string[]>([]);
+  const [staffEmailInput, setStaffEmailInput] = useState('');
+  const [staffEmailError, setStaffEmailError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -44,24 +62,78 @@ export default function EventsTab() {
     setLoading(false);
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  const loadStaffEmails = useCallback(async () => {
+    const { data, error } = await supabase.from('admin_emails').select('email').order('email');
+    if (!error && data) {
+      setStaffEmails(data.map((r) => r.email as string));
+    }
+  }, []);
 
-  async function save(row: Row) {
-    const { error } = await supabase
-      .from('events')
-      .update({
-        name: row.name,
-        date: row.date,
-        location: row.location,
-        description: row.description,
-        is_active: row.is_active,
-        registration_open_date: row.registration_open_date || null,
-        registration_close_date: row.registration_close_date || null,
-        scoring_competition_id: row.scoring_competition_id?.trim() || null,
-      })
-      .eq('id', row.id);
-    if (error) alert(error.message);
-    else load();
+  useEffect(() => {
+    load();
+    loadStaffEmails();
+  }, [load, loadStaffEmails]);
+
+  async function save(row: Row): Promise<string | null> {
+    if (row.is_active && !row.scoring_competition_id?.trim()) {
+      return 'Scoring competition ID is required when "Show on public website" is on. Create the competition in the scoring app, copy its UUID, paste it here, then save.';
+    }
+    try {
+      if (row.is_active) {
+        await deactivateOtherActiveEvents(row.id);
+      }
+      const { error } = await supabase
+        .from('events')
+        .update({
+          name: row.name,
+          date: row.date,
+          location: row.location,
+          description: row.description,
+          is_active: row.is_active,
+          registration_open_date: row.registration_open_date || null,
+          registration_close_date: row.registration_close_date || null,
+          scoring_competition_id: row.scoring_competition_id?.trim() || null,
+        })
+        .eq('id', row.id);
+      if (error) return formatDbError(error);
+      await load();
+      return null;
+    } catch (e) {
+      return e instanceof Error ? e.message : String(e);
+    }
+  }
+
+  async function deleteEvent(id: string): Promise<string | null> {
+    const { error } = await supabase.from('events').delete().eq('id', id);
+    if (error) return formatDbError(error);
+    await load();
+    return null;
+  }
+
+  async function addStaffEmail() {
+    setStaffEmailError(null);
+    const email = staffEmailInput.trim().toLowerCase();
+    if (!email || !email.includes('@')) {
+      setStaffEmailError('Enter a valid email address.');
+      return;
+    }
+    const { error } = await supabase.from('admin_emails').insert({ email });
+    if (error) {
+      setStaffEmailError(formatDbError(error));
+      return;
+    }
+    setStaffEmailInput('');
+    loadStaffEmails();
+  }
+
+  async function removeStaffEmail(email: string) {
+    setStaffEmailError(null);
+    const { error } = await supabase.from('admin_emails').delete().eq('email', email);
+    if (error) {
+      setStaffEmailError(formatDbError(error));
+      return;
+    }
+    loadStaffEmails();
   }
 
   function resetCreateForm() {
@@ -73,7 +145,7 @@ export default function EventsTab() {
       registration_open_date: '',
       registration_close_date: '',
       scoring_competition_id: '',
-      is_active: true,
+      is_active: false,
     });
     setCreateError(null);
   }
@@ -84,30 +156,39 @@ export default function EventsTab() {
     if (!newEvent.date) { setCreateError('Competition date is required.'); return; }
     if (!newEvent.location.trim()) { setCreateError('Location is required.'); return; }
     if (newEvent.is_active && !newEvent.scoring_competition_id.trim()) {
-      setCreateError('Scoring competition ID is required for an active event (create the competition in the scoring app first).');
+      setCreateError(
+        'To show this event on the public website, turn on "Show on public website" only after you paste a Scoring competition ID (see steps below). For test events, leave that switch off.',
+      );
       return;
     }
 
     setCreating(true);
-    const { error } = await supabase.from('events').insert({
-      name: newEvent.name.trim(),
-      date: newEvent.date,
-      location: newEvent.location.trim(),
-      description: newEvent.description.trim() || null,
-      registration_open_date: newEvent.registration_open_date || null,
-      registration_close_date: newEvent.registration_close_date || null,
-      scoring_competition_id: newEvent.scoring_competition_id.trim() || null,
-      is_active: newEvent.is_active,
-    });
-    setCreating(false);
-
-    if (error) {
-      setCreateError(error.message);
-      return;
+    try {
+      if (newEvent.is_active) {
+        await deactivateOtherActiveEvents();
+      }
+      const { error } = await supabase.from('events').insert({
+        name: newEvent.name.trim(),
+        date: newEvent.date,
+        location: newEvent.location.trim(),
+        description: newEvent.description.trim() || null,
+        registration_open_date: newEvent.registration_open_date || null,
+        registration_close_date: newEvent.registration_close_date || null,
+        scoring_competition_id: newEvent.scoring_competition_id.trim() || null,
+        is_active: newEvent.is_active,
+      });
+      if (error) {
+        setCreateError(formatDbError(error));
+        return;
+      }
+      setCreateOpen(false);
+      resetCreateForm();
+      await load();
+    } catch (e) {
+      setCreateError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setCreating(false);
     }
-    setCreateOpen(false);
-    resetCreateForm();
-    load();
   }
 
   return (
@@ -116,7 +197,8 @@ export default function EventsTab() {
         <div>
           <h1 className="text-2xl font-bold text-white">Events</h1>
           <p className="text-sm text-slate-400 mt-0.5">
-            Changes here appear immediately on the public website — no deployment needed.
+            Changes here appear immediately on the public website — no deployment needed. Only one event
+            can be active at a time (the one shown on Schedule and Registration).
           </p>
         </div>
         <Button
@@ -208,7 +290,9 @@ export default function EventsTab() {
                 placeholder="UUID from scoring app → Competitions"
               />
               <p className="text-[10px] text-slate-500 mt-1">
-                Required when active. Create the competition in the scoring app, then paste its ID here so registrations sync to the right event.
+                Required only when &quot;Show on public website&quot; is on. Steps: (1) Scoring app →
+                Competitions → create/open competition. (2) Copy UUID. (3) Paste here. (4) Turn on public
+                visibility and save.
               </p>
             </div>
             <div className="flex items-center gap-3">
@@ -218,7 +302,9 @@ export default function EventsTab() {
               />
               <div>
                 <p className="text-sm text-white font-medium">Show on public website</p>
-                <p className="text-xs text-slate-500">When off, this event is hidden from the public site</p>
+                <p className="text-xs text-slate-500">
+                  Off = test/draft (no scoring ID). On = live on Schedule &amp; Registration.
+                </p>
               </div>
             </div>
             {createError && (
@@ -253,6 +339,48 @@ export default function EventsTab() {
         </DialogContent>
       </Dialog>
 
+      <div className="rounded-xl border border-slate-700 bg-slate-900/40 p-5 space-y-3">
+        <h2 className="text-sm font-semibold text-white">Staff admin access</h2>
+        <p className="text-xs text-slate-400 leading-relaxed">
+          Emails listed here can create, edit, and delete events in this dashboard (via Supabase RLS).
+          Also add the same emails to <code className="text-[#7EB8E8]">VITE_ADMIN_EMAILS</code> in Vercel so
+          the admin login page allows them in.
+        </p>
+        <ul className="flex flex-wrap gap-2">
+          {staffEmails.map((email) => (
+            <li
+              key={email}
+              className="flex items-center gap-2 rounded-lg bg-slate-800 px-3 py-1.5 text-xs text-slate-200"
+            >
+              {email}
+              <button
+                type="button"
+                className="text-red-400 hover:text-red-300"
+                aria-label={`Remove ${email}`}
+                onClick={() => removeStaffEmail(email)}
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+            </li>
+          ))}
+        </ul>
+        <div className="flex flex-wrap gap-2">
+          <Input
+            type="email"
+            value={staffEmailInput}
+            onChange={(e) => setStaffEmailInput(e.target.value)}
+            placeholder="staff@email.com"
+            className="max-w-xs bg-slate-800 border-slate-600 text-white"
+          />
+          <Button type="button" variant="outline" className="border-slate-600" onClick={addStaffEmail}>
+            Add staff email
+          </Button>
+        </div>
+        {staffEmailError && (
+          <p className="text-xs text-red-400">{staffEmailError}</p>
+        )}
+      </div>
+
       {loading ? (
         <div className="flex items-center justify-center py-20">
           <div className="w-6 h-6 border-2 border-[#2E75B6]/30 border-t-[#2E75B6] rounded-full animate-spin" />
@@ -260,7 +388,7 @@ export default function EventsTab() {
       ) : (
         <div className="space-y-6">
           {rows.map((ev) => (
-            <EventEditor key={ev.id} initial={ev} onSave={save} />
+            <EventEditor key={ev.id} initial={ev} onSave={save} onDelete={deleteEvent} />
           ))}
           {rows.length === 0 && (
             <p className="text-slate-500 text-sm">No events yet. Click “Add Event” to create one.</p>
@@ -271,19 +399,44 @@ export default function EventsTab() {
   );
 }
 
-function EventEditor({ initial, onSave }: { initial: Row; onSave: (r: Row) => void }) {
+function EventEditor({
+  initial,
+  onSave,
+  onDelete,
+}: {
+  initial: Row;
+  onSave: (r: Row) => Promise<string | null>;
+  onDelete: (id: string) => Promise<string | null>;
+}) {
   const [row, setRow] = useState(initial);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   useEffect(() => { setRow(initial); }, [initial]);
 
   async function handleSave() {
+    setSaveError(null);
     setSaving(true);
-    await onSave(row);
+    const err = await onSave(row);
     setSaving(false);
+    if (err) {
+      setSaveError(err);
+      return;
+    }
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);
+  }
+
+  async function handleDelete() {
+    if (!window.confirm(`Delete event "${row.name}"? This cannot be undone.`)) return;
+    setDeleteError(null);
+    setDeleting(true);
+    const err = await onDelete(row.id);
+    setDeleting(false);
+    if (err) setDeleteError(err);
   }
 
   // Compute registration status for display
@@ -394,11 +547,12 @@ function EventEditor({ initial, onSave }: { initial: Row; onSave: (r: Row) => vo
             placeholder="UUID from scoring app → Competitions"
           />
           <p className="text-[10px] text-slate-500 mt-1">
-            Registrations sync to this competition. Required when the event is active on the public site.
+            Required when this event is active on the public site. Create the competition in the scoring app
+            first, then paste its UUID here.
           </p>
           {row.is_active && !row.scoring_competition_id && (
             <p className="text-[10px] text-amber-400 mt-1">
-              Active event has no scoring competition linked — sync will fail until you paste the UUID.
+              Active event has no scoring competition linked — registration sync will fail until you paste the UUID.
             </p>
           )}
         </div>
@@ -411,16 +565,31 @@ function EventEditor({ initial, onSave }: { initial: Row; onSave: (r: Row) => vo
           />
           <div>
             <p className="text-sm text-white font-medium">Show on public website</p>
-            <p className="text-xs text-slate-500">When off, this event is hidden from the public schedule</p>
+            <p className="text-xs text-slate-500">
+              Only one event can be active. Turning this on hides other events from the public site.
+            </p>
           </div>
         </div>
       </div>
 
-      {/* Save button */}
-      <div className="flex items-center gap-3 pt-2">
+      {saveError && (
+        <div className="flex items-start gap-2 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2">
+          <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+          <p className="text-xs text-red-300 leading-relaxed">{saveError}</p>
+        </div>
+      )}
+      {deleteError && (
+        <div className="flex items-start gap-2 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2">
+          <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+          <p className="text-xs text-red-300 leading-relaxed">{deleteError}</p>
+        </div>
+      )}
+
+      {/* Save / delete */}
+      <div className="flex flex-wrap items-center gap-3 pt-2">
         <Button
           onClick={handleSave}
-          disabled={saving}
+          disabled={saving || deleting}
           className="bg-[#2E75B6] hover:bg-[#1F4E78] min-w-[120px]"
         >
           {saving ? (
@@ -429,6 +598,22 @@ function EventEditor({ initial, onSave }: { initial: Row; onSave: (r: Row) => vo
               Saving…
             </span>
           ) : 'Save Changes'}
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          disabled={saving || deleting}
+          className="border-red-800/60 text-red-400 hover:bg-red-950/40 hover:text-red-300"
+          onClick={handleDelete}
+        >
+          {deleting ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <>
+              <Trash2 className="w-4 h-4 mr-2" />
+              Delete event
+            </>
+          )}
         </Button>
         {saved && (
           <span className="flex items-center gap-1.5 text-sm text-emerald-400 font-medium">
