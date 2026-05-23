@@ -103,11 +103,11 @@ export default function EventsTab() {
     }
   }
 
-  async function deleteEvent(id: string): Promise<string | null> {
+  async function deleteEvent(id: string) {
+    if (!window.confirm('Are you sure you want to delete this event? This cannot be undone.')) return;
     const { error } = await supabase.from('events').delete().eq('id', id);
-    if (error) return formatDbError(error);
-    await load();
-    return null;
+    if (error) alert(error.message);
+    else load();
   }
 
   async function addStaffEmail() {
@@ -406,14 +406,12 @@ function EventEditor({
 }: {
   initial: Row;
   onSave: (r: Row) => Promise<string | null>;
-  onDelete: (id: string) => Promise<string | null>;
+  onDelete: (id: string) => void;
 }) {
   const [row, setRow] = useState(initial);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-  const [deleting, setDeleting] = useState(false);
-  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   useEffect(() => { setRow(initial); }, [initial]);
 
@@ -428,15 +426,6 @@ function EventEditor({
     }
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);
-  }
-
-  async function handleDelete() {
-    if (!window.confirm(`Delete event "${row.name}"? This cannot be undone.`)) return;
-    setDeleteError(null);
-    setDeleting(true);
-    const err = await onDelete(row.id);
-    setDeleting(false);
-    if (err) setDeleteError(err);
   }
 
   // Compute registration status for display
@@ -578,18 +567,10 @@ function EventEditor({
           <p className="text-xs text-red-300 leading-relaxed">{saveError}</p>
         </div>
       )}
-      {deleteError && (
-        <div className="flex items-start gap-2 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2">
-          <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
-          <p className="text-xs text-red-300 leading-relaxed">{deleteError}</p>
-        </div>
-      )}
-
-      {/* Save / delete */}
-      <div className="flex flex-wrap items-center gap-3 pt-2">
+      <div className="flex items-center gap-3 pt-2">
         <Button
           onClick={handleSave}
-          disabled={saving || deleting}
+          disabled={saving}
           className="bg-[#2E75B6] hover:bg-[#1F4E78] min-w-[120px]"
         >
           {saving ? (
@@ -600,20 +581,11 @@ function EventEditor({
           ) : 'Save Changes'}
         </Button>
         <Button
-          type="button"
+          onClick={() => onDelete(row.id)}
           variant="outline"
-          disabled={saving || deleting}
-          className="border-red-800/60 text-red-400 hover:bg-red-950/40 hover:text-red-300"
-          onClick={handleDelete}
+          className="border-red-700 text-red-400 hover:bg-red-950 hover:text-red-300"
         >
-          {deleting ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <>
-              <Trash2 className="w-4 h-4 mr-2" />
-              Delete event
-            </>
-          )}
+          Delete Event
         </Button>
         {saved && (
           <span className="flex items-center gap-1.5 text-sm text-emerald-400 font-medium">
