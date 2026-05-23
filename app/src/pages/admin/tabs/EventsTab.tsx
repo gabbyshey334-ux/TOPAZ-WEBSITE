@@ -14,6 +14,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { CheckCircle2, AlertCircle, Plus, Loader2, Trash2 } from 'lucide-react';
+import { useAdminEventOptional } from '@/contexts/AdminEventContext';
 
 type Row = Database['public']['Tables']['events']['Row'];
 
@@ -33,6 +34,7 @@ function formatDbError(error: { message: string; code?: string }): string {
 }
 
 export default function EventsTab() {
+  const adminEvents = useAdminEventOptional();
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
   const [createOpen, setCreateOpen] = useState(false);
@@ -97,6 +99,7 @@ export default function EventsTab() {
         .eq('id', row.id);
       if (error) return formatDbError(error);
       await load();
+      void adminEvents?.refresh();
       return null;
     } catch (e) {
       return e instanceof Error ? e.message : String(e);
@@ -107,7 +110,10 @@ export default function EventsTab() {
     if (!window.confirm('Are you sure you want to delete this event? This cannot be undone.')) return;
     const { error } = await supabase.from('events').delete().eq('id', id);
     if (error) alert(error.message);
-    else load();
+    else {
+      await load();
+      void adminEvents?.refresh();
+    }
   }
 
   async function addStaffEmail() {
@@ -184,6 +190,7 @@ export default function EventsTab() {
       setCreateOpen(false);
       resetCreateForm();
       await load();
+      void adminEvents?.refresh();
     } catch (e) {
       setCreateError(e instanceof Error ? e.message : String(e));
     } finally {

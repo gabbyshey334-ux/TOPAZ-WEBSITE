@@ -24,6 +24,8 @@ import AnnouncementsTab from '@/pages/admin/tabs/AnnouncementsTab';
 import ShopTab from '@/pages/admin/tabs/ShopTab';
 import SettingsTab from '@/pages/admin/tabs/SettingsTab';
 import ScoringInterface from '@/pages/admin/ScoringInterface';
+import { AdminEventProvider } from '@/contexts/AdminEventContext';
+import AdminEventSwitcher from '@/components/admin/AdminEventSwitcher';
 
 type TabId = 'overview' | 'registrations' | 'gallery' | 'events' | 'content' | 'members' | 'announcements' | 'shop' | 'settings' | 'scoring';
 
@@ -40,7 +42,9 @@ const NAV: { id: TabId; label: string; shortLabel: string; icon: typeof LayoutDa
   { id: 'settings',       label: 'Settings',       shortLabel: 'More',   icon: Settings },
 ];
 
-export default function AdminDashboard() {
+const EVENT_SCOPED_TABS: TabId[] = ['overview', 'registrations', 'scoring'];
+
+function AdminDashboardInner() {
   const [tab, setTab] = useState<TabId>('overview');
 
   return (
@@ -94,6 +98,7 @@ export default function AdminDashboard() {
         </div>
 
         <div className="max-w-6xl mx-auto px-4 py-6 lg:px-8 lg:py-10">
+          {EVENT_SCOPED_TABS.includes(tab) && <AdminEventSwitcher />}
           {tab === 'overview'       && <OverviewTab onNavigate={setTab} />}
           {tab === 'scoring'        && <ScoringInterface />}
           {tab === 'registrations'  && <RegistrationsAdmin />}
@@ -125,5 +130,13 @@ export default function AdminDashboard() {
         ))}
       </nav>
     </div>
+  );
+}
+
+export default function AdminDashboard() {
+  return (
+    <AdminEventProvider>
+      <AdminDashboardInner />
+    </AdminEventProvider>
   );
 }

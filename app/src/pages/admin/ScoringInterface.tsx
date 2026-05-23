@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { getEntriesSupabaseClient, supabase } from '@/lib/supabase';
-import { useScoringCompetitionId } from '@/hooks/useScoringCompetitionId';
+import { useAdminEvent } from '@/contexts/AdminEventContext';
+import { LEGACY_SCORING_COMPETITION_ID } from '@/hooks/useScoringCompetitionId';
 import {
   mergedParticipantNamesForRegistration,
   parseGroupMemberNames,
@@ -56,8 +57,15 @@ function matchesDivisionFilter(
 }
 
 export default function ScoringInterface() {
-  const { resolvedCompetitionId, isLinked, loading: competitionIdLoading } =
-    useScoringCompetitionId();
+  const { selectedEventId, selectedEvent, loading: eventsLoading } = useAdminEvent();
+  const scoringCompetitionId =
+    typeof selectedEvent?.scoring_competition_id === 'string' &&
+    selectedEvent.scoring_competition_id.trim()
+      ? selectedEvent.scoring_competition_id.trim()
+      : null;
+  const resolvedCompetitionId = scoringCompetitionId ?? LEGACY_SCORING_COMPETITION_ID;
+  const isLinked = Boolean(scoringCompetitionId);
+  const competitionIdLoading = eventsLoading;
   const [rows, setRows] = useState<EntryRow[]>([]);
   const [participantNamesByPerf, setParticipantNamesByPerf] = useState<Map<string, string[]>>(
     new Map(),
@@ -78,7 +86,7 @@ export default function ScoringInterface() {
   const [cleanupResult, setCleanupResult] = useState<string | null>(null);
 
   const load = useCallback(async () => {
-    if (competitionIdLoading) return;
+    if (competitionIdLoading || !selectedEventId) return;
     setLoading(true);
     setLoadError(null);
     const client = getEntriesSupabaseClient();
@@ -95,7 +103,8 @@ export default function ScoringInterface() {
         .from('registrations')
         .select(
           'id, contestant_name, routine_name, group_link_code, group_size, participants_json, studio_name, category, status',
-        ),
+        )
+        .eq('event_id', selectedEventId),
     ]);
 
     if (entriesRes.error) {
@@ -138,7 +147,7 @@ export default function ScoringInterface() {
     }
 
     setLoading(false);
-  }, [competitionIdLoading, resolvedCompetitionId]);
+  }, [competitionIdLoading, resolvedCompetitionId, selectedEventId]);
 
   useEffect(() => {
     void load();

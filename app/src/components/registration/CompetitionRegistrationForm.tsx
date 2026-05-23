@@ -631,6 +631,7 @@ export default function CompetitionRegistrationForm() {
     // ── Build row ──────────────────────────────────────────────────────────
     const row = {
       status: 'pending',
+      ...(event?.id ? { event_id: event.id } : {}),
       contestant_name: contestantName.trim(),
       age: computedAge || String(ageAsOf(dateOfBirth, competitionDate)),
       date_of_birth: dateOfBirth || null,

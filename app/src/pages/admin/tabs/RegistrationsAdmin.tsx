@@ -44,7 +44,8 @@ import {
   List,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useScoringCompetitionId } from '@/hooks/useScoringCompetitionId';
+import { useAdminEvent } from '@/contexts/AdminEventContext';
+import { LEGACY_SCORING_COMPETITION_ID } from '@/hooks/useScoringCompetitionId';
 import {
   findLinkedRegistrations,
   groupSizeToEntryType,
@@ -721,7 +722,14 @@ function DetailDialog({
 
 // ── Main component ────────────────────────────────────────────────────────────
 export default function RegistrationsAdmin() {
-  const { resolvedCompetitionId, isLinked } = useScoringCompetitionId();
+  const { selectedEventId, selectedEvent } = useAdminEvent();
+  const scoringCompetitionId =
+    typeof selectedEvent?.scoring_competition_id === 'string' &&
+    selectedEvent.scoring_competition_id.trim()
+      ? selectedEvent.scoring_competition_id.trim()
+      : null;
+  const resolvedCompetitionId = scoringCompetitionId ?? LEGACY_SCORING_COMPETITION_ID;
+  const isLinked = Boolean(scoringCompetitionId);
   const [rows, setRows] = useState<RegRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -790,14 +798,20 @@ export default function RegistrationsAdmin() {
   }, [m_groupSize]);
 
   const load = useCallback(async () => {
+    if (!selectedEventId) {
+      setRows([]);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     const { data } = await supabase
       .from('registrations')
       .select('*')
+      .eq('event_id', selectedEventId)
       .order('created_at', { ascending: false });
     setRows((data as RegRow[]) ?? []);
     setLoading(false);
-  }, []);
+  }, [selectedEventId]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -1016,6 +1030,7 @@ export default function RegistrationsAdmin() {
       const count = defaultContestantCountFor(m_groupSize);
       const row = {
         status: 'confirmed',
+        event_id: selectedEventId,
         contestant_name: m_contestantName.trim(),
         age: m_age.trim(),
         studio_name: m_studioName.trim(),
@@ -1257,6 +1272,7 @@ export default function RegistrationsAdmin() {
         <div>
           <h2 className="text-2xl font-bold text-white">Registrations</h2>
           <p className="text-sm text-slate-400 mt-0.5">
+            {selectedEvent ? `${selectedEvent.name} · ` : ''}
             {filtered.length} of {rows.length} entr{rows.length === 1 ? 'y' : 'ies'}
             {activeFilters.length > 0 && ` · filtered by ${activeFilters.join(', ')}`}
           </p>

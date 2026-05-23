@@ -3,9 +3,9 @@ import { supabase } from '@/lib/supabase';
 import type { Database } from '@/types/database';
 import { ClipboardList, CheckCircle2, Clock, XCircle, AlertCircle, DollarSign, Users, CalendarCheck, RefreshCw } from 'lucide-react';
 import { registrationDivisionTypeLabel } from '@/lib/entryType';
+import { useAdminEvent } from '@/contexts/AdminEventContext';
 
 type RegRow = Database['public']['Tables']['registrations']['Row'];
-type EventRow = Database['public']['Tables']['events']['Row'];
 type TabId =
   | 'overview'
   | 'registrations'
@@ -26,22 +26,29 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; 
 };
 
 export default function OverviewTab({ onNavigate }: { onNavigate: (tab: TabId) => void }) {
+  const { selectedEventId, selectedEvent, loading: eventsLoading } = useAdminEvent();
   const [regs, setRegs] = useState<RegRow[]>([]);
-  const [event, setEvent] = useState<EventRow | null>(null);
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
+    if (!selectedEventId) {
+      setRegs([]);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
-    const [{ data: regData }, { data: evData }] = await Promise.all([
-      supabase.from('registrations').select('*').order('created_at', { ascending: false }),
-      supabase.from('events').select('*').eq('is_active', true).order('date').limit(1),
-    ]);
+    const { data: regData } = await supabase
+      .from('registrations')
+      .select('*')
+      .eq('event_id', selectedEventId)
+      .order('created_at', { ascending: false });
     setRegs((regData as RegRow[]) ?? []);
-    setEvent(evData?.[0] ?? null);
     setLoading(false);
-  }, []);
+  }, [selectedEventId]);
 
   useEffect(() => { load(); }, [load]);
+
+  const event = selectedEvent;
 
   // ── Derived stats ─────────────────────────────────────────────────────────
   const totalRegs   = regs.length;
@@ -82,7 +89,7 @@ export default function OverviewTab({ onNavigate }: { onNavigate: (tab: TabId) =
     return { open: true, label: 'Open' };
   }, [event]);
 
-  if (loading) {
+  if (loading || eventsLoading) {
     return (
       <div className="flex items-center justify-center py-20">
         <div className="w-6 h-6 border-2 border-[#2E75B6]/30 border-t-[#2E75B6] rounded-full animate-spin" />

@@ -91,6 +91,7 @@ export type Database = {
           // Confirmation email tracking
           confirmation_email_sent_at: string | null;
           confirmation_email_error: string | null;
+          event_id: string | null;
         };
         Insert: {
           id?: string;
@@ -136,6 +137,7 @@ export type Database = {
           scoring_app_sync_error?: string | null;
           confirmation_email_sent_at?: string | null;
           confirmation_email_error?: string | null;
+          event_id?: string | null;
         };
         Update: {
           id?: string;
@@ -181,6 +183,7 @@ export type Database = {
           scoring_app_sync_error?: string | null;
           confirmation_email_sent_at?: string | null;
           confirmation_email_error?: string | null;
+          event_id?: string | null;
         };
         Relationships: [];
       };
