@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState, useRef } from 'react';
-import { Link } from 'react-router-dom';
-import { useActiveEvent } from '@/hooks/useActiveEvent';
+import { Link, useSearchParams } from 'react-router-dom';
+import { useRegistrationEvent } from '@/hooks/useRegistrationEvent';
+import { formatEventDateSchedule } from '@/lib/formatEventDate';
+import { registrationCloseDate, registrationOpenDate } from '@/lib/eventRegistrationStatus';
 import { supabase } from '@/lib/supabase';
 import type { RegistrationParticipant } from '@/types/database';
 import { Input } from '@/components/ui/input';
@@ -33,12 +35,6 @@ const FALLBACK_REGISTRATION_CLOSE = new Date('2026-07-30T00:00:00');
 function parseDateStart(isoDate: string): Date {
   const [y, m, d] = isoDate.split('-').map(Number);
   return new Date(y, m - 1, d, 0, 0, 0, 0);
-}
-
-/** Last moment of the close date (inclusive). */
-function parseDateEnd(isoDate: string): Date {
-  const [y, m, d] = isoDate.split('-').map(Number);
-  return new Date(y, m - 1, d, 23, 59, 59, 999);
 }
 
 function formatDisplayDate(d: Date): string {
@@ -316,7 +312,10 @@ const FormLabel = ({ children, className }: { children: React.ReactNode; classNa
 
 // ─── Main component ───────────────────────────────────────────────────────────
 export default function CompetitionRegistrationForm() {
-  const { event, loading: eventLoading } = useActiveEvent();
+  const [searchParams] = useSearchParams();
+  const eventIdParam = searchParams.get('event');
+  const { event, openEvents, loading: eventLoading, needsPicker, notFound } =
+    useRegistrationEvent(eventIdParam);
 
   const competitionDate = useMemo(() => {
     if (event?.date) return parseDateStart(event.date);
@@ -324,14 +323,14 @@ export default function CompetitionRegistrationForm() {
   }, [event?.date]);
 
   const registrationOpen = useMemo(() => {
-    if (event?.registration_open_date) return parseDateStart(event.registration_open_date);
+    if (event) return registrationOpenDate(event);
     return FALLBACK_REGISTRATION_OPEN;
-  }, [event?.registration_open_date]);
+  }, [event]);
 
   const registrationClose = useMemo(() => {
-    if (event?.registration_close_date) return parseDateEnd(event.registration_close_date);
+    if (event) return registrationCloseDate(event);
     return FALLBACK_REGISTRATION_CLOSE;
-  }, [event?.registration_close_date]);
+  }, [event]);
 
   const now = new Date();
   const isBeforeOpen = !eventLoading && now < registrationOpen;
@@ -631,7 +630,7 @@ export default function CompetitionRegistrationForm() {
     // ── Build row ──────────────────────────────────────────────────────────
     const row = {
       status: 'pending',
-      ...(event?.id ? { event_id: event.id } : {}),
+      event_id: event!.id,
       contestant_name: contestantName.trim(),
       age: computedAge || String(ageAsOf(dateOfBirth, competitionDate)),
       date_of_birth: dateOfBirth || null,
@@ -740,6 +739,73 @@ export default function CompetitionRegistrationForm() {
   }
 
   // ── Early returns ─────────────────────────────────────────────────────────
+  if (eventLoading) {
+    return (
+      <div className="flex justify-center py-20">
+        <div className="w-8 h-8 border-2 border-[#2E75B6]/30 border-t-[#2E75B6] rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (notFound) {
+    return (
+      <div className="max-w-xl mx-auto rounded-2xl border border-amber-200 bg-amber-50 p-8 text-center">
+        <AlertTriangle className="w-10 h-10 text-amber-600 mx-auto mb-4" />
+        <h2 className="font-display font-black text-xl text-gray-900 mb-2">Competition not found</h2>
+        <p className="text-gray-600 mb-6">
+          This registration link may be outdated, or the event is no longer on the public schedule.
+        </p>
+        <Link to="/schedule" className="text-[#2E75B6] font-bold hover:underline">
+          View all competitions →
+        </Link>
+      </div>
+    );
+  }
+
+  if (needsPicker) {
+    return (
+      <div className="max-w-2xl mx-auto rounded-2xl border border-gray-100 bg-white p-8 shadow-lg">
+        <h2 className="font-display font-black text-2xl text-gray-900 mb-2">Choose a competition</h2>
+        <p className="text-gray-600 mb-8">
+          Several competitions are open for registration. Select the event you are entering.
+        </p>
+        <ul className="space-y-4">
+          {openEvents.map((ev) => (
+            <li key={ev.id}>
+              <Link
+                to={`/registration?event=${ev.id}`}
+                className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 rounded-xl border border-gray-200 px-5 py-4 hover:border-[#2E75B6] hover:bg-blue-50/50 transition-colors"
+              >
+                <span className="font-bold text-gray-900">{ev.name}</span>
+                <span className="text-sm text-gray-500">
+                  {formatEventDateSchedule(ev.date, ev.date)}
+                  {ev.location ? ` · ${ev.location}` : ''}
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+        <p className="mt-6 text-center text-sm text-gray-500">
+          <Link to="/schedule" className="text-[#2E75B6] font-semibold hover:underline">
+            View full schedule
+          </Link>
+        </p>
+      </div>
+    );
+  }
+
+  if (!event) {
+    return (
+      <div className="max-w-xl mx-auto rounded-2xl border border-gray-200 bg-gray-50 p-8 text-center">
+        <h2 className="font-display font-black text-xl text-gray-900 mb-2">No open registration</h2>
+        <p className="text-gray-600 mb-6">There are no competitions accepting registration right now.</p>
+        <Link to="/schedule" className="text-[#2E75B6] font-bold hover:underline">
+          View upcoming events →
+        </Link>
+      </div>
+    );
+  }
+
   if (isBeforeOpen) {
     return (
       <RegistrationClosedBanner before openDate={registrationOpen} closeDate={registrationClose} />

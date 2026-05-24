@@ -1,18 +1,22 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { format, parseISO } from 'date-fns';
 import { Link } from 'react-router-dom';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Search, ChevronDown, Calendar } from 'lucide-react';
 import CompetitionCard, { type CompetitionCardProps } from '../components/CompetitionCard';
-import { useActiveEvent } from '@/hooks/useActiveEvent';
+import { usePublishedEvents } from '@/hooks/usePublishedEvents';
 import { siteContentText, siteContentUrl } from '@/constants/siteContentDefaults';
 import { useSiteContentMap } from '@/contexts/SiteContentContext';
+import { formatEventDateSchedule } from '@/lib/formatEventDate';
+import {
+  formatRegistrationDeadline,
+  getEventRegistrationStatus,
+} from '@/lib/eventRegistrationStatus';
 
 gsap.registerPlugin(ScrollTrigger);
 
 const Schedule = () => {
-  const { event: activeEvent, loading: eventLoading } = useActiveEvent();
+  const { events: publishedEvents, loading: eventsLoading } = usePublishedEvents();
   const heroRef = useRef<HTMLDivElement>(null);
   const upcomingRef = useRef<HTMLDivElement>(null);
   const siteContent = useSiteContentMap();
@@ -73,53 +77,39 @@ const Schedule = () => {
     return () => ctx.revert();
   }, []);
 
-  const upcomingCompetitions: CompetitionCardProps[] = useMemo(() => {
-    const fbName = siteContentText(siteContent, 'schedule_fallback_event_name');
-    const fbSubtitle = siteContentText(siteContent, 'schedule_fallback_subtitle');
-    const fbDate = siteContentText(siteContent, 'schedule_fallback_date');
+  const { upcomingCompetitions, pastCompetitions } = useMemo(() => {
     const fbTime = siteContentText(siteContent, 'schedule_fallback_time');
-    const fbLocation = siteContentText(siteContent, 'schedule_fallback_location');
-    const fbAddress = siteContentText(siteContent, 'schedule_fallback_address');
     const fbDeadline = siteContentText(siteContent, 'schedule_fallback_deadline');
 
-    if (!eventLoading && activeEvent) {
-      const dateLabel = format(parseISO(`${activeEvent.date}T12:00:00`), 'EEEE, MMMM d, yyyy');
-      return [
-        {
-          id: activeEvent.id,
-          name: activeEvent.name,
-          subtitle: activeEvent.description ?? fbSubtitle,
-          date: dateLabel,
-          time: fbTime,
-          location: activeEvent.location.split(',')[0]?.trim() || activeEvent.location,
-          address: activeEvent.location,
-          registrationDeadline: fbDeadline,
-          status: 'open' as const,
-          description: scheduleEventDescription,
-          image: eventCardImage,
-          imageErrorFallback: cardErrorFallback,
-        },
-      ];
-    }
-    return [
-      {
-        id: '1',
-        name: fbName,
-        subtitle: fbSubtitle,
-        date: fbDate,
+    const cards: CompetitionCardProps[] = publishedEvents.map((ev) => {
+      const regStatus = getEventRegistrationStatus(ev);
+      const dateLabel = formatEventDateSchedule(ev.date, ev.date);
+      return {
+        id: ev.id,
+        name: ev.name,
+        subtitle: ev.description ?? undefined,
+        date: dateLabel,
         time: fbTime,
-        location: fbLocation,
-        address: fbAddress,
-        registrationDeadline: fbDeadline,
-        status: 'open' as const,
+        location: ev.location.split(',')[0]?.trim() || ev.location,
+        address: ev.location,
+        registrationDeadline: formatRegistrationDeadline(ev, fbDeadline),
+        status: regStatus,
         description: scheduleEventDescription,
         image: eventCardImage,
         imageErrorFallback: cardErrorFallback,
-      },
-    ];
-  }, [activeEvent, eventLoading, eventCardImage, cardErrorFallback, scheduleEventDescription, siteContent]);
+      };
+    });
 
-  const pastCompetitions: CompetitionCardProps[] = [];
+    const upcoming = cards.filter((c) => c.status !== 'closed');
+    const past = cards.filter((c) => c.status === 'closed');
+    return { upcomingCompetitions: upcoming, pastCompetitions: past };
+  }, [
+    publishedEvents,
+    eventCardImage,
+    cardErrorFallback,
+    scheduleEventDescription,
+    siteContent,
+  ]);
 
   const filterCompetitions = (competitions: CompetitionCardProps[]) => {
     return competitions.filter((comp) => {
@@ -138,6 +128,7 @@ const Schedule = () => {
   };
 
   const filteredUpcoming = filterCompetitions(upcomingCompetitions);
+  const filteredPast = filterCompetitions(pastCompetitions);
 
   return (
     <div className="min-h-screen bg-white">
@@ -216,7 +207,9 @@ const Schedule = () => {
             </p>
           </div>
 
-          {filteredUpcoming.length > 0 ? (
+          {eventsLoading ? (
+            <div className="text-center py-20 text-gray-500">Loading competitions…</div>
+          ) : filteredUpcoming.length > 0 ? (
             <div className="space-y-12 lg:space-y-16">
               {filteredUpcoming.map((competition) => (
                 <div key={competition.id} className="competition-card w-full">
@@ -266,7 +259,10 @@ const Schedule = () => {
 
           {showPast && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 mt-12 animate-in fade-in slide-in-from-top-8 duration-700">
-              {pastCompetitions.map((competition) => (
+              {filteredPast.length === 0 ? (
+                <p className="text-gray-500 col-span-full text-center py-8">No past competitions yet.</p>
+              ) : null}
+              {filteredPast.map((competition) => (
                 <div key={competition.id} className="h-full opacity-70 hover:opacity-100 transition-opacity duration-500">
                   <div className="h-full bg-white rounded-3xl border border-gray-100 shadow-premium">
                     <CompetitionCard {...competition} />

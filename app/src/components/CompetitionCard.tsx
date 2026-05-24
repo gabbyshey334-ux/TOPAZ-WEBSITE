@@ -40,6 +40,7 @@ const statusConfig = {
 } as const;
 
 const CompetitionCard = ({
+  id,
   name,
   date,
   location,
@@ -135,7 +136,7 @@ const CompetitionCard = ({
       {/* Actions */}
       <div className="flex flex-col sm:flex-row gap-4">
         <Link
-          to={status === 'open' ? '/registration' : '/schedule'}
+          to={status === 'open' ? `/registration?event=${id}` : '/schedule'}
           className={`flex-1 inline-flex items-center justify-center gap-2 px-6 py-4 rounded-xl font-bold transition-all shadow-lg ${
             status === 'open'
               ? 'bg-blue-600 text-white hover:bg-blue-700 hover:shadow-xl hover:-translate-y-0.5'

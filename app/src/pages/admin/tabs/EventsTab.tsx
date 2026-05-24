@@ -18,14 +18,6 @@ import { useAdminEventOptional } from '@/contexts/AdminEventContext';
 
 type Row = Database['public']['Tables']['events']['Row'];
 
-/** Only one event should be active on the public site at a time. */
-async function deactivateOtherActiveEvents(exceptId?: string) {
-  let q = supabase.from('events').update({ is_active: false }).eq('is_active', true);
-  if (exceptId) q = q.neq('id', exceptId);
-  const { error } = await q;
-  if (error) throw new Error(error.message);
-}
-
 function formatDbError(error: { message: string; code?: string }): string {
   if (error.code === '42501' || /permission|policy|row-level security/i.test(error.message)) {
     return `${error.message} — Your login email may not be in the admin allowlist. Add it to VITE_ADMIN_EMAILS in Vercel and to the admin_emails table in Supabase, then sign in again.`;
@@ -81,9 +73,6 @@ export default function EventsTab() {
       return 'Scoring competition ID is required when "Show on public website" is on. Create the competition in the scoring app, copy its UUID, paste it here, then save.';
     }
     try {
-      if (row.is_active) {
-        await deactivateOtherActiveEvents(row.id);
-      }
       const { error } = await supabase
         .from('events')
         .update({
@@ -170,9 +159,6 @@ export default function EventsTab() {
 
     setCreating(true);
     try {
-      if (newEvent.is_active) {
-        await deactivateOtherActiveEvents();
-      }
       const { error } = await supabase.from('events').insert({
         name: newEvent.name.trim(),
         date: newEvent.date,
@@ -204,8 +190,8 @@ export default function EventsTab() {
         <div>
           <h1 className="text-2xl font-bold text-white">Events</h1>
           <p className="text-sm text-slate-400 mt-0.5">
-            Changes here appear immediately on the public website — no deployment needed. Only one event
-            can be active at a time (the one shown on Schedule and Registration).
+            Changes here appear immediately on the public website — no deployment needed. Turn on
+            &quot;Show on public website&quot; for every competition in your season; all of them appear on Events.
           </p>
         </div>
         <Button
@@ -310,7 +296,7 @@ export default function EventsTab() {
               <div>
                 <p className="text-sm text-white font-medium">Show on public website</p>
                 <p className="text-xs text-slate-500">
-                  Off = test/draft (no scoring ID). On = live on Schedule &amp; Registration.
+                  Off = draft (hidden from public). On = listed on Events; open dates control Register.
                 </p>
               </div>
             </div>
@@ -562,7 +548,7 @@ function EventEditor({
           <div>
             <p className="text-sm text-white font-medium">Show on public website</p>
             <p className="text-xs text-slate-500">
-              Only one event can be active. Turning this on hides other events from the public site.
+              Multiple events can be public at once for a full season. Registration open/close dates control each form.
             </p>
           </div>
         </div>

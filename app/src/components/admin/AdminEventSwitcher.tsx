@@ -44,7 +44,7 @@ export default function AdminEventSwitcher() {
             return (
               <SelectItem key={ev.id} value={ev.id} className="text-white focus:bg-slate-800">
                 {ev.name} · {dateLabel}
-                {ev.is_active ? ' (live on site)' : ''}
+                {ev.is_active ? ' (on website)' : ''}
               </SelectItem>
             );
           })}
@@ -53,7 +53,7 @@ export default function AdminEventSwitcher() {
       {selectedEvent && (
         <p className="text-[10px] text-slate-500 sm:max-w-xs">
           Registrations, overview stats, and scoring sync use this event.
-          {selectedEvent.is_active ? ' This is the public registration event.' : ''}
+          {selectedEvent.is_active ? ' Shown on the public Events page.' : ' Hidden from the public website.'}
         </p>
       )}
     </div>

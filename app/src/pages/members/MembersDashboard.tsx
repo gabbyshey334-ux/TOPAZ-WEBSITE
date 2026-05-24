@@ -18,7 +18,7 @@ const BASE = import.meta.env.BASE_URL;
 
 export default function MembersDashboard() {
   const { user, signOut } = useAuth();
-  const { event, loading: eventLoading } = useActiveEvent();
+  const { events, event, loading: eventLoading } = useActiveEvent();
   const [member, setMember] = useState<MemberRow | null>(null);
   const [gallery, setGallery] = useState<GalleryRow[]>([]);
   const [announcements, setAnnouncements] = useState<AnnouncementRow[]>([]);
@@ -106,9 +106,28 @@ export default function MembersDashboard() {
               ) : (
                 <p className="text-slate-500">Event details will appear here when available.</p>
               )}
-              <Button asChild className="mt-4 bg-[#2E75B6] hover:bg-[#1F4E78]">
-                <Link to="/registration">Register now</Link>
-              </Button>
+              {events.length > 1 ? (
+                <div className="mt-4 space-y-2">
+                  {events
+                    .filter((e) => e.id)
+                    .map((e) => (
+                      <Button
+                        key={e.id}
+                        asChild
+                        variant="outline"
+                        className="w-full border-slate-600 text-white"
+                      >
+                        <Link to={`/registration?event=${e.id}`}>Register — {e.name}</Link>
+                      </Button>
+                    ))}
+                </div>
+              ) : (
+                <Button asChild className="mt-4 bg-[#2E75B6] hover:bg-[#1F4E78]">
+                  <Link to={event ? `/registration?event=${event.id}` : '/registration'}>
+                    Register now
+                  </Link>
+                </Button>
+              )}
             </CardContent>
           </Card>
         </section>
