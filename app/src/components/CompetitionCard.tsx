@@ -143,7 +143,7 @@ const CompetitionCard = ({
               : 'bg-gray-200 text-gray-500 cursor-not-allowed pointer-events-none'
           }`}
         >
-          Register
+          Register for this event
           <ArrowRight className="w-5 h-5" />
         </Link>
         <Link

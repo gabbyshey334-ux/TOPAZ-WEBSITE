@@ -69,9 +69,6 @@ export default function EventsTab() {
   }, [load, loadStaffEmails]);
 
   async function save(row: Row): Promise<string | null> {
-    if (row.is_active && !row.scoring_competition_id?.trim()) {
-      return 'Scoring competition ID is required when "Show on public website" is on. Create the competition in the scoring app, copy its UUID, paste it here, then save.';
-    }
     try {
       const { error } = await supabase
         .from('events')
@@ -150,12 +147,6 @@ export default function EventsTab() {
     if (!newEvent.name.trim()) { setCreateError('Event name is required.'); return; }
     if (!newEvent.date) { setCreateError('Competition date is required.'); return; }
     if (!newEvent.location.trim()) { setCreateError('Location is required.'); return; }
-    if (newEvent.is_active && !newEvent.scoring_competition_id.trim()) {
-      setCreateError(
-        'To show this event on the public website, turn on "Show on public website" only after you paste a Scoring competition ID (see steps below). For test events, leave that switch off.',
-      );
-      return;
-    }
 
     setCreating(true);
     try {
@@ -294,9 +285,9 @@ export default function EventsTab() {
                 onCheckedChange={(v) => setNewEvent({ ...newEvent, is_active: v })}
               />
               <div>
-                <p className="text-sm text-white font-medium">Show on public website</p>
+                <p className="text-sm text-white font-medium">Show on public Events page</p>
                 <p className="text-xs text-slate-500">
-                  Off = draft (hidden from public). On = listed on Events; open dates control Register.
+                  When on, listed on Events; Register on that card opens this competition&apos;s form.
                 </p>
               </div>
             </div>
@@ -528,10 +519,10 @@ function EventEditor({
             className="mt-1 bg-slate-800 border-slate-600 text-white font-mono text-xs"
             placeholder="UUID from scoring app → Competitions"
           />
-          <p className="text-[10px] text-slate-500 mt-1">
-            Required when this event is active on the public site. Create the competition in the scoring app
-            first, then paste its UUID here.
-          </p>
+            <p className="text-[10px] text-slate-500 mt-1">
+              Paste the UUID from the scoring app so registrations sync. You can publish without it for
+              testing — sync will fail until the ID is added.
+            </p>
           {row.is_active && !row.scoring_competition_id && (
             <p className="text-[10px] text-amber-400 mt-1">
               Active event has no scoring competition linked — registration sync will fail until you paste the UUID.
@@ -546,9 +537,9 @@ function EventEditor({
             onCheckedChange={(v) => setRow({ ...row, is_active: v })}
           />
           <div>
-            <p className="text-sm text-white font-medium">Show on public website</p>
+            <p className="text-sm text-white font-medium">Show on public Events page</p>
             <p className="text-xs text-slate-500">
-              Multiple events can be public at once for a full season. Registration open/close dates control each form.
+              When on, this competition appears on Events and dancers can click Register on its card.
             </p>
           </div>
         </div>

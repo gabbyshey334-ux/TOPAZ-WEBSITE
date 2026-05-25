@@ -209,6 +209,15 @@ const Schedule = () => {
 
           {eventsLoading ? (
             <div className="text-center py-20 text-gray-500">Loading competitions…</div>
+          ) : publishedEvents.length === 0 ? (
+            <div className="text-center py-32 bg-gray-50 rounded-3xl border-2 border-dashed border-gray-200 px-6">
+              <p className="text-gray-600 font-medium">
+                No competitions are listed on the website yet.
+              </p>
+              <p className="text-sm text-gray-500 mt-2">
+                In admin, turn on &quot;Show on public Events page&quot; for each event and save.
+              </p>
+            </div>
           ) : filteredUpcoming.length > 0 ? (
             <div className="space-y-12 lg:space-y-16">
               {filteredUpcoming.map((competition) => (

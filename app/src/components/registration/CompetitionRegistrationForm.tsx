@@ -352,6 +352,9 @@ export default function CompetitionRegistrationForm() {
     email: string;
     song_title: string;
     artist_name: string;
+    event_name: string;
+    event_date_label: string;
+    event_location: string;
   } | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -735,6 +738,11 @@ export default function CompetitionRegistrationForm() {
       email: row.email,
       song_title: songTitle.trim(),
       artist_name: artistName.trim(),
+      event_name: event!.name,
+      event_date_label: event!.date
+        ? formatEventDateSchedule(event!.date, event!.date)
+        : '—',
+      event_location: event!.location,
     });
   }
 
@@ -914,8 +922,9 @@ export default function CompetitionRegistrationForm() {
             </h4>
             <ul className="space-y-3 text-gray-600 font-medium">
               <li className="flex gap-3"><span className="text-[#2E75B6]">•</span> Check your email for a full confirmation summary</li>
-              <li className="flex gap-3"><span className="text-[#2E75B6]">•</span> Competition date: <strong className="text-[#0a0a0a]">August 22, 2026</strong></li>
-              <li className="flex gap-3"><span className="text-[#2E75B6]">•</span> Location: <strong className="text-[#0a0a0a]">Seaside Convention Center, OR</strong></li>
+              <li className="flex gap-3"><span className="text-[#2E75B6]">•</span> Competition: <strong className="text-[#0a0a0a]">{success.event_name}</strong></li>
+              <li className="flex gap-3"><span className="text-[#2E75B6]">•</span> Competition date: <strong className="text-[#0a0a0a]">{success.event_date_label}</strong></li>
+              <li className="flex gap-3"><span className="text-[#2E75B6]">•</span> Location: <strong className="text-[#0a0a0a]">{success.event_location}</strong></li>
             </ul>
           </div>
 
@@ -934,6 +943,29 @@ export default function CompetitionRegistrationForm() {
 
   return (
     <div ref={formRef} className="max-w-4xl mx-auto space-y-12 scroll-mt-24">
+      {event ? (
+        <div className="rounded-2xl border-2 border-[#2E75B6]/30 bg-[#2E75B6]/5 px-6 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="min-w-0">
+            <p className="text-xs font-bold uppercase tracking-widest text-[#2E75B6] mb-1">
+              You are registering for
+            </p>
+            <h2 className="font-display font-black text-2xl sm:text-3xl text-[#0a0a0a] break-words">
+              {event.name}
+            </h2>
+            <p className="text-sm text-gray-600 mt-1">
+              {formatEventDateSchedule(event.date, event.date)}
+              {event.location ? ` · ${event.location}` : ''}
+            </p>
+          </div>
+          <Link
+            to="/schedule"
+            className="text-sm font-bold text-[#2E75B6] hover:underline shrink-0 whitespace-nowrap"
+          >
+            Choose a different event →
+          </Link>
+        </div>
+      ) : null}
+
       {/* Premium Step Indicator */}
       <div className="relative pt-6 pb-12">
         <div className="absolute top-10 left-[10%] right-[10%] h-1 bg-gray-100 rounded-full" />

@@ -5,8 +5,8 @@ import { useCart } from '@/contexts/CartContext';
 
 const navLinks = [
   { label: 'HOME', to: '/' },
-  { label: 'REGISTER', to: '/registration' },
   { label: 'EVENTS', to: '/schedule' },
+  { label: 'REGISTER', to: '/schedule' },
   { label: 'ABOUT', to: '/about' },
   { label: 'RULES', to: '/rules' },
   { label: 'GALLERY', to: '/gallery' },
