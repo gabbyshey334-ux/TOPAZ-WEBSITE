@@ -7,6 +7,13 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -17,6 +24,7 @@ import { CheckCircle2, AlertCircle, Plus, Loader2, Trash2 } from 'lucide-react';
 import { useAdminEventOptional } from '@/contexts/AdminEventContext';
 
 type Row = Database['public']['Tables']['events']['Row'];
+type ScoringCompetition = { id: string; name: string };
 
 function formatDbError(error: { message: string; code?: string }): string {
   if (error.code === '42501' || /permission|policy|row-level security/i.test(error.message)) {
@@ -28,6 +36,9 @@ function formatDbError(error: { message: string; code?: string }): string {
 export default function EventsTab() {
   const adminEvents = useAdminEventOptional();
   const [rows, setRows] = useState<Row[]>([]);
+  const [scoringCompetitions, setScoringCompetitions] = useState<ScoringCompetition[]>([]);
+  const [scoringCompetitionsLoading, setScoringCompetitionsLoading] = useState(false);
+  const [scoringCompetitionsError, setScoringCompetitionsError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [createOpen, setCreateOpen] = useState(false);
   const [creating, setCreating] = useState(false);
@@ -63,10 +74,36 @@ export default function EventsTab() {
     }
   }, []);
 
+  const loadScoringCompetitions = useCallback(async () => {
+    setScoringCompetitionsLoading(true);
+    setScoringCompetitionsError(null);
+    const { data, error } = await supabase.functions.invoke('list-scoring-competitions', {
+      body: {},
+    });
+    if (error) {
+      setScoringCompetitions([]);
+      setScoringCompetitionsError(error.message);
+      setScoringCompetitionsLoading(false);
+      return;
+    }
+    const list =
+      data && typeof data === 'object' && Array.isArray((data as { competitions?: unknown[] }).competitions)
+        ? ((data as { competitions: ScoringCompetition[] }).competitions ?? [])
+        : [];
+    setScoringCompetitions(
+      list.filter(
+        (c): c is ScoringCompetition =>
+          !!c && typeof c.id === 'string' && typeof c.name === 'string',
+      ),
+    );
+    setScoringCompetitionsLoading(false);
+  }, []);
+
   useEffect(() => {
     load();
     loadStaffEmails();
-  }, [load, loadStaffEmails]);
+    void loadScoringCompetitions();
+  }, [load, loadStaffEmails, loadScoringCompetitions]);
 
   async function save(row: Row): Promise<string | null> {
     try {
@@ -267,6 +304,29 @@ export default function EventsTab() {
             </div>
             <div>
               <Label className="text-slate-300">Scoring app competition ID</Label>
+              <div className="mt-1 grid gap-2">
+                <Select
+                  value={newEvent.scoring_competition_id || undefined}
+                  onValueChange={(v) => setNewEvent({ ...newEvent, scoring_competition_id: v })}
+                >
+                  <SelectTrigger className="bg-slate-900 border-slate-600 text-white">
+                    <SelectValue
+                      placeholder={
+                        scoringCompetitionsLoading
+                          ? 'Loading competitions…'
+                          : 'Choose competition from scoring app'
+                      }
+                    />
+                  </SelectTrigger>
+                  <SelectContent className="bg-slate-900 border-slate-600 text-white">
+                    {scoringCompetitions.map((c) => (
+                      <SelectItem key={c.id} value={c.id} className="focus:bg-slate-800">
+                        {c.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
               <Input
                 value={newEvent.scoring_competition_id}
                 onChange={(e) => setNewEvent({ ...newEvent, scoring_competition_id: e.target.value })}
@@ -274,10 +334,13 @@ export default function EventsTab() {
                 placeholder="UUID from scoring app → Competitions"
               />
               <p className="text-[10px] text-slate-500 mt-1">
-                Required only when &quot;Show on public website&quot; is on. Steps: (1) Scoring app →
-                Competitions → create/open competition. (2) Copy UUID. (3) Paste here. (4) Turn on public
-                visibility and save.
+                Select from the list above, or paste manually if needed.
               </p>
+              {scoringCompetitionsError && (
+                <p className="text-[10px] text-amber-400 mt-1">
+                  Could not load competitions list: {scoringCompetitionsError}
+                </p>
+              )}
             </div>
             <div className="flex items-center gap-3">
               <Switch
@@ -372,7 +435,13 @@ export default function EventsTab() {
       ) : (
         <div className="space-y-6">
           {rows.map((ev) => (
-            <EventEditor key={ev.id} initial={ev} onSave={save} onDelete={deleteEvent} />
+            <EventEditor
+              key={ev.id}
+              initial={ev}
+              onSave={save}
+              onDelete={deleteEvent}
+              competitions={scoringCompetitions}
+            />
           ))}
           {rows.length === 0 && (
             <p className="text-slate-500 text-sm">No events yet. Click “Add Event” to create one.</p>
@@ -387,10 +456,12 @@ function EventEditor({
   initial,
   onSave,
   onDelete,
+  competitions,
 }: {
   initial: Row;
   onSave: (r: Row) => Promise<string | null>;
   onDelete: (id: string) => void;
+  competitions: ScoringCompetition[];
 }) {
   const [row, setRow] = useState(initial);
   const [saving, setSaving] = useState(false);
@@ -511,6 +582,23 @@ function EventEditor({
         {/* Scoring competition link */}
         <div className="md:col-span-2">
           <Label className="text-slate-300">Scoring app competition ID</Label>
+          <div className="mt-1 grid gap-2">
+            <Select
+              value={row.scoring_competition_id ?? undefined}
+              onValueChange={(v) => setRow({ ...row, scoring_competition_id: v })}
+            >
+              <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
+                <SelectValue placeholder="Choose competition from scoring app" />
+              </SelectTrigger>
+              <SelectContent className="bg-slate-900 border-slate-600 text-white">
+                {competitions.map((c) => (
+                  <SelectItem key={c.id} value={c.id} className="focus:bg-slate-800">
+                    {c.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
           <Input
             value={row.scoring_competition_id ?? ''}
             onChange={(e) =>
@@ -519,10 +607,9 @@ function EventEditor({
             className="mt-1 bg-slate-800 border-slate-600 text-white font-mono text-xs"
             placeholder="UUID from scoring app → Competitions"
           />
-            <p className="text-[10px] text-slate-500 mt-1">
-              Paste the UUID from the scoring app so registrations sync. You can publish without it for
-              testing — sync will fail until the ID is added.
-            </p>
+          <p className="text-[10px] text-slate-500 mt-1">
+            Choose from the scoring app list or paste manually if needed.
+          </p>
           {row.is_active && !row.scoring_competition_id && (
             <p className="text-[10px] text-amber-400 mt-1">
               Active event has no scoring competition linked — registration sync will fail until you paste the UUID.
