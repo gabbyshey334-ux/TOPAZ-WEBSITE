@@ -136,19 +136,22 @@ Deno.serve(async (req: Request) => {
   const websiteClient = createClient(WEBSITE_URL, WEBSITE_SERVICE_ROLE_KEY);
   const scoringClient = createClient(SCORING_APP_URL, SCORING_APP_SERVICE_ROLE_KEY);
 
-  const resolved = await resolveCompetitionId(websiteClient, bodyCompetitionId);
-  if ('error' in resolved) {
-    return json({ error: resolved.error }, 422);
-  }
-
   const { data: reg, error: regErr } = await websiteClient
     .from('registrations')
-    .select('id, scoring_app_contestant_id, scoring_app_sync_status')
+    .select('id, event_id, scoring_app_contestant_id, scoring_app_sync_status')
     .eq('id', registrationId)
     .maybeSingle();
 
   if (regErr) {
     return json({ error: regErr.message }, 500);
+  }
+
+  const websiteEventId =
+    typeof reg?.event_id === 'string' && reg.event_id.trim() ? reg.event_id.trim() : null;
+
+  const resolved = await resolveCompetitionId(websiteClient, bodyCompetitionId, websiteEventId);
+  if ('error' in resolved) {
+    return json({ error: resolved.error }, 422);
   }
 
   const entryHint =

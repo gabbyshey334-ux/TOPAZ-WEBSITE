@@ -7,13 +7,50 @@ export type ResolveCompetitionResult =
   | { competitionId: string }
   | { error: string };
 
-/** Resolve scoring competition: body override → active event → env → legacy constant. */
+async function resolveFromWebsiteEventId(
+  websiteClient: SupabaseClient,
+  websiteEventId: string,
+): Promise<ResolveCompetitionResult> {
+  const { data: event, error: eventErr } = await websiteClient
+    .from('events')
+    .select('scoring_competition_id')
+    .eq('id', websiteEventId)
+    .maybeSingle();
+
+  if (eventErr) {
+    return { error: `Failed to load website event: ${eventErr.message}` };
+  }
+  if (!event) {
+    return { error: `Website event not found: ${websiteEventId}` };
+  }
+
+  const fromEvent =
+    typeof event.scoring_competition_id === 'string'
+      ? event.scoring_competition_id.trim()
+      : '';
+  if (!fromEvent) {
+    return {
+      error:
+        'This event has no scoring_competition_id configured. Link it to a scoring app competition in admin.',
+    };
+  }
+
+  return { competitionId: fromEvent };
+}
+
+/** Resolve scoring competition: body override → registration event → active event → env → legacy. */
 export async function resolveCompetitionId(
   websiteClient: SupabaseClient,
   bodyCompetitionId?: string | null,
+  websiteEventId?: string | null,
 ): Promise<ResolveCompetitionResult> {
   const override = typeof bodyCompetitionId === 'string' ? bodyCompetitionId.trim() : '';
   if (override) return { competitionId: override };
+
+  const regEventId = typeof websiteEventId === 'string' ? websiteEventId.trim() : '';
+  if (regEventId) {
+    return resolveFromWebsiteEventId(websiteClient, regEventId);
+  }
 
   const { data: event, error: eventErr } = await websiteClient
     .from('events')
@@ -27,11 +64,11 @@ export async function resolveCompetitionId(
     return { error: `Failed to load active event: ${eventErr.message}` };
   }
 
-  const fromEvent =
+  const fromActiveEvent =
     typeof event?.scoring_competition_id === 'string'
       ? event.scoring_competition_id.trim()
       : '';
-  if (fromEvent) return { competitionId: fromEvent };
+  if (fromActiveEvent) return { competitionId: fromActiveEvent };
 
   const fromEnv = Deno.env.get('SCORING_COMPETITION_ID')?.trim() ?? '';
   if (fromEnv) return { competitionId: fromEnv };

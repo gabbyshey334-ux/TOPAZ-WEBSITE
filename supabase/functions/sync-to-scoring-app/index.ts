@@ -113,23 +113,6 @@ Deno.serve(async (req: Request) => {
 
   const websiteClient = createClient(WEBSITE_URL, WEBSITE_SERVICE_ROLE_KEY);
 
-  if (!SCORING_APP_URL || !SCORING_APP_SERVICE_ROLE_KEY) {
-    const msg =
-      'SCORING_APP_URL and SCORING_APP_SERVICE_ROLE_KEY secrets are not configured. Add them in the Supabase dashboard under Edge Function secrets, then retry sync.';
-    await updateSyncStatus(websiteClient, registrationId, 'failed', null, msg);
-    return new Response(JSON.stringify({ error: msg }), { status: 500, headers: JSON_HEADERS });
-  }
-
-  const resolved = await resolveCompetitionId(websiteClient, bodyCompetitionId);
-  if ('error' in resolved) {
-    await updateSyncStatus(websiteClient, registrationId, 'failed', null, resolved.error);
-    return new Response(JSON.stringify({ error: resolved.error }), {
-      status: 422,
-      headers: JSON_HEADERS,
-    });
-  }
-  const competitionId = resolved.competitionId;
-
   const { data: reg, error: regErr } = await websiteClient
     .from('registrations')
     .select('*')
@@ -144,6 +127,26 @@ Deno.serve(async (req: Request) => {
       headers: JSON_HEADERS,
     });
   }
+
+  if (!SCORING_APP_URL || !SCORING_APP_SERVICE_ROLE_KEY) {
+    const msg =
+      'SCORING_APP_URL and SCORING_APP_SERVICE_ROLE_KEY secrets are not configured. Add them in the Supabase dashboard under Edge Function secrets, then retry sync.';
+    await updateSyncStatus(websiteClient, registrationId, 'failed', null, msg);
+    return new Response(JSON.stringify({ error: msg }), { status: 500, headers: JSON_HEADERS });
+  }
+
+  const websiteEventId =
+    typeof reg.event_id === 'string' && reg.event_id.trim() ? reg.event_id.trim() : null;
+
+  const resolved = await resolveCompetitionId(websiteClient, bodyCompetitionId, websiteEventId);
+  if ('error' in resolved) {
+    await updateSyncStatus(websiteClient, registrationId, 'failed', null, resolved.error);
+    return new Response(JSON.stringify({ error: resolved.error }), {
+      status: 422,
+      headers: JSON_HEADERS,
+    });
+  }
+  const competitionId = resolved.competitionId;
 
   const scoringClient = createClient(SCORING_APP_URL, SCORING_APP_SERVICE_ROLE_KEY);
 
