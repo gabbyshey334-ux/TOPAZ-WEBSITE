@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
+import RegistrationLink from '@/components/RegistrationLink';
 import { Facebook, Instagram, Twitter, Mail, MapPin, Phone } from 'lucide-react';
 import { TikTokIcon } from './icons/TikTokIcon';
 import { siteContentText } from '@/constants/siteContentDefaults';
@@ -11,7 +12,7 @@ const footerLinks = [
     links: [
       { label: 'Schedule', to: '/schedule' },
       { label: 'Rules', to: '/rules' },
-      { label: 'Registration', to: '/registration' },
+      { label: 'Registration', to: '/registration', registration: true },
       { label: 'Categories', to: '/rules' },
     ],
   },
@@ -91,12 +92,18 @@ const Footer = () => {
               <ul className="space-y-3">
                 {column.links.map((link) => (
                   <li key={link.label}>
-                    <Link
-                      to={link.to}
-                      className="text-white/60 hover:text-[#2E75B6] transition-colors duration-200 text-sm"
-                    >
-                      {link.label}
-                    </Link>
+                    {'registration' in link && link.registration ? (
+                      <RegistrationLink className="text-white/60 hover:text-[#2E75B6] transition-colors duration-200 text-sm">
+                        {link.label}
+                      </RegistrationLink>
+                    ) : (
+                      <Link
+                        to={link.to!}
+                        className="text-white/60 hover:text-[#2E75B6] transition-colors duration-200 text-sm"
+                      >
+                        {link.label}
+                      </Link>
+                    )}
                   </li>
                 ))}
               </ul>

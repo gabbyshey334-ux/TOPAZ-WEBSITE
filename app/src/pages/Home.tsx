@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import RegistrationLink from '@/components/RegistrationLink';
 import {
   ArrowRight,
   Calendar,
@@ -643,13 +644,12 @@ const Home = () => {
             </div>
 
             <div className="pt-8">
-              <Link
-                to="/registration"
+              <RegistrationLink
                 className="inline-flex items-center gap-3 px-12 py-5 bg-[#2E75B6] text-white font-bold text-lg uppercase tracking-wider rounded-full hover:bg-[#1F4E78] transition-all duration-300 hover:scale-105 shadow-2xl shadow-[#2E75B6]/50"
               >
                 {siteContentText(siteContent, 'home_tour_register_btn')}
                 <ArrowRight className="w-6 h-6" />
-              </Link>
+              </RegistrationLink>
             </div>
           </div>
         </div>
@@ -766,13 +766,12 @@ const Home = () => {
           </p>
           
           <div className="flex flex-wrap justify-center gap-4">
-            <Link
-              to="/registration"
+            <RegistrationLink
               className="inline-flex items-center gap-3 px-10 py-5 bg-white text-[#2E75B6] font-bold text-sm uppercase tracking-wider rounded-full hover:bg-white/90 transition-all duration-300 hover:scale-105 shadow-2xl"
             >
               {siteContentText(siteContent, 'home_final_cta_primary_btn')}
               <ArrowRight className="w-5 h-5" />
-            </Link>
+            </RegistrationLink>
             <Link
               to="/contact"
               className="inline-flex items-center gap-3 px-10 py-5 border-2 border-white/30 text-white font-bold text-sm uppercase tracking-wider rounded-full hover:bg-white/10 hover:border-white/50 transition-all duration-300"

@@ -761,7 +761,8 @@ export default function CompetitionRegistrationForm() {
         <AlertTriangle className="w-10 h-10 text-amber-600 mx-auto mb-4" />
         <h2 className="font-display font-black text-xl text-gray-900 mb-2">Competition not found</h2>
         <p className="text-gray-600 mb-6">
-          This registration link may be outdated, or the event is no longer on the public schedule.
+          This registration link may be outdated, or the event ID in the URL is wrong. Ask your studio for the
+          current registration link from Admin → Events.
         </p>
         <Link to="/schedule" className="text-[#2E75B6] font-bold hover:underline">
           View all competitions →

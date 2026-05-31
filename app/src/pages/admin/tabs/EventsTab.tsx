@@ -20,8 +20,11 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { CheckCircle2, AlertCircle, Plus, Loader2, Trash2 } from 'lucide-react';
+import { CheckCircle2, AlertCircle, Plus, Loader2, Trash2, Copy } from 'lucide-react';
+import { toast } from 'sonner';
 import { useAdminEventOptional } from '@/contexts/AdminEventContext';
+import EventImageUpload from '@/components/admin/EventImageUpload';
+import { publicRegistrationUrl } from '@/lib/registrationLinks';
 
 type Row = Database['public']['Tables']['events']['Row'];
 type ScoringCompetition = { id: string; name: string };
@@ -118,6 +121,7 @@ export default function EventsTab() {
           registration_open_date: row.registration_open_date || null,
           registration_close_date: row.registration_close_date || null,
           scoring_competition_id: row.scoring_competition_id?.trim() || null,
+          image_url: row.image_url?.trim() || null,
         })
         .eq('id', row.id);
       if (error) return formatDbError(error);
@@ -577,6 +581,49 @@ function EventEditor({
             className="mt-1 bg-slate-800 border-slate-600 text-white min-h-[90px]"
             placeholder="Any additional details about this event…"
           />
+        </div>
+
+        {/* Card image */}
+        <div className="md:col-span-2">
+          <EventImageUpload
+            eventId={row.id}
+            eventSlug={row.name}
+            currentUrl={row.image_url}
+            onUrlChange={(url) => setRow({ ...row, image_url: url })}
+          />
+        </div>
+
+        {/* Registration link */}
+        <div className="md:col-span-2 rounded-lg border border-slate-700 bg-slate-800/40 p-4 space-y-2">
+          <Label className="text-slate-300">Public registration link</Label>
+          <p className="text-[10px] text-slate-500">
+            Share this URL so dancers register for this specific event. Works even before the event is shown on
+            the public Events page.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <Input
+              readOnly
+              value={publicRegistrationUrl(row.id, typeof window !== 'undefined' ? window.location.origin : '')}
+              className="font-mono text-xs bg-slate-900 border-slate-600 text-slate-200"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              className="border-slate-600 shrink-0"
+              onClick={() => {
+                const url = publicRegistrationUrl(row.id, window.location.origin);
+                void navigator.clipboard.writeText(url).then(() => toast.success('Registration link copied'));
+              }}
+            >
+              <Copy className="w-4 h-4 mr-2" />
+              Copy link
+            </Button>
+          </div>
+          {!row.is_active && (
+            <p className="text-[10px] text-amber-400">
+              This event is hidden from the Events page until you turn on &quot;Show on public website&quot;.
+            </p>
+          )}
         </div>
 
         {/* Scoring competition link */}

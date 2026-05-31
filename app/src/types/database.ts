@@ -368,6 +368,7 @@ export type Database = {
           registration_open_date: string | null;
           registration_close_date: string | null;
           scoring_competition_id: string | null;
+          image_url: string | null;
         };
         Insert: {
           id?: string;
@@ -380,6 +381,7 @@ export type Database = {
           registration_open_date?: string | null;
           registration_close_date?: string | null;
           scoring_competition_id?: string | null;
+          image_url?: string | null;
         };
         Update: {
           id?: string;
@@ -392,6 +394,7 @@ export type Database = {
           registration_open_date?: string | null;
           registration_close_date?: string | null;
           scoring_competition_id?: string | null;
+          image_url?: string | null;
         };
         Relationships: [];
       };

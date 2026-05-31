@@ -136,11 +136,17 @@ const CompetitionCard = ({
       {/* Actions */}
       <div className="flex flex-col sm:flex-row gap-4">
         <Link
-          to={status === 'open' ? `/registration?event=${id}` : '/schedule'}
+          to={
+            status === 'closed'
+              ? '/schedule'
+              : `/registration?event=${id}`
+          }
           className={`flex-1 inline-flex items-center justify-center gap-2 px-6 py-4 rounded-xl font-bold transition-all shadow-lg ${
             status === 'open'
               ? 'bg-blue-600 text-white hover:bg-blue-700 hover:shadow-xl hover:-translate-y-0.5'
-              : 'bg-gray-200 text-gray-500 cursor-not-allowed pointer-events-none'
+              : status === 'coming'
+                ? 'bg-blue-100 text-blue-800 hover:bg-blue-200 hover:shadow-lg'
+                : 'bg-gray-200 text-gray-500 cursor-not-allowed pointer-events-none'
           }`}
         >
           Register for this event
