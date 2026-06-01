@@ -95,7 +95,8 @@ const Schedule = () => {
         registrationDeadline: formatRegistrationDeadline(ev, fbDeadline),
         status: regStatus,
         description: scheduleEventDescription,
-        image: ev.image_url?.trim() || eventCardImage,
+        customImage: ev.image_url?.trim() || undefined,
+        fallbackImage: eventCardImage,
         imageErrorFallback: cardErrorFallback,
       };
     });

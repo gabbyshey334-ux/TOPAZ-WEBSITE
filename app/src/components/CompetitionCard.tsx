@@ -13,8 +13,11 @@ export interface CompetitionCardProps {
   registrationDeadline: string;
   status: 'open' | 'closed' | 'coming';
   description?: string;
-  image?: string;
-  /** Shown if `image` fails to load (e.g. from `site_content.schedule_card_error_fallback`). */
+  /** This event's uploaded image (Admin → Events). */
+  customImage?: string;
+  /** Site-wide default when no custom image (Website Editor → Schedule). */
+  fallbackImage?: string;
+  /** Shown if custom + fallback fail to load. */
   imageErrorFallback?: string;
   address?: string;
   time?: string;
@@ -50,16 +53,17 @@ const CompetitionCard = ({
   description,
   subtitle,
   time,
-  image,
+  customImage,
+  fallbackImage,
   imageErrorFallback,
 }: CompetitionCardProps) => {
   const [imgTier, setImgTier] = useState(0);
   const candidates = useMemo(() => {
-    const raw = [image, imageErrorFallback, FALLBACK_EVENT_IMAGE].filter(
+    const raw = [customImage, fallbackImage, imageErrorFallback, FALLBACK_EVENT_IMAGE].filter(
       (u): u is string => Boolean(u && u.trim()),
     );
     return [...new Set(raw)];
-  }, [image, imageErrorFallback]);
+  }, [customImage, fallbackImage, imageErrorFallback]);
 
   useEffect(() => {
     setImgTier(0);
@@ -162,7 +166,9 @@ const CompetitionCard = ({
     </div>
   );
 
-  if (image) {
+  const showHeroImage = candidates.length > 0;
+
+  if (showHeroImage) {
     return (
       <div className="w-full bg-white rounded-2xl shadow-2xl overflow-hidden hover:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)] hover:scale-[1.01] transition-all duration-300">
         <div className="grid grid-cols-1 lg:grid-cols-5 min-h-[600px] w-full">
@@ -170,6 +176,7 @@ const CompetitionCard = ({
           <div className="lg:col-span-3 relative order-1 w-full">
             <div className="relative h-80 sm:h-96 lg:h-full min-h-[320px] w-full">
               <img
+                key={imgSrc}
                 src={imgSrc}
                 alt={name}
                 className="absolute inset-0 h-full w-full object-cover object-center"

@@ -24,7 +24,7 @@ import { CheckCircle2, AlertCircle, Plus, Loader2, Trash2, Copy } from 'lucide-r
 import { toast } from 'sonner';
 import { useAdminEventOptional } from '@/contexts/AdminEventContext';
 import EventImageUpload from '@/components/admin/EventImageUpload';
-import { publicRegistrationUrl } from '@/lib/registrationLinks';
+import { PUBLIC_SITE_ORIGIN, publicRegistrationUrl } from '@/lib/registrationLinks';
 
 type Row = Database['public']['Tables']['events']['Row'];
 type ScoringCompetition = { id: string; name: string };
@@ -603,7 +603,7 @@ function EventEditor({
           <div className="flex flex-col sm:flex-row gap-2">
             <Input
               readOnly
-              value={publicRegistrationUrl(row.id, typeof window !== 'undefined' ? window.location.origin : '')}
+              value={publicRegistrationUrl(row.id, PUBLIC_SITE_ORIGIN)}
               className="font-mono text-xs bg-slate-900 border-slate-600 text-slate-200"
             />
             <Button
@@ -611,7 +611,7 @@ function EventEditor({
               variant="outline"
               className="border-slate-600 shrink-0"
               onClick={() => {
-                const url = publicRegistrationUrl(row.id, window.location.origin);
+                const url = publicRegistrationUrl(row.id, PUBLIC_SITE_ORIGIN);
                 void navigator.clipboard.writeText(url).then(() => toast.success('Registration link copied'));
               }}
             >

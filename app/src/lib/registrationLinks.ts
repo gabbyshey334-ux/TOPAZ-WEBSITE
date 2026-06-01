@@ -1,5 +1,9 @@
 import type { EventRow } from '@/hooks/useActiveEvent';
-import { getEventRegistrationStatus } from '@/lib/eventRegistrationStatus';
+
+/** Public site origin for admin copy links (production domain). */
+export const PUBLIC_SITE_ORIGIN =
+  (import.meta.env.VITE_PUBLIC_SITE_URL as string | undefined)?.replace(/\/$/, '') ||
+  'https://dancetopaz.com';
 
 /** Direct registration URL for a specific website event. */
 export function registrationPathForEvent(eventId: string): string {
@@ -7,17 +11,18 @@ export function registrationPathForEvent(eventId: string): string {
 }
 
 /** Full public registration URL (for admin copy/paste). */
-export function publicRegistrationUrl(eventId: string, origin = ''): string {
+export function publicRegistrationUrl(
+  eventId: string,
+  origin: string = PUBLIC_SITE_ORIGIN,
+): string {
   const base = origin.replace(/\/$/, '');
   return `${base}${registrationPathForEvent(eventId)}`;
 }
 
 /**
- * Best default registration entry from the navbar/home/footer.
- * One open event → direct link; several → picker on /registration.
+ * Navbar / home / footer Register buttons — always Events first so visitors pick a competition,
+ * then use that event's card to register (same flow for every event).
  */
-export function registrationEntryPath(events: EventRow[]): string {
-  const open = events.filter((e) => getEventRegistrationStatus(e) === 'open');
-  if (open.length === 1) return registrationPathForEvent(open[0].id);
-  return '/registration';
+export function registrationEntryPath(_events?: EventRow[]): string {
+  return '/schedule';
 }

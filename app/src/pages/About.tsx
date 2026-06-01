@@ -2,7 +2,6 @@ import { useRef, useEffect, useMemo } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Link } from 'react-router-dom';
-import RegistrationLink from '@/components/RegistrationLink';
 import { ArrowRight, Star, Award, Heart, Sparkles, Quote } from 'lucide-react';
 import TextSection from '../components/TextSection';
 import TeamSection from '../components/TeamSection';
@@ -334,12 +333,13 @@ const About = () => {
             {siteContentText(siteContent, 'about_cta_body')}
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            <RegistrationLink
+            <Link
+              to="/schedule"
               className="inline-flex items-center gap-3 px-10 py-5 bg-white text-[#2E75B6] font-bold text-sm uppercase tracking-wider rounded-full hover:bg-white/90 transition-all duration-300 hover:scale-105 shadow-2xl"
             >
               {siteContentText(siteContent, 'about_cta_register')}
               <ArrowRight className="w-5 h-5" />
-            </RegistrationLink>
+            </Link>
             <Link
               to="/gallery"
               className="inline-flex items-center gap-3 px-10 py-5 border-2 border-white/30 text-white font-bold text-sm uppercase tracking-wider rounded-full hover:bg-white/10 hover:border-white/50 transition-all duration-300"

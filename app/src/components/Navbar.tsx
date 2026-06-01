@@ -1,6 +1,5 @@
 import { useState, useEffect, type MouseEvent } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
-import RegistrationLink from '@/components/RegistrationLink';
 import { Menu, X, ShoppingBag } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 
@@ -66,41 +65,25 @@ const Navbar = () => {
 
             {/* Desktop Nav Links - Minimal style */}
             <div className="hidden lg:flex items-center justify-center flex-1 min-w-0 gap-5 xl:gap-8 px-6">
-              {navLinks.map((link) =>
-                link.label === 'REGISTER' ? (
-                  <RegistrationLink
-                    key="register"
-                    className={`shrink-0 font-bold text-[11px] xl:text-xs uppercase tracking-[0.18em] transition-colors duration-200 ${
-                      location.pathname.startsWith('/registration')
-                        ? 'text-[#2E75B6]'
-                        : 'text-white/90 hover:text-white'
-                    }`}
-                  >
-                    {link.label}
-                  </RegistrationLink>
-                ) : (
-                  <Link
-                    key={link.to}
-                    to={link.to}
-                    className={`shrink-0 font-bold text-[11px] xl:text-xs uppercase tracking-[0.18em] transition-colors duration-200 ${
-                      isActive(link.to)
-                        ? 'text-[#2E75B6]'
-                        : 'text-white/90 hover:text-white'
-                    }`}
-                  >
-                    {link.label}
-                  </Link>
-                ),
-              )}
+              {navLinks.map((link) => (
+                <Link
+                  key={link.to}
+                  to={link.to}
+                  className={`shrink-0 font-bold text-[11px] xl:text-xs uppercase tracking-[0.18em] transition-colors duration-200 ${
+                    isActive(link.to) ||
+                    (link.to === '/schedule' &&
+                      (location.pathname === '/schedule' || location.pathname.startsWith('/registration')))
+                      ? 'text-[#2E75B6]'
+                      : 'text-white/90 hover:text-white'
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              ))}
             </div>
 
             {/* Desktop CTA - Minimal */}
             <div className="hidden lg:flex items-center shrink-0 gap-3">
-              <RegistrationLink
-                className="font-bold text-[11px] xl:text-xs uppercase tracking-[0.18em] text-white/90 hover:text-white transition-colors duration-200"
-              >
-                REGISTER
-              </RegistrationLink>
               <button
                 onClick={openCart}
                 className="relative p-2 text-white/80 hover:text-white transition-colors"
@@ -173,34 +156,22 @@ const Navbar = () => {
 
         {/* Nav links */}
         <div className="flex flex-col px-4 py-8">
-          {navLinks.map((link) =>
-            link.label === 'REGISTER' ? (
-              <RegistrationLink
-                key="register-mobile"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className={`py-5 border-b border-white/10 font-bold text-lg uppercase tracking-[0.15em] transition-colors ${
-                  location.pathname.startsWith('/registration')
-                    ? 'text-[#2E75B6]'
-                    : 'text-white/80 hover:text-white'
-                }`}
-              >
-                {link.label}
-              </RegistrationLink>
-            ) : (
-              <Link
-                key={link.to}
-                to={link.to}
-                onClick={() => setIsMobileMenuOpen(false)}
-                className={`py-5 border-b border-white/10 font-bold text-lg uppercase tracking-[0.15em] transition-colors ${
-                  isActive(link.to)
-                    ? 'text-[#2E75B6]'
-                    : 'text-white/80 hover:text-white'
-                }`}
-              >
-                {link.label}
-              </Link>
-            ),
-          )}
+          {navLinks.map((link) => (
+            <Link
+              key={link.to}
+              to={link.to}
+              onClick={() => setIsMobileMenuOpen(false)}
+              className={`py-5 border-b border-white/10 font-bold text-lg uppercase tracking-[0.15em] transition-colors ${
+                isActive(link.to) ||
+                (link.to === '/schedule' &&
+                  (location.pathname === '/schedule' || location.pathname.startsWith('/registration')))
+                  ? 'text-[#2E75B6]'
+                  : 'text-white/80 hover:text-white'
+              }`}
+            >
+              {link.label}
+            </Link>
+          ))}
         </div>
 
         {/* Mobile CTAs */}

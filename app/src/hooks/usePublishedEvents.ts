@@ -11,7 +11,9 @@ export function usePublishedEvents() {
     setLoading(true);
     const { data } = await supabase
       .from('events')
-      .select('*')
+      .select(
+        'id, created_at, name, date, location, description, is_active, registration_open_date, registration_close_date, scoring_competition_id, image_url',
+      )
       .eq('is_active', true)
       .order('date', { ascending: true });
     setEvents((data as EventRow[]) ?? []);
