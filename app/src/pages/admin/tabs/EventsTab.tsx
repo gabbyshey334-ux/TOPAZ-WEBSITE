@@ -589,8 +589,17 @@ function EventEditor({
             eventId={row.id}
             eventSlug={row.name}
             currentUrl={row.image_url}
-            onUrlChange={(url) => setRow({ ...row, image_url: url })}
+            onUrlChange={async (url) => {
+              setRow((prev) => ({ ...prev, image_url: url }));
+              await supabase
+                .from('events')
+                .update({ image_url: url ?? null })
+                .eq('id', row.id);
+            }}
           />
+          <p className="text-[10px] text-emerald-400 mt-1">
+            Image saves automatically. Click &quot;Save Changes&quot; to save all other fields.
+          </p>
         </div>
 
         {/* Registration link */}
@@ -657,9 +666,9 @@ function EventEditor({
           <p className="text-[10px] text-slate-500 mt-1">
             Choose from the scoring app list or paste manually if needed.
           </p>
-          {row.is_active && !row.scoring_competition_id && (
+          {!row.scoring_competition_id && (
             <p className="text-[10px] text-amber-400 mt-1">
-              Active event has no scoring competition linked — registration sync will fail until you paste the UUID.
+              ⚠️ No scoring competition linked — registration sync will fail for this event until you select one and save.
             </p>
           )}
         </div>

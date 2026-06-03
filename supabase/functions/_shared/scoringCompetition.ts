@@ -1,8 +1,5 @@
 import type { SupabaseClient } from 'jsr:@supabase/supabase-js@2';
 
-/** Legacy fallback when event is not linked (optional env secret). */
-const LEGACY_COMPETITION_ID = '60874ab6-341e-4e21-9e62-7fe686530607';
-
 export type ResolveCompetitionResult =
   | { competitionId: string }
   | { error: string };
@@ -38,7 +35,7 @@ async function resolveFromWebsiteEventId(
   return { competitionId: fromEvent };
 }
 
-/** Resolve scoring competition: body override → registration event → active event → env → legacy. */
+/** Resolve scoring competition: body override → registration event → active event → env. */
 export async function resolveCompetitionId(
   websiteClient: SupabaseClient,
   bodyCompetitionId?: string | null,
@@ -73,7 +70,11 @@ export async function resolveCompetitionId(
   const fromEnv = Deno.env.get('SCORING_COMPETITION_ID')?.trim() ?? '';
   if (fromEnv) return { competitionId: fromEnv };
 
-  return { competitionId: LEGACY_COMPETITION_ID };
+  return {
+    error:
+      'No scoring competition is linked to this registration\'s event. ' +
+      'Go to Admin → Events, select the correct scoring app competition from the dropdown, and click Save Changes.',
+  };
 }
 
 /** Website registration category label → scoring app category name for lookup. */

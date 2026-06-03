@@ -1,4 +1,5 @@
 import { useRef, useLayoutEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Calendar, MapPin, Clock, ArrowRight } from 'lucide-react';
@@ -136,14 +137,14 @@ const EventCardSection = () => {
             </div>
 
             {/* CTA */}
-            <a
+            <Link
               ref={ctaRef}
-              href="#register"
+              to="/schedule"
               className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-primary-foreground font-mono text-sm tracking-wider btn-hover"
             >
               Register Now
               <ArrowRight className="w-4 h-4" />
-            </a>
+            </Link>
           </div>
         </div>
       </div>
