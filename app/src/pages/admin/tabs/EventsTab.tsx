@@ -36,6 +36,14 @@ function formatDbError(error: { message: string; code?: string }): string {
   return error.message;
 }
 
+function validateCompetitionYear(date: string): string | null {
+  const year = parseInt(date.slice(0, 4), 10);
+  if (!Number.isFinite(year) || year < 2020 || year > 2035) {
+    return 'Competition year must be between 2020 and 2035. Check for typos (e.g. 2826 instead of 2026).';
+  }
+  return null;
+}
+
 export default function EventsTab() {
   const adminEvents = useAdminEventOptional();
   const [rows, setRows] = useState<Row[]>([]);
@@ -187,6 +195,8 @@ export default function EventsTab() {
     setCreateError(null);
     if (!newEvent.name.trim()) { setCreateError('Event name is required.'); return; }
     if (!newEvent.date) { setCreateError('Competition date is required.'); return; }
+    const yearErr = validateCompetitionYear(newEvent.date);
+    if (yearErr) { setCreateError(yearErr); return; }
     if (!newEvent.location.trim()) { setCreateError('Location is required.'); return; }
 
     setCreating(true);
@@ -476,6 +486,13 @@ function EventEditor({
 
   async function handleSave() {
     setSaveError(null);
+    if (row.date) {
+      const yearErr = validateCompetitionYear(row.date);
+      if (yearErr) {
+        setSaveError(yearErr);
+        return;
+      }
+    }
     setSaving(true);
     const err = await onSave(row);
     setSaving(false);

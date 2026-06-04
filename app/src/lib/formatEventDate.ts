@@ -8,6 +8,8 @@ function parseEventDateInput(dateStr: string): string {
 export function formatEventDateLabel(dateStr: string | undefined | null, fallback: string): string {
   if (!dateStr) return fallback;
   try {
+    const year = parseInt(dateStr.slice(0, 4), 10);
+    if (!Number.isFinite(year) || year < 2020 || year > 2035) return fallback;
     return format(new Date(parseEventDateInput(dateStr)), 'MMMM d, yyyy');
   } catch {
     return fallback;
@@ -18,6 +20,8 @@ export function formatEventDateLabel(dateStr: string | undefined | null, fallbac
 export function formatEventDateSchedule(dateStr: string | undefined | null, fallback: string): string {
   if (!dateStr) return fallback;
   try {
+    const year = parseInt(dateStr.slice(0, 4), 10);
+    if (!Number.isFinite(year) || year < 2020 || year > 2035) return fallback;
     return format(new Date(parseEventDateInput(dateStr)), 'EEEE, MMMM d, yyyy');
   } catch {
     return fallback;

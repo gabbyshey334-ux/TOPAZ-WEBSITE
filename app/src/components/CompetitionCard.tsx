@@ -12,6 +12,8 @@ export interface CompetitionCardProps {
   location: string;
   registrationDeadline: string;
   status: 'open' | 'closed' | 'coming';
+  /** Competition calendar date has passed — used for layout/filtering only. */
+  competitionPast?: boolean;
   description?: string;
   /** This event's uploaded image (Admin → Events). */
   customImage?: string;
@@ -139,23 +141,23 @@ const CompetitionCard = ({
 
       {/* Actions */}
       <div className="flex flex-col sm:flex-row gap-4">
-        <Link
-          to={
-            status === 'closed'
-              ? '/schedule'
-              : `/registration?event=${id}`
-          }
-          className={`flex-1 inline-flex items-center justify-center gap-2 px-6 py-4 rounded-xl font-bold transition-all shadow-lg ${
-            status === 'open'
-              ? 'bg-blue-600 text-white hover:bg-blue-700 hover:shadow-xl hover:-translate-y-0.5'
-              : status === 'coming'
-                ? 'bg-blue-100 text-blue-800 hover:bg-blue-200 hover:shadow-lg'
-                : 'bg-gray-200 text-gray-500 cursor-not-allowed pointer-events-none'
-          }`}
-        >
-          Register for this event
-          <ArrowRight className="w-5 h-5" />
-        </Link>
+        {status === 'open' ? (
+          <Link
+            to={`/registration?event=${id}`}
+            className="flex-1 inline-flex items-center justify-center gap-2 px-6 py-4 rounded-xl font-bold transition-all shadow-lg bg-blue-600 text-white hover:bg-blue-700 hover:shadow-xl hover:-translate-y-0.5"
+          >
+            Register for this event
+            <ArrowRight className="w-5 h-5" />
+          </Link>
+        ) : status === 'coming' ? (
+          <span className="flex-1 inline-flex items-center justify-center gap-2 px-6 py-4 rounded-xl font-bold bg-blue-100 text-blue-800 shadow-lg">
+            Registration opens soon
+          </span>
+        ) : (
+          <span className="flex-1 inline-flex items-center justify-center gap-2 px-6 py-4 rounded-xl font-bold bg-gray-200 text-gray-600">
+            Registration closed
+          </span>
+        )}
         <Link
           to="/rules"
           className="px-6 py-4 border-2 border-gray-300 text-gray-700 font-bold rounded-xl hover:border-blue-600 hover:text-blue-600 transition-all text-center"

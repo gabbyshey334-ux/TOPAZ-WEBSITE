@@ -11,6 +11,15 @@ function parseDateEnd(dateStr: string): Date {
   return new Date(/^\d{4}-\d{2}-\d{2}$/.test(dateStr) ? `${dateStr}T23:59:59.999` : dateStr);
 }
 
+/** True once the competition date has passed (end of that calendar day). */
+export function isCompetitionPast(
+  event: Pick<EventRow, 'date'>,
+  now: Date = new Date(),
+): boolean {
+  if (!event.date) return false;
+  return now > parseDateEnd(event.date);
+}
+
 /** Whether registration is open, not yet open, or closed for this event. */
 export function getEventRegistrationStatus(
   event: Pick<EventRow, 'date' | 'registration_open_date' | 'registration_close_date'>,

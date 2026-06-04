@@ -11,6 +11,7 @@ import { formatEventDateSchedule } from '@/lib/formatEventDate';
 import {
   formatRegistrationDeadline,
   getEventRegistrationStatus,
+  isCompetitionPast,
 } from '@/lib/eventRegistrationStatus';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -75,15 +76,17 @@ const Schedule = () => {
     });
 
     return () => ctx.revert();
-  }, []);
+  }, [eventsLoading, publishedEvents.length]);
 
-  const { upcomingCompetitions, pastCompetitions } = useMemo(() => {
+  const scheduleFallbackDate = siteContentText(siteContent, 'schedule_fallback_date');
+
+  const { upcomingCompetitions, pastCompetitions, firstOpenRegistrationId } = useMemo(() => {
     const fbTime = siteContentText(siteContent, 'schedule_fallback_time');
     const fbDeadline = siteContentText(siteContent, 'schedule_fallback_deadline');
 
     const cards: CompetitionCardProps[] = publishedEvents.map((ev) => {
       const regStatus = getEventRegistrationStatus(ev);
-      const dateLabel = formatEventDateSchedule(ev.date, ev.date);
+      const dateLabel = formatEventDateSchedule(ev.date, scheduleFallbackDate);
       return {
         id: ev.id,
         name: ev.name,
@@ -94,6 +97,7 @@ const Schedule = () => {
         address: ev.location,
         registrationDeadline: formatRegistrationDeadline(ev, fbDeadline),
         status: regStatus,
+        competitionPast: isCompetitionPast(ev),
         description: scheduleEventDescription,
         customImage: ev.image_url?.trim() || undefined,
         fallbackImage: eventCardImage,
@@ -101,16 +105,38 @@ const Schedule = () => {
       };
     });
 
-    const upcoming = cards.filter((c) => c.status !== 'closed');
-    const past = cards.filter((c) => c.status === 'closed');
-    return { upcomingCompetitions: upcoming, pastCompetitions: past };
+    // Upcoming = competition hasn't happened yet (NOT registration-closed).
+    const upcoming = cards.filter((c) => !c.competitionPast);
+    const past = cards.filter((c) => c.competitionPast);
+    const firstOpen = upcoming.find((c) => c.status === 'open');
+    return {
+      upcomingCompetitions: upcoming,
+      pastCompetitions: past,
+      firstOpenRegistrationId: firstOpen?.id ?? null,
+    };
   }, [
     publishedEvents,
     eventCardImage,
     cardErrorFallback,
     scheduleEventDescription,
+    scheduleFallbackDate,
     siteContent,
   ]);
+
+  const seasonLabel = useMemo(() => {
+    const years = publishedEvents
+      .map((ev) => {
+        const y = parseInt(String(ev.date).slice(0, 4), 10);
+        return Number.isFinite(y) && y >= 2020 && y <= 2035 ? y : null;
+      })
+      .filter((y): y is number => y != null);
+    if (years.length === 0) {
+      return siteContentText(siteContent, 'schedule_hero_kicker');
+    }
+    const min = Math.min(...years);
+    const max = Math.max(...years);
+    return min === max ? `Season ${min}` : `Season ${min}–${max}`;
+  }, [publishedEvents, siteContent]);
 
   const filterCompetitions = (competitions: CompetitionCardProps[]) => {
     return competitions.filter((comp) => {
@@ -118,7 +144,7 @@ const Schedule = () => {
         filter === 'all' ||
         (filter === 'open' && comp.status === 'open') ||
         (filter === 'upcoming' && comp.status === 'coming') ||
-        (filter === 'past' && comp.status === 'closed');
+        (filter === 'past' && comp.competitionPast);
 
       const matchesSearch =
         comp.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -150,13 +176,20 @@ const Schedule = () => {
 
         <div className="relative w-full px-4 sm:px-6 lg:px-12 max-w-7xl mx-auto text-center z-10">
           <p className="hero-animate font-mono text-primary font-bold tracking-[0.3em] uppercase mb-6">
-            {siteContentText(siteContent, 'schedule_hero_kicker')}
+            {seasonLabel}
           </p>
           <h1 className="hero-animate font-display font-black text-5xl sm:text-6xl lg:text-8xl text-white mb-8 tracking-tighter uppercase break-words">
             {siteContentText(siteContent, 'schedule_hero_heading_prefix')}
             <span className="text-primary italic">{siteContentText(siteContent, 'schedule_hero_heading_accent')}</span>
           </h1>
-          <div className="hero-animate w-24 h-1 bg-primary mx-auto rounded-full" />
+          <div className="hero-animate w-24 h-1 bg-primary mx-auto rounded-full mb-10" />
+          <a
+            href="#events"
+            className="hero-animate inline-flex items-center gap-2 px-8 py-4 bg-primary text-primary-foreground font-mono text-sm tracking-wider rounded-full hover:opacity-90 transition-opacity"
+          >
+            {siteContentText(siteContent, 'schedule_hero_view_events_btn')}
+            <ChevronDown className="w-4 h-4" />
+          </a>
         </div>
       </section>
 
@@ -197,7 +230,7 @@ const Schedule = () => {
       </section>
 
       {/* Upcoming Competitions */}
-      <section ref={upcomingRef} className="py-20 lg:py-32 bg-gray-50">
+      <section id="events" ref={upcomingRef} className="py-20 lg:py-32 bg-gray-50 scroll-mt-24">
         <div className="max-w-7xl mx-auto px-6 lg:px-12">
           <div className="mb-16 text-center lg:text-left">
             <h2 className="text-4xl lg:text-5xl font-black text-gray-900 mb-4 break-words">
@@ -300,6 +333,21 @@ const Schedule = () => {
             {siteContentText(siteContent, 'schedule_cta_body')}
           </p>
           <div className="flex flex-wrap justify-center gap-6">
+            {firstOpenRegistrationId ? (
+              <Link
+                to={`/registration?event=${firstOpenRegistrationId}`}
+                className="btn-secondary !bg-white !text-primary !border-none !px-10 !py-4"
+              >
+                {siteContentText(siteContent, 'schedule_cta_register_btn')}
+              </Link>
+            ) : (
+              <a
+                href="#events"
+                className="btn-secondary !bg-white !text-primary !border-none !px-10 !py-4"
+              >
+                {siteContentText(siteContent, 'schedule_hero_view_events_btn')}
+              </a>
+            )}
             <Link
               to="/rules"
               className="btn-secondary !bg-white !text-primary !border-none !px-10 !py-4"

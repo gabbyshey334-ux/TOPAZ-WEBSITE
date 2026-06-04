@@ -9,14 +9,19 @@ export function usePublishedEvents() {
 
   const load = useCallback(async () => {
     setLoading(true);
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('events')
       .select(
         'id, created_at, name, date, location, description, is_active, registration_open_date, registration_close_date, scoring_competition_id, image_url',
       )
       .eq('is_active', true)
       .order('date', { ascending: true });
-    setEvents((data as EventRow[]) ?? []);
+    if (error) {
+      console.error('[usePublishedEvents] Failed to load events:', error.message);
+      setEvents([]);
+    } else {
+      setEvents((data as EventRow[]) ?? []);
+    }
     setLoading(false);
   }, []);
 

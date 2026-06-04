@@ -305,7 +305,9 @@ export const SITE_CONTENT_TEXT_DEFAULTS = {
   schedule_cta_body:
     'Register early to secure your spot. Join the TOPAZ 2.0 family today.',
   schedule_cta_rules_btn: 'View Competition Rules',
+  schedule_cta_register_btn: 'Register Now',
   schedule_cta_top_btn: 'Back to Top',
+  schedule_hero_view_events_btn: 'View Competitions',
   schedule_fallback_event_name: 'The Return of TOPAZ 2.0',
   schedule_fallback_subtitle: 'Join us for the return of TOPAZ 2.0',
   schedule_fallback_date: 'Saturday, August 22, 2026',
