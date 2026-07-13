@@ -63,6 +63,37 @@ const ABOUT_IMAGE_CAPTION_KEYS = new Set<string>([
   'about_image_3_caption',
 ]);
 
+/** Edited under Homepage → “What’s coming” — excluded from bulk text list. */
+const WHATS_COMING_TEXT_KEYS = [
+  'home_whats_coming_kicker',
+  'home_whats_coming_heading',
+  'home_promo_1_title',
+  'home_promo_1_subtitle',
+  'home_promo_1_description',
+  'home_promo_2_title',
+  'home_promo_2_subtitle',
+  'home_promo_2_description',
+  'home_promo_3_title',
+  'home_promo_3_subtitle',
+  'home_promo_3_description',
+] as const satisfies readonly SiteContentTextKey[];
+
+const WHATS_COMING_TEXT_KEY_SET = new Set<string>(WHATS_COMING_TEXT_KEYS);
+
+const WHATS_COMING_TEXT_FIELDS: { key: SiteContentTextKey; label: string }[] = [
+  { key: 'home_whats_coming_kicker', label: 'Section label (above the heading)' },
+  { key: 'home_whats_coming_heading', label: 'Section heading' },
+  { key: 'home_promo_1_title', label: 'Card 1 — title (Master Classes)' },
+  { key: 'home_promo_1_subtitle', label: 'Card 1 — status label (e.g. Coming Soon)' },
+  { key: 'home_promo_1_description', label: 'Card 1 — short description' },
+  { key: 'home_promo_2_title', label: 'Card 2 — title (Sponsors)' },
+  { key: 'home_promo_2_subtitle', label: 'Card 2 — status label' },
+  { key: 'home_promo_2_description', label: 'Card 2 — short description' },
+  { key: 'home_promo_3_title', label: 'Card 3 — title (Panel & Judges)' },
+  { key: 'home_promo_3_subtitle', label: 'Card 3 — status label' },
+  { key: 'home_promo_3_description', label: 'Card 3 — short description' },
+];
+
 function SlotCaptionEditor({
   siteKey,
   savedValue,
@@ -854,11 +885,11 @@ const PAGE_SECTIONS: PageSection[] = [
         ],
       },
       {
-        groupTitle: '“What’s coming” promo cards',
+        groupTitle: '“What’s coming” / Exciting Features Ahead',
         slots: [
-          { key: 'home_promo_masterclass', label: 'Master classes card image', storagePrefix: 'homepage/promo-masterclass' },
-          { key: 'home_promo_sponsors', label: 'Sponsors card image', storagePrefix: 'homepage/promo-sponsors' },
-          { key: 'home_promo_panel', label: 'Panel & judges card image', storagePrefix: 'homepage/promo-panel' },
+          { key: 'home_promo_masterclass', label: 'Card 1 image — Master classes', storagePrefix: 'homepage/promo-masterclass' },
+          { key: 'home_promo_sponsors', label: 'Card 2 image — Sponsors', storagePrefix: 'homepage/promo-sponsors' },
+          { key: 'home_promo_panel', label: 'Card 3 image — Panel & judges', storagePrefix: 'homepage/promo-panel' },
         ],
       },
     ],
@@ -1027,7 +1058,9 @@ export default function ContentTab() {
 
   const allTextFieldKeys = Object.keys(SITE_CONTENT_TEXT_DEFAULTS).sort() as SiteContentTextKey[];
   const textEditorFieldCount =
-    allTextFieldKeys.filter((k) => !ABOUT_IMAGE_CAPTION_KEYS.has(k)).length + FAQ_JSON_EDITORS.length;
+    allTextFieldKeys.filter(
+      (k) => !ABOUT_IMAGE_CAPTION_KEYS.has(k) && !WHATS_COMING_TEXT_KEY_SET.has(k),
+    ).length + FAQ_JSON_EDITORS.length;
 
   return (
     <div className="space-y-6">
@@ -1047,6 +1080,10 @@ export default function ContentTab() {
               <li>
                 <strong className="text-white">Photos &amp; hero video</strong> — expand the page sections below
                 (Homepage, About page, Schedule, etc.). This is separate from the text editor.
+              </li>
+              <li>
+                <strong className="text-white">“What&apos;s Coming” homepage cards</strong> — under Homepage, edit
+                titles, descriptions, and card images in one place.
               </li>
               <li>
                 <strong className="text-white">Wording, buttons, footer, contact lines, optional FAQ JSON</strong> —
@@ -1121,6 +1158,27 @@ export default function ContentTab() {
                         <h4 className="text-xs font-bold uppercase tracking-widest text-[#7EB8E8]">
                           {group.groupTitle}
                         </h4>
+                        {section.id === 'home' &&
+                          group.groupTitle.startsWith('“What’s coming”') && (
+                            <div className="space-y-3 rounded-xl border border-[#2E75B6]/30 bg-[#2E75B6]/5 p-4">
+                              <p className="text-xs text-slate-400">
+                                Edit the &quot;Exciting Features Ahead&quot; section on the homepage. Changes go live
+                                as soon as you save each field. Card images are below.
+                              </p>
+                              <div className="flex flex-col gap-3">
+                                {WHATS_COMING_TEXT_FIELDS.map((field) => (
+                                  <ManagedTextField
+                                    key={field.key}
+                                    fieldKey={field.key}
+                                    label={field.label}
+                                    multiline={field.key.includes('description')}
+                                    savedValue={content[field.key] ?? null}
+                                    onSaved={(v) => updateLocal(field.key, v)}
+                                  />
+                                ))}
+                              </div>
+                            </div>
+                          )}
                         <div className="flex flex-col gap-4">
                           {group.slots.map((slot) => (
                             <ManagedImageSlot
@@ -1196,7 +1254,9 @@ export default function ContentTab() {
                 {TEXT_SECTION_ORDER.map((section) => {
                   const keys = allTextFieldKeys.filter(
                     (k) =>
-                      textSectionForKey(k) === section.id && !ABOUT_IMAGE_CAPTION_KEYS.has(k),
+                      textSectionForKey(k) === section.id &&
+                      !ABOUT_IMAGE_CAPTION_KEYS.has(k) &&
+                      !WHATS_COMING_TEXT_KEY_SET.has(k),
                   );
                   if (keys.length === 0) return null;
                   return (

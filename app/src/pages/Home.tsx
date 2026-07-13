@@ -420,7 +420,7 @@ const Home = () => {
                         <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1.5 backdrop-blur-sm">
                           <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white" />
                           <span className="text-xs font-bold uppercase tracking-wider text-white">
-                            Coming Soon
+                            {card.subtitle}
                           </span>
                         </div>
                       )}
