@@ -532,6 +532,18 @@ function InstructorsSection() {
     setOpen(true);
   }
 
+  // When the edit dialog opens, force the bio field to start at the top
+  useEffect(() => {
+    if (!open) return;
+    const id = window.requestAnimationFrame(() => {
+      const el = document.querySelector<HTMLTextAreaElement>(
+        '[data-slot="dialog-content"] textarea',
+      );
+      if (el) el.scrollTop = 0;
+    });
+    return () => window.cancelAnimationFrame(id);
+  }, [open, bio]);
+
   async function onUploadPhoto(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     e.target.value = '';
@@ -665,7 +677,7 @@ function InstructorsSection() {
           if (!o) resetForm();
         }}
       >
-        <DialogContent className="bg-slate-950 border-slate-700 text-white max-w-lg">
+        <DialogContent className="bg-slate-950 border-slate-700 text-white max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editing ? 'Edit person' : 'Add person'}</DialogTitle>
           </DialogHeader>
@@ -706,9 +718,17 @@ function InstructorsSection() {
               <Textarea
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
-                className="mt-1 bg-slate-900 border-slate-600 text-white min-h-[100px]"
+                rows={10}
+                className="mt-1 bg-slate-900 border-slate-600 text-white min-h-[200px] max-h-[320px] overflow-y-auto resize-y [field-sizing:fixed]"
                 placeholder="Short background or credentials…"
+                onFocus={(e) => {
+                  // Keep the start of the bio visible when the dialog opens
+                  e.currentTarget.scrollTop = 0;
+                }}
               />
+              <p className="mt-1 text-[10px] text-slate-500">
+                Scroll inside this box to see the full bio. The public homepage shows the complete text.
+              </p>
             </div>
             <div>
               <Label className="text-slate-300">Photo (optional)</Label>

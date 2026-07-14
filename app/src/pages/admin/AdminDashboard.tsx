@@ -56,7 +56,7 @@ function AdminDashboardInner() {
           to="/"
           className="font-display font-black text-xl uppercase tracking-tight px-3 mb-10 hover:opacity-80 transition-opacity"
         >
-          TOPAZ<span className="text-[#2E75B6]">2.0</span>
+          TOPAZ <span className="text-[#2E75B6]">2.0</span>
         </Link>
 
         <p className="text-[10px] font-mono uppercase tracking-widest text-slate-500 px-3 mb-3">
@@ -90,7 +90,7 @@ function AdminDashboardInner() {
         {/* Mobile header */}
         <div className="lg:hidden sticky top-0 z-30 bg-[#0a0a0a]/95 backdrop-blur border-b border-slate-800 px-4 py-3 flex items-center justify-between">
           <Link to="/" className="font-display font-black text-lg uppercase tracking-tight">
-            TOPAZ<span className="text-[#2E75B6]">2.0</span>
+            TOPAZ <span className="text-[#2E75B6]">2.0</span>
           </Link>
           <p className="text-xs text-slate-400 font-medium uppercase tracking-wide">
             {NAV.find((n) => n.id === tab)?.label}

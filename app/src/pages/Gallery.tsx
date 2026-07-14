@@ -86,7 +86,7 @@ function GalleryPasswordModal({
             <Lock className="w-7 h-7 text-[#7EB8E8]" />
           </div>
           <h2 className="font-display font-black text-2xl text-white tracking-tight uppercase">
-            TOPAZ<span className="text-[#2E75B6]">2.0</span>
+            TOPAZ <span className="text-[#2E75B6]">2.0</span>
           </h2>
           <p className="text-white/60 text-sm mt-2 leading-relaxed">
             Protected Gallery

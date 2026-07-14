@@ -488,7 +488,7 @@ const Home = () => {
                   <div className="p-6">
                     <h3 className="font-display font-black text-xl text-gray-900">{p.name}</h3>
                     {p.title && <p className="text-sm font-bold text-violet-600 mt-0.5">{p.title}</p>}
-                    {p.bio && <p className="mt-3 text-sm text-gray-600 leading-relaxed line-clamp-4">{p.bio}</p>}
+                    {p.bio && <p className="mt-3 text-sm text-gray-600 leading-relaxed whitespace-pre-line">{p.bio}</p>}
                   </div>
                 </div>
               ))}
@@ -535,7 +535,7 @@ const Home = () => {
                   <div className="p-6">
                     <h3 className="font-display font-black text-xl text-gray-900">{p.name}</h3>
                     {p.title && <p className="text-sm font-bold text-amber-600 mt-0.5">{p.title}</p>}
-                    {p.bio && <p className="mt-3 text-sm text-gray-600 leading-relaxed line-clamp-4">{p.bio}</p>}
+                    {p.bio && <p className="mt-3 text-sm text-gray-600 leading-relaxed whitespace-pre-line">{p.bio}</p>}
                   </div>
                 </div>
               ))}

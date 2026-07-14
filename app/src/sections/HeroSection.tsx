@@ -24,11 +24,17 @@ interface HeroSectionProps {
   heroSubtitle?: string;
 }
 
+/** Ensure brand always renders as "TOPAZ 2.0" (DB may still have "TOPAZ2.0"). */
+function normalizeBrandTitle(title: string): string {
+  return title.replace(/TOPAZ\s*2\.0/gi, 'TOPAZ 2.0');
+}
+
 const HeroSection = ({ videoUrl, emblemSrc, heroTitle, heroSubtitle }: HeroSectionProps = {}) => {
-  const resolvedTitle =
+  const resolvedTitle = normalizeBrandTitle(
     heroTitle != null && String(heroTitle).trim()
       ? String(heroTitle).trim()
-      : SITE_CONTENT_TEXT_DEFAULTS.home_hero_title;
+      : SITE_CONTENT_TEXT_DEFAULTS.home_hero_title,
+  );
   const resolvedSubtitle =
     heroSubtitle != null && String(heroSubtitle).trim()
       ? String(heroSubtitle).trim()
@@ -126,7 +132,7 @@ const HeroSection = ({ videoUrl, emblemSrc, heroTitle, heroSubtitle }: HeroSecti
 
         <h1
           ref={headingRef}
-          className="font-display font-black text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl tracking-tighter text-white leading-[0.95] mb-4 max-w-[min(100%,56rem)] mx-auto px-2 break-words"
+          className="font-display font-black text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl tracking-tight text-white leading-[0.95] mb-4 max-w-[min(100%,56rem)] mx-auto px-2 break-words"
         >
           {resolvedTitle}
         </h1>

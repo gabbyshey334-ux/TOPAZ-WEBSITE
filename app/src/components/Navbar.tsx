@@ -59,7 +59,7 @@ const Navbar = () => {
             {/* Logo - Clean minimal style */}
             <Link to="/" className="flex items-center gap-2 group shrink-0">
               <span className="font-display font-black text-2xl md:text-3xl tracking-tight text-white uppercase drop-shadow-sm">
-                TOPAZ<span className="text-[#2E75B6]">2.0</span>
+                TOPAZ <span className="text-[#2E75B6]">2.0</span>
               </span>
             </Link>
 
@@ -143,7 +143,7 @@ const Navbar = () => {
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-6 border-b border-white/10">
           <span className="font-display font-black text-xl text-white tracking-tight uppercase">
-            TOPAZ<span className="text-[#2E75B6]">2.0</span>
+            TOPAZ <span className="text-[#2E75B6]">2.0</span>
           </span>
           <button
             onClick={() => setIsMobileMenuOpen(false)}

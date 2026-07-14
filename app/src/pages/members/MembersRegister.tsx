@@ -66,7 +66,7 @@ export default function MembersRegister() {
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
           <Link to="/" className="font-display font-black text-2xl text-white uppercase">
-            TOPAZ<span className="text-[#2E75B6]">2.0</span>
+            TOPAZ <span className="text-[#2E75B6]">2.0</span>
           </Link>
           <h1 className="mt-6 text-xl font-bold text-white tracking-wide">Join member area</h1>
         </div>
