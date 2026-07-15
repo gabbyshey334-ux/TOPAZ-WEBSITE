@@ -4,6 +4,7 @@ import { Facebook, Instagram, Twitter, Mail, MapPin, Phone } from 'lucide-react'
 import { TikTokIcon } from './icons/TikTokIcon';
 import { siteContentText } from '@/constants/siteContentDefaults';
 import { useSiteContentMap } from '@/contexts/SiteContentContext';
+import BrandName from '@/components/BrandName';
 
 const footerLinks = [
   {
@@ -64,7 +65,7 @@ const Footer = () => {
           <div className="lg:col-span-2">
             <Link to="/" className="inline-block mb-6">
               <span className="font-display font-black text-2xl text-white tracking-tight">
-                TOPAZ <span className="text-[#2E75B6]">2.0</span>
+                <BrandName />
               </span>
             </Link>
             <p className="text-white/60 leading-relaxed mb-6 max-w-sm break-words">{tagline}</p>

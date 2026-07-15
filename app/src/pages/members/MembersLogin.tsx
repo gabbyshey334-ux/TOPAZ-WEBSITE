@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import BrandName from '@/components/BrandName';
 
 export default function MembersLogin() {
   const { signIn } = useAuth();
@@ -70,7 +71,7 @@ export default function MembersLogin() {
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
           <Link to="/" className="font-display font-black text-2xl text-white uppercase">
-            TOPAZ <span className="text-[#2E75B6]">2.0</span>
+            <BrandName />
           </Link>
           <h1 className="mt-6 text-xl font-bold text-white tracking-wide">Member login</h1>
         </div>

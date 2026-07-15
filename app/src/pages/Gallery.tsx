@@ -7,6 +7,7 @@ import type { Database } from '@/types/database';
 import { siteContentText, siteContentUrl } from '@/constants/siteContentDefaults';
 import { useSiteContentMap } from '@/contexts/SiteContentContext';
 import { ImageLightbox } from '@/components/ImageLightbox';
+import BrandName from '@/components/BrandName';
 
 const BASE = import.meta.env.BASE_URL;
 const FALLBACK_HISTORY_IMG = `${BASE}images/gallery/history/founders-duo-striped-pants.jpg`;
@@ -86,7 +87,7 @@ function GalleryPasswordModal({
             <Lock className="w-7 h-7 text-[#7EB8E8]" />
           </div>
           <h2 className="font-display font-black text-2xl text-white tracking-tight uppercase">
-            TOPAZ <span className="text-[#2E75B6]">2.0</span>
+            <BrandName />
           </h2>
           <p className="text-white/60 text-sm mt-2 leading-relaxed">
             Protected Gallery

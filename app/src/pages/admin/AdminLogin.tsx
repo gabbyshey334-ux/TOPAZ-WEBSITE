@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import BrandName from '@/components/BrandName';
 
 export default function AdminLogin() {
   const { user, loading, signIn } = useAuth();
@@ -91,7 +92,7 @@ export default function AdminLogin() {
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
           <Link to="/" className="font-display font-black text-2xl text-white uppercase">
-            TOPAZ <span className="text-[#2E75B6]">2.0</span>
+            <BrandName />
           </Link>
           <h1 className="mt-6 text-xl font-bold text-white tracking-wide">Admin login</h1>
           <p className="mt-2 text-sm text-white/50">

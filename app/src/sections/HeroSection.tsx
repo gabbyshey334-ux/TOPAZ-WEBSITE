@@ -2,12 +2,13 @@ import { useRef, useEffect, useState } from 'react';
 import { gsap } from 'gsap';
 import { ChevronDown } from 'lucide-react';
 import { SITE_CONTENT_TEXT_DEFAULTS } from '@/constants/siteContentDefaults';
+import BrandName from '@/components/BrandName';
 
 // Fallback used when the DB value for `hero_video_url` is missing or not yet loaded.
 const DEFAULT_SHOWREEL_VIDEO_URL = 'https://video.wixstatic.com/video/187f75_27990c00a54e450aa41497ecc3f40b68/480p/mp4/file.mp4';
 const BASE = import.meta.env.BASE_URL;
 const MASK_LOGO = `${BASE}images/logos/topaz-logo-masks.png`;
-const MASK_LOGO_FALLBACK = `${BASE}images/logos/topaz-logo.png`;
+const MASK_LOGO_FALLBACK = `${BASE}topaz-favicon.png`;
 
 interface HeroSectionProps {
   /**
@@ -24,17 +25,17 @@ interface HeroSectionProps {
   heroSubtitle?: string;
 }
 
-/** Ensure brand always renders as "TOPAZ 2.0" (DB may still have "TOPAZ2.0"). */
-function normalizeBrandTitle(title: string): string {
-  return title.replace(/TOPAZ\s*2\.0/gi, 'TOPAZ 2.0');
+/** True when the CMS title is the TOPAZ 2.0 brand (with or without a space). */
+function isTopazBrandTitle(title: string): boolean {
+  return /^TOPAZ\s*2\.0$/i.test(title.trim());
 }
 
 const HeroSection = ({ videoUrl, emblemSrc, heroTitle, heroSubtitle }: HeroSectionProps = {}) => {
-  const resolvedTitle = normalizeBrandTitle(
+  const rawTitle =
     heroTitle != null && String(heroTitle).trim()
       ? String(heroTitle).trim()
-      : SITE_CONTENT_TEXT_DEFAULTS.home_hero_title,
-  );
+      : SITE_CONTENT_TEXT_DEFAULTS.home_hero_title;
+  const useBrandMark = isTopazBrandTitle(rawTitle);
   const resolvedSubtitle =
     heroSubtitle != null && String(heroSubtitle).trim()
       ? String(heroSubtitle).trim()
@@ -111,15 +112,15 @@ const HeroSection = ({ videoUrl, emblemSrc, heroTitle, heroSubtitle }: HeroSecti
         <source src={activeVideoUrl} type="video/mp4" />
       </video>
 
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/60" />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/50 via-black/25 to-black/70" />
 
-      <div className="absolute inset-0 flex flex-col items-center justify-center px-4 text-center">
-        {/* Theater masks logo — floats over video, same treatment as heading (no card) */}
+      {/* Brand lockup — far right, matching buyer reference */}
+      <div className="absolute inset-0 flex flex-col items-end justify-end px-5 pb-24 pt-28 text-right sm:px-10 sm:pb-28 lg:px-16 lg:pb-32">
         <img
           ref={logoRef}
           src={logoSrc}
           alt="TOPAZ"
-          className="mb-8 max-h-[72px] w-auto max-w-full min-w-0 object-contain sm:mb-10 sm:max-h-[80px] sm:max-w-[min(100%,320px)]"
+          className="mb-4 max-h-[64px] w-auto max-w-[min(100%,220px)] object-contain sm:mb-5 sm:max-h-[72px] sm:max-w-[260px] lg:max-h-[80px]"
           data-fallback-tried=""
           onError={(e) => {
             const el = e.currentTarget;
@@ -132,19 +133,23 @@ const HeroSection = ({ videoUrl, emblemSrc, heroTitle, heroSubtitle }: HeroSecti
 
         <h1
           ref={headingRef}
-          className="font-display font-black text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl tracking-tight text-white leading-[0.95] mb-4 max-w-[min(100%,56rem)] mx-auto px-2 break-words"
+          className="font-display font-black text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl tracking-tight text-white leading-[0.95] mb-3 max-w-[min(100%,40rem)] break-words"
         >
-          {resolvedTitle}
+          {useBrandMark ? (
+            <BrandName accentClassName="text-white" />
+          ) : (
+            rawTitle.replace(/TOPAZ\s*2\.0/gi, 'TOPAZ 2.0')
+          )}
         </h1>
 
         <div
           ref={underlineRef}
-          className="mx-auto mb-6 h-1 w-24 origin-center rounded-full bg-[#2E75B6]"
+          className="mb-4 ml-auto h-1 w-24 origin-right rounded-full bg-[#2E75B6]"
         />
 
         <p
           ref={taglineRef}
-          className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-white/80 sm:text-sm max-w-2xl mx-auto px-2"
+          className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-white/80 sm:text-sm max-w-xl"
         >
           {resolvedSubtitle}
         </p>
