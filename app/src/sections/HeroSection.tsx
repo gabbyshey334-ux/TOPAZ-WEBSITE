@@ -114,13 +114,13 @@ const HeroSection = ({ videoUrl, emblemSrc, heroTitle, heroSubtitle }: HeroSecti
 
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/50 via-black/25 to-black/70" />
 
-      {/* Brand lockup — far right, matching buyer reference */}
-      <div className="absolute inset-0 flex flex-col items-end justify-end px-5 pb-24 pt-28 text-right sm:px-10 sm:pb-28 lg:px-16 lg:pb-32">
+      {/* Brand lockup — centered */}
+      <div className="absolute inset-0 flex flex-col items-center justify-center px-4 text-center">
         <img
           ref={logoRef}
           src={logoSrc}
           alt="TOPAZ"
-          className="mb-4 max-h-[64px] w-auto max-w-[min(100%,220px)] object-contain sm:mb-5 sm:max-h-[72px] sm:max-w-[260px] lg:max-h-[80px]"
+          className="mb-8 max-h-[72px] w-auto max-w-full min-w-0 object-contain sm:mb-10 sm:max-h-[80px] sm:max-w-[min(100%,320px)]"
           data-fallback-tried=""
           onError={(e) => {
             const el = e.currentTarget;
@@ -133,7 +133,7 @@ const HeroSection = ({ videoUrl, emblemSrc, heroTitle, heroSubtitle }: HeroSecti
 
         <h1
           ref={headingRef}
-          className="font-display font-black text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl tracking-tight text-white leading-[0.95] mb-3 max-w-[min(100%,40rem)] break-words"
+          className="font-display font-black text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl tracking-tight text-white leading-[0.95] mb-4 max-w-[min(100%,56rem)] mx-auto px-2 break-words"
         >
           {useBrandMark ? (
             <BrandName accentClassName="text-white" />
@@ -144,12 +144,12 @@ const HeroSection = ({ videoUrl, emblemSrc, heroTitle, heroSubtitle }: HeroSecti
 
         <div
           ref={underlineRef}
-          className="mb-4 ml-auto h-1 w-24 origin-right rounded-full bg-[#2E75B6]"
+          className="mx-auto mb-6 h-1 w-24 origin-center rounded-full bg-[#2E75B6]"
         />
 
         <p
           ref={taglineRef}
-          className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-white/80 sm:text-sm max-w-xl"
+          className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-white/80 sm:text-sm max-w-2xl mx-auto px-2"
         >
           {resolvedSubtitle}
         </p>
