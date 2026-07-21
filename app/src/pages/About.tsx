@@ -36,12 +36,18 @@ const About = () => {
 
   const aboutHeroBg = siteContentUrl(siteContent, 'about_hero_background');
   const aboutImage1 = siteContentUrl(siteContent, 'about_image_1');
+  const aboutImage2 = siteContentUrl(siteContent, 'about_image_2');
   const aboutImage3 = siteContentUrl(siteContent, 'about_image_3');
   const performersVisible = useMemo(
     () => aboutPerformersSectionVisible(siteContent, siteContentReady),
     [siteContent, siteContentReady],
   );
   /** No fallback: empty DB value must hide the pill caption (siteContentText would use defaults). */
+  const aboutImage2CaptionDisplay = useMemo(() => {
+    const raw = siteContent['about_image_2_caption'];
+    const v = raw != null ? String(raw).trim() : '';
+    return v;
+  }, [siteContent]);
   const aboutImage3CaptionDisplay = useMemo(() => {
     const raw = siteContent['about_image_3_caption'];
     const v = raw != null ? String(raw).trim() : '';
@@ -239,16 +245,18 @@ const About = () => {
                 <div className="relative rounded-[2rem] overflow-hidden border border-gray-200 bg-white shadow-2xl">
                   <div className="aspect-[3/4] bg-gradient-to-br from-gray-100 to-gray-50">
                     <img
-                      src={ricPortrait}
-                      alt={siteContentText(siteContent, 'about_ric_portrait_alt')}
+                      src={aboutImage2}
+                      alt={siteContentText(siteContent, 'about_image_2_alt')}
                       loading="lazy"
                       className="h-full w-full object-contain"
                     />
                   </div>
                 </div>
-                <p className="text-center font-display font-bold text-lg text-gray-700 px-2">
-                  {siteContentText(siteContent, 'about_ric_name')}
-                </p>
+                {aboutImage2CaptionDisplay ? (
+                  <p className="text-center font-display font-bold text-lg text-gray-700 px-2">
+                    {aboutImage2CaptionDisplay}
+                  </p>
+                ) : null}
               </div>
 
               <div className="story-animate order-1 lg:order-2">
