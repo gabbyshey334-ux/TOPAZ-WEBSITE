@@ -20,6 +20,8 @@ import Gallery from '@/pages/Gallery';
 import Registration from '@/pages/Registration';
 import RegistrationFormRedirect from '@/pages/RegistrationFormRedirect';
 import Shop from '@/pages/Shop';
+import Privacy from '@/pages/Privacy';
+import Terms from '@/pages/Terms';
 import AdminLogin from '@/pages/admin/AdminLogin';
 import AdminEntry from '@/pages/admin/AdminEntry';
 import AdminDashboard from '@/pages/admin/AdminDashboard';
@@ -78,6 +80,8 @@ function App() {
           <Route path="/registration" element={<Registration />} />
           <Route path="/registration-form" element={<RegistrationFormRedirect />} />
           <Route path="/shop" element={<Shop />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/terms" element={<Terms />} />
           <Route
             path="/members/dashboard"
             element={

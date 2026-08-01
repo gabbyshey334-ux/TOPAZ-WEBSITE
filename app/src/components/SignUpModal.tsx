@@ -1,5 +1,6 @@
 import { X, Facebook, Loader2 } from 'lucide-react';
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 export interface SignUpModalProps {
   isOpen: boolean;
@@ -131,8 +132,15 @@ const SignUpModal = ({ isOpen, onClose }: SignUpModalProps) => {
           {/* Footer text */}
           <div className="mt-12 text-center space-y-4">
             <p className="text-white/30 text-xs font-medium leading-relaxed">
-              By joining, you agree to our <span className="text-white hover:underline cursor-pointer">Terms of Service</span> and <br />
-              <span className="text-white hover:underline cursor-pointer">Privacy Policy</span>.
+              By joining, you agree to our{' '}
+              <Link to="/terms" onClick={onClose} className="text-white hover:underline">
+                Terms of Service
+              </Link>{' '}
+              and <br />
+              <Link to="/privacy" onClick={onClose} className="text-white hover:underline">
+                Privacy Policy
+              </Link>
+              .
             </p>
             <p className="text-white/60 font-bold uppercase tracking-widest text-[10px]">
               Already a member? <button onClick={() => handleSignUp('login')} className="text-primary hover:text-secondary transition-colors underline underline-offset-4">Log In</button>

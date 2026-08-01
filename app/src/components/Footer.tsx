@@ -30,8 +30,8 @@ const footerLinks = [
     links: [
       { label: 'Our Story', to: '/about' },
       { label: 'Team', to: '/about' },
-      { label: 'Sponsors', to: '/' },
-      { label: 'Press', to: '/' },
+      { label: 'Privacy Policy', to: '/privacy' },
+      { label: 'Terms of Service', to: '/terms' },
     ],
   },
 ];
@@ -123,10 +123,10 @@ const Footer = () => {
             </div>
 
             <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
-              <Link to="/" className="text-white/60 hover:text-[#2E75B6] transition-colors">
+              <Link to="/privacy" className="text-white/60 hover:text-[#2E75B6] transition-colors">
                 Privacy Policy
               </Link>
-              <Link to="/" className="text-white/60 hover:text-[#2E75B6] transition-colors">
+              <Link to="/terms" className="text-white/60 hover:text-[#2E75B6] transition-colors">
                 Terms of Service
               </Link>
             </div>
